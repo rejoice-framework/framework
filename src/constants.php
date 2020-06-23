@@ -1,6 +1,16 @@
 <?php
+
+/*
+ * This file is part of the Rejoice package.
+ *
+ * (c) Prince Dorcis <princedorcis@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /**
- * Framework Constants
+ * Defines Framework Constants
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -21,11 +31,16 @@ define(
 
 define('MSG', 'message');
 define('ACTIONS', 'actions');
+
 define('ITEM_MSG', 'display');
 define('ITEM_ACTION', 'next_menu');
+define('ITEM_LATER', 'later');
+
 define('SAVE_RESPONSE_AS', 'save_as');
 define('DEFAULT_MENU_ACTION', 'default_next_menu');
+define('MENU', 'menu');
 define('VALIDATE', 'validate');
+define('FORCED_MENU_FLOW', 'forced_menu_flow');
 
 define('APP_WELCOME', '__welcome');
 define('APP_BACK', '__back');
@@ -34,23 +49,8 @@ define('APP_END', '__end');
 define('APP_SPLITTED_MENU_NEXT', '__split_next');
 define('APP_SPLITTED_MENU_BACK', '__split_back');
 define('APP_CONTINUE_LAST_SESSION', '__continue_last_session');
-
-define('WELCOME_MENU_NAME', 'welcome');
-define('MENU_MSG_PLACEHOLDER', ':');
-
-define('PROD', 'prod');
-define('DEV', 'dev');
-
-define(
-    'ALLOWED_REQUEST_PARAMS',
-    [
-        'msisdn',
-        'network',
-        'sessionID',
-        'ussdString',
-        'ussdServiceOp',
-    ]
-);
+define('APP_PAGINATE_FORWARD', '__paginate_forward');
+define('APP_PAGINATE_BACK', '__paginate_back');
 
 /*
  * Actions refer to a certain type of special menu that the app can manage
@@ -71,7 +71,26 @@ define('RESERVED_MENU_IDs', [
     APP_CONTINUE_LAST_SESSION,
     APP_SPLITTED_MENU_NEXT,
     APP_SPLITTED_MENU_BACK,
+    APP_PAGINATE_FORWARD,
+    APP_PAGINATE_BACK,
 ]);
+
+define('WELCOME_MENU_NAME', 'welcome');
+define('MENU_MSG_PLACEHOLDER', ':');
+
+define('PROD', 'prod');
+define('DEV', 'dev');
+
+define(
+    'ALLOWED_REQUEST_PARAMS',
+    [
+        'msisdn',
+        'network',
+        'sessionID',
+        'ussdString',
+        'ussdServiceOp',
+    ]
+);
 
 define('ALLOWED_REQUEST_CHANNELS', ['USSD', 'WHATSAPP']);
 
@@ -82,7 +101,7 @@ define(
 
 define('DEVELOPER_SAVED_DATA', 'session_data_accessible_by_app');
 
-define('MODIFY_MENUS', 'modify_menus');
+define('CURRENT_MENU_ACTIONS', 'modify_menus');
 
 define('DEFAULT_LOG', realpath(__DIR__ . '/../../../../storage/logs/') . '/rejoice.log');
 
@@ -94,12 +113,17 @@ define('RESERVED_MENU_ACTIONS', [
     VALIDATE,
 ]);
 
-define('MENU_ENTITIES_NAMESPACE', 'App\MenuEntities\\');
 define('MENU_ENTITY_VALIDATE_RESPONSE', 'validateResponse');
 define('MENU_ENTITY_SAVE_RESPONSE_AS', 'saveResponseAs');
+define('MENU_ENTITY_DEFAULT_NEXT_MENU', 'defaultNextMenu');
 define('MENU_ENTITY_MESSAGE', 'message');
 define('MENU_ENTITY_ACTIONS', 'actions');
 define('MENU_ENTITY_BEFORE', 'before');
 define('MENU_ENTITY_AFTER', 'after');
+define('MENU_ENTITY_ON_MOVE_TO_NEXT_MENU', 'onMoveToNextMenu');
+define('MENU_ENTITY_ON_BACK', 'onBack');
+define('MENU_ENTITY_ON_PAGINATE_FORWARD', 'onPaginateForward');
+define('MENU_ENTITY_ON_PAGINATE_BACK', 'onPaginateBack');
 define('MENU_ENTITIES_NAMESPACE_PREFIX', 'MenuEntities');
+define('MENU_ENTITIES_NAMESPACE', 'App\\' . MENU_ENTITIES_NAMESPACE_PREFIX . '\\');
 define('MENUS_NAMESPACE_PREFIX', 'Menus');

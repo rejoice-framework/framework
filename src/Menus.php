@@ -1,19 +1,27 @@
 <?php
+
+/*
+ * This file is part of the Rejoice package.
+ *
+ * (c) Prince Dorcis <princedorcis@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Prinx\Rejoice;
+
+require_once 'constants.php';
+
 /**
  * Provides the appropriate menu sought by the request and some menus related functions
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-
-namespace Prinx\Rejoice;
-
-require_once 'constants.php';
-
 class Menus implements \ArrayAccess
 {
-    protected $kernel;
+    protected $app;
     protected $menus = [];
-    protected $menu_ask_user_before_reload_last_session = [
+    protected $menuAskUserBeforeReloadLastSession = [
         ASK_USER_BEFORE_RELOAD_LAST_SESSION => [
             'message' => 'Do you want to continue from where you left?',
             'actions' => [
@@ -29,134 +37,242 @@ class Menus implements \ArrayAccess
         ],
     ];
 
-    protected $menus_php = '';
-    protected $menus_json = '';
+    protected $menusPhp = '';
+    protected $menusJson = '';
 
-    public function __construct($kernel)
+    public function __construct($app)
     {
-        $this->kernel = $kernel;
-        $this->menus_php = $this->menuPath() . '/menus.php';
-        $this->menus_json = $this->menuPath() . '/menus.json';
-        $this->hydrateMenus($kernel);
+        $this->app = $app;
+        $this->session = $app->session();
+        $this->menusPhp = $this->menuPath() . '/menus.php';
+        $this->menusJson = $this->menuPath() . '/menus.json';
+        $this->hydrateMenus($app);
     }
 
     public function menuPath()
     {
-        return $this->kernel->config('menus_root_path') . '/' . $this->kernel->menusNamespace();
+        return $this->app->config('menus_root_path') . '/' . $this->app->menusNamespace();
     }
-    public function hydrateMenus($kernel)
+    public function hydrateMenus($app)
     {
         $this->menus = $this->retrieveMenus();
 
-        if (isset($kernel->sessionData()[MODIFY_MENUS])) {
-            $modifications = $kernel->sessionData()[MODIFY_MENUS];
-
-            $this->modifyMenus($modifications);
+        if ($this->session->hasMetadata(CURRENT_MENU_ACTIONS)) {
+            $modifications = $this->session->metadata(CURRENT_MENU_ACTIONS)[ACTIONS];
+            $this->insertMenuActions($modifications, $app->currentMenuName());
         }
 
         $this->menus = array_merge(
             $this->menus,
-            $this->menu_ask_user_before_reload_last_session
+            $this->menuAskUserBeforeReloadLastSession
         );
     }
 
     public function modifyMenus($modifications)
     {
-        foreach ($modifications as $menu_name => $modif) {
+        foreach ($modifications as $menuName => $modif) {
             if (isset($modif[MSG])) {
-                $this->menus[$menu_name][MSG] = $modif[MSG];
+                $this->menus[$menuName][MSG] = $modif[MSG];
             }
 
             if (isset($modif[ACTIONS])) {
-                $this->modifyPageActions($modif[ACTIONS], $menu_name);
+                $this->insertMenuActions($modif[ACTIONS], $menuName);
             }
         }
     }
 
-    public function modifyPageActions($modifications, $menu_name)
+    public function insertMenuActions($actions, $menuName, $replace = false)
     {
-        if (!isset($this->menus[$menu_name][ACTIONS])) {
-            $this->menus[$menu_name][ACTIONS] = [];
+        if (!isset($this->menus[$menuName][ACTIONS])) {
+            $this->menus[$menuName][ACTIONS] = [];
         }
 
-        foreach ($modifications as $key => $value) {
-            $this->menus[$menu_name][ACTIONS][$key] = $value;
+        if ($replace) {
+            $this->menus[$menuName][ACTIONS] = $actions;
+        } else {
+            foreach ($actions as $key => $value) {
+                $this->menus[$menuName][ACTIONS][$key] = $value;
+            }
         }
+    }
+
+    public function setMenuActions($actions, $menuName)
+    {
+        $this->emptyActionsOfMenu($menuName);
+        $this->insertMenuActions($actions, $menuName, true);
+    }
+
+    public function emptyActionsOfMenu($menuName)
+    {
+        $this->menus[$menuName][ACTIONS] = [];
     }
 
     public function retrieveMenus()
     {
-        if (file_exists($this->menus_php)) {
-            return require $this->menus_php;
-        } elseif (file_exists($this->menus_json)) {
+        if (file_exists($this->menusPhp)) {
+            return require $this->menusPhp;
+        } elseif (file_exists($this->menusJson)) {
             return json_decode(
-                file_get_contents($this->menus_json),
+                file_get_contents($this->menusJson),
                 true,
                 512,
                 JSON_THROW_ON_ERROR
             );
+        } elseif (class_exists($this->app->menuEntityClass('welcome'))) {
+            return [];
         } else {
-            throw new \Exception('Unable to found the Menus, neither in "' . $this->menus_php . '", nor in "' . $this->menus_json . '".');
+            throw new \Exception('Unable to found the Menus, neither in "' . $this->menusPhp . '", nor in "' . $this->menusJson . '".');
         }
     }
 
     public function getNextMenuName(
-        $user_response,
-        $menu_name,
-        $user_response_exists_in_menu_actions
+        $userResponse,
+        $menuName,
+        $userResponseExistsInMenuActions
     ) {
-        if ($user_response_exists_in_menu_actions) {
-            return $this->menus[$menu_name][ACTIONS][$user_response][ITEM_ACTION];
+        if (!empty($forcedFlow = $this->session->metadata(FORCED_MENU_FLOW, []))) {
+            $nextMenu = array_shift($forcedFlow);
+            // var_dump($forcedFlow);
+            $this->session->setMetadata(FORCED_MENU_FLOW, $forcedFlow);
+            // var_dump($this->session->metadata(FORCED_MENU_FLOW, $forcedFlow));
 
-        } elseif (
-            $this->sessionData('current_menu_splitted') &&
-            !$this->sessionData('current_menu_split_end') &&
-            $user_response === $this->kernel->appParams()['splitted_menu_next_thrower']
+            return $nextMenu;
+        }
+
+        if ($userResponseExistsInMenuActions) {
+            if (is_array($this->menus[$menuName][ACTIONS][$userResponse][ITEM_ACTION])) {
+                return $this->menus[$menuName][ACTIONS][$userResponse][ITEM_ACTION][MENU];
+            }
+
+            if (is_string($this->menus[$menuName][ACTIONS][$userResponse][ITEM_ACTION])) {
+                return $this->menus[$menuName][ACTIONS][$userResponse][ITEM_ACTION];
+            }
+
+            throw new \Exception('Next menu name for option "' . $userResponse . '" in the menu "' . $menuName . '" must be an array or a string.');
+        }
+
+        if (
+            $this->session->metadata('currentMenuSplitted', null) &&
+            !$this->session->metadata('currentMenuSplitEnd', null) &&
+            $userResponse === $this->app->params('splitted_menu_next_thrower')
         ) {
             return APP_SPLITTED_MENU_NEXT;
+        }
 
-        } elseif (
-            $this->sessionData('current_menu_splitted') &&
-            !$this->sessionData('current_menu_split_start') &&
-            $user_response === $this->kernel->appParams()['back_action_thrower']
+        if (
+            $this->session->metadata('currentMenuSplitted', null) &&
+            !$this->session->metadata('currentMenuSplitStart', null) &&
+            $userResponse === $this->app->params('back_action_thrower')
         ) {
             return APP_BACK;
-
-        } elseif (isset($this->menus[$menu_name][ACTIONS][DEFAULT_MENU_ACTION])) {
-            return $this->menus[$menu_name][ACTIONS][DEFAULT_MENU_ACTION];
-
-        } else {
-            return false;
         }
+
+        if (isset($this->menus[$menuName][DEFAULT_MENU_ACTION])) {
+            if (is_array($this->menus[$menuName][DEFAULT_MENU_ACTION])) {
+                return $this->menus[$menuName][DEFAULT_MENU_ACTION][MENU];
+            }
+
+            if (is_string($this->menus[$menuName][DEFAULT_MENU_ACTION])) {
+                return $this->menus[$menuName][DEFAULT_MENU_ACTION];
+            }
+
+            throw new \Exception('Default next menu name for the menu "' . $menuName . '" must be an array or a string.');
+        }
+
+        if ($nextMenu = $this->app->getNextMenuFromMenuEntity()) {
+            if (is_array($nextMenu)) {
+                return $nextMenu[MENU];
+            }
+
+            return $nextMenu;
+        }
+
+        return false;
+    }
+
+    public function forcedFlowIfExists($menuName, $response)
+    {
+        if (isset($this->menus[$menuName][ACTIONS][$response][ITEM_LATER])) {
+            return $this->menus[$menuName][ACTIONS][$response][ITEM_LATER];
+        }
+
+        if (
+            isset($this->menus[$menuName][ACTIONS][$response][ITEM_ACTION]) &&
+            is_array($this->menus[$menuName][ACTIONS][$response][ITEM_ACTION]) &&
+            isset($this->menus[$menuName][ACTIONS][$response][ITEM_ACTION][ITEM_LATER])
+        ) {
+            return $this->menus[$menuName][ACTIONS][$response][ITEM_ACTION][ITEM_LATER];
+        }
+
+        if (isset($this->menus[$menuName][ITEM_LATER])) {
+            return $this->menus[$menuName][ITEM_LATER];
+        }
+
+        if (
+            isset($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
+            is_array($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
+            isset($this->menus[$menuName][DEFAULT_MENU_ACTION][ITEM_LATER])
+        ) {
+            return $this->menus[$menuName][DEFAULT_MENU_ACTION][ITEM_LATER];
+        }
+
+        if ($nextMenu = $this->app->getNextMenuFromMenuEntity()) {
+            if (is_array($nextMenu)) {
+                return $nextMenu[ITEM_LATER];
+            }
+        }
+
+        return null;
+        // return (
+        //     isset($this->menus[$menuName][ITEM_LATER]) ||
+        //     isset($this->menus[$menuName][ACTIONS][$response][ITEM_LATER]) ||
+        //     (isset($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
+        //         is_array($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
+        //         isset($this->menus[$menuName][DEFAULT_MENU_ACTION][ITEM_LATER]))
+        // );
+    }
+
+    public function saveForcedFlow($actionLater/* , $menuName, $response */)
+    {
+        $type = gettype($actionLater);
+        if (!in_array($type, ['array', 'string'])) {
+            throw new \Exception('The parameter ' . ITEM_LATER . ' must be of  a the name or an array of the name(s) of the menu(s) you want to redirect to.');
+        }
+
+        $actionLater = is_array($actionLater) ? $actionLater : [$actionLater];
+        $this->session->setMetadata(FORCED_MENU_FLOW, $actionLater);
     }
 
     public function menuStateExists($id)
     {
-        return $id !== '' &&
-            (isset($this->menus[$id]) || in_array($id, RESERVED_MENU_IDs, true));
+        return $id !== '' && (
+            isset($this->menus[$id]) ||
+            in_array($id, RESERVED_MENU_IDs, true) ||
+            class_exists($this->app->menuEntityClass($id))
+        );
     }
 
     public function splittedMenuNextActionDisplay()
     {
-        return $this->kernel->appParams()['splitted_menu_next_thrower'] . ". " .
-        $this->kernel->appParams()['splitted_menu_display'];
+        return $this->app->params('splitted_menu_next_thrower') . ". " .
+        $this->app->params('splitted_menu_display');
     }
 
     public function splittedMenuBackActionDisplay()
     {
-        return $this->kernel->appParams()['back_action_thrower'] . ". " .
-        $this->kernel->appParams()['back_action_display'];
+        return $this->app->params('back_action_thrower') . ". " .
+        $this->app->params('back_action_display');
     }
 
     public function getSplitMenuStringNext()
     {
-        $index = $this->kernel->session_data['current_menu_split_index'] + 1;
+        $index = $this->session->metadata('currentMenuSplitIndex') + 1;
         return $this->getSplitMenuStringAt($index);
     }
 
     public function getSplitMenuStringBack()
     {
-        $index = $this->kernel->session_data['current_menu_split_index'] - 1;
+        $index = $this->session->metadata('currentMenuSplitIndex') - 1;
         return $this->getSplitMenuStringAt($index);
     }
 
@@ -164,57 +280,57 @@ class Menus implements \ArrayAccess
     {
         if ($index < 0) {
             throw new \Exception('Error: Splitted menu does not have page back page. This might not normally happen! Review the code.');
-        } elseif (!isset($this->kernel->session_data['current_menu_chunks'][$index])) {
+        } elseif (!isset($this->session->data['currentMenuChunks'][$index])) {
             throw new \Exception('Splitted menu does not have any next page.');
         }
 
         $this->updateSplittedMenuState($index);
 
-        return $this->kernel->session_data['current_menu_chunks'][$index];
+        return $this->session->data['currentMenuChunks'][$index];
     }
 
     public function updateSplittedMenuState($index)
     {
-        $end = count($this->kernel->session_data['current_menu_chunks']) - 1;
+        $end = count($this->session->data['currentMenuChunks']) - 1;
 
         switch ($index) {
             case 0:
-                $this->kernel->session_data['current_menu_split_start'] = true;
-                $this->kernel->session_data['current_menu_split_end'] = false;
+                $this->session->data['currentMenuSplitStart'] = true;
+                $this->session->data['currentMenuSplitEnd'] = false;
                 break;
 
             case $end:
-                $this->kernel->session_data['current_menu_split_start'] = false;
-                $this->kernel->session_data['current_menu_split_end'] = true;
+                $this->session->data['currentMenuSplitStart'] = false;
+                $this->session->data['currentMenuSplitEnd'] = true;
                 break;
 
             default:
-                $this->kernel->session_data['current_menu_split_start'] = false;
-                $this->kernel->session_data['current_menu_split_end'] = false;
+                $this->session->data['currentMenuSplitStart'] = false;
+                $this->session->data['currentMenuSplitEnd'] = false;
                 break;
         }
 
-        $this->kernel->session_data['current_menu_split_index'] = $index;
+        $this->session->data['currentMenuSplitIndex'] = $index;
     }
 
     public function getMenuString(
-        $menu_actions,
+        $menuActions,
         $menu_msg = '',
-        $has_back_action = false
+        $hasBackAction = false
     ) {
-        $menu_string = $this->menuToString($menu_actions, $menu_msg);
+        $menu_string = $this->menuToString($menuActions, $menu_msg);
 
         $chunks = explode("\n", $menu_string);
         $lines = count($chunks);
 
         if (
-            strlen($menu_string) > $this->kernel->maxUssdPageContent() ||
-            $lines > $this->kernel->maxUssdPageLines()
+            strlen($menu_string) > $this->app->maxUssdPageContent() ||
+            $lines > $this->app->maxUssdPageLines()
         ) {
-            $menu_chunks = $this->splitMenu($chunks, $has_back_action);
-            $menu_string = $menu_chunks[0];
+            $menuChunks = $this->splitMenu($chunks, $hasBackAction);
+            $menu_string = $menuChunks[0];
 
-            $this->saveMenuSplittedState($menu_chunks, $has_back_action);
+            $this->saveMenuSplittedState($menuChunks, $hasBackAction);
         } else {
             $this->unsetPreviousSplittedMenuIfExists();
         }
@@ -222,30 +338,30 @@ class Menus implements \ArrayAccess
         return $menu_string;
     }
 
-    public function splitMenu($menu_string_chunks, $has_back_action)
+    public function splitMenu($menuStringChunks, $hasBackAction)
     {
-        $menu_chunks = [];
+        $menuChunks = [];
 
         $first = 0;
-        $last = count($menu_string_chunks) - 1;
+        $last = count($menuStringChunks) - 1;
 
-        $current_string_without_split_menu = '';
+        $currentStringWithoutSplitMenu = '';
 
         $splitted_menu_next = $this->splittedMenuNextActionDisplay();
         $splitted_menu_back = $this->splittedMenuBackActionDisplay();
 
         foreach (
-            $menu_string_chunks as $menu_item_number => $menu_item_str
+            $menuStringChunks as $menu_item_number => $menu_item_str
         ) {
             $split_menu = '';
 
-            if ($menu_item_number === $first || !isset($menu_chunks[0])) {
+            if ($menu_item_number === $first || !isset($menuChunks[0])) {
                 $split_menu = $splitted_menu_next;
 
-                if ($has_back_action) {
+                if ($hasBackAction) {
                     $split_menu .= "\n" . $splitted_menu_back;
                 }
-            } elseif ($menu_item_number === $last && !$has_back_action) {
+            } elseif ($menu_item_number === $last && !$hasBackAction) {
                 $split_menu = $splitted_menu_back;
             } elseif ($menu_item_number !== $last) {
                 $split_menu = $splitted_menu_next . "\n" . $splitted_menu_back;
@@ -254,10 +370,10 @@ class Menus implements \ArrayAccess
             $new_line = $menu_item_str;
             $new_line_with_split_menu = $menu_item_str . "\n" . $split_menu;
             if (
-                strlen($new_line_with_split_menu) > $this->kernel->maxUssdPageContent() ||
-                count(explode("\n", $new_line_with_split_menu)) > $this->kernel->maxUssdPageLines()
+                strlen($new_line_with_split_menu) > $this->app->maxUssdPageContent() ||
+                count(explode("\n", $new_line_with_split_menu)) > $this->app->maxUssdPageLines()
             ) {
-                $max = $this->kernel->maxUssdPageContent() - strlen("\n" . $splitted_menu_next . "\n" . $splitted_menu_back);
+                $max = $this->app->maxUssdPageContent() - strlen("\n" . $splitted_menu_next . "\n" . $splitted_menu_back);
                 exit('The text <br>```<br>' . $menu_item_str . '<br>```<br><br> is too large to be displayed. Consider breaking it in pieces with the newline character (\n). Each piece must not exceed ' . $max . ' characters.');
 
                 // $exploded = str_split($menu_item_str, $max);
@@ -267,104 +383,84 @@ class Menus implements \ArrayAccess
             /*
              * The order is important here. (setting
              * current_string_with_split_menu before
-             * current_string_without_split_menu)
+             * currentStringWithoutSplitMenu)
              */
-            $current_string_with_split_menu = $current_string_without_split_menu . "\n" . $new_line_with_split_menu;
+            $current_string_with_split_menu = $currentStringWithoutSplitMenu . "\n" . $new_line_with_split_menu;
 
-            $current_string_without_split_menu .= "\n" . $new_line;
+            $currentStringWithoutSplitMenu .= "\n" . $new_line;
 
             $next = $menu_item_number + 1;
             $next_string_with_split_menu = '';
 
             if ($next < $last) {
-                $next_line = "\n" . $menu_string_chunks[$next];
+                $next_line = "\n" . $menuStringChunks[$next];
 
-                if (!isset($menu_chunks[0])) {
+                if (!isset($menuChunks[0])) {
                     $split_menu = "\n" . $splitted_menu_next;
                 } else {
                     $split_menu = "\n" . $splitted_menu_next . "\n" . $splitted_menu_back;
                 }
 
-                $next_string_with_split_menu = $current_string_without_split_menu . $next_line . $split_menu;
+                $next_string_with_split_menu = $currentStringWithoutSplitMenu . $next_line . $split_menu;
             } else {
-                $next_line = "\n" . $menu_string_chunks[$last];
-                $split_menu = $has_back_action ? '' : "\n" . $splitted_menu_back;
+                $next_line = "\n" . $menuStringChunks[$last];
+                $split_menu = $hasBackAction ? '' : "\n" . $splitted_menu_back;
 
-                $next_string_with_split_menu = $current_string_without_split_menu . $next_line . $split_menu;
+                $next_string_with_split_menu = $currentStringWithoutSplitMenu . $next_line . $split_menu;
             }
 
             if (
-                strlen($next_string_with_split_menu) >= $this->kernel->maxUssdPageContent() ||
-                count(explode("\n", $next_string_with_split_menu)) >= $this->kernel->maxUssdPageLines() ||
+                strlen($next_string_with_split_menu) >= $this->app->maxUssdPageContent() ||
+                count(explode("\n", $next_string_with_split_menu)) >= $this->app->maxUssdPageLines() ||
                 $menu_item_number === $last
             ) {
-                $menu_chunks[] = trim($current_string_with_split_menu);
+                $menuChunks[] = trim($current_string_with_split_menu);
                 $current_string_with_split_menu = '';
-                $current_string_without_split_menu = '';
+                $currentStringWithoutSplitMenu = '';
             }
         }
 
-        return $menu_chunks;
+        return $menuChunks;
     }
 
-    public function saveMenuSplittedState($menu_chunks, $has_back_action)
+    public function saveMenuSplittedState($menuChunks, $hasBackAction)
     {
-        $this->kernel->session_data['current_menu_splitted'] = true;
-        $this->kernel->session_data['current_menu_split_index'] = 0;
-        $this->kernel->session_data['current_menu_split_start'] = true;
-        $this->kernel->session_data['current_menu_split_end'] = false;
-
-        $this->kernel->session_data['current_menu_chunks'] = $menu_chunks;
-        $this->kernel->session_data['current_menu_has_back_action'] = $has_back_action;
+        $this->session->data['currentMenuSplitted'] = true;
+        $this->session->data['currentMenuSplitIndex'] = 0;
+        $this->session->data['currentMenuSplitStart'] = true;
+        $this->session->data['currentMenuSplitEnd'] = false;
+        $this->session->data['currentMenuChunks'] = $menuChunks;
+        $this->session->data['currentMenuHasBackAction'] = $hasBackAction;
     }
 
     public function unsetPreviousSplittedMenuIfExists()
     {
-        if (isset($this->kernel->session_data['current_menu_splitted'])) {
-            $this->kernel->session_data['current_menu_splitted'] = false;
+        if (isset($this->session->data['currentMenuSplitted'])) {
+            $this->session->data['currentMenuSplitted'] = false;
 
-            $to_delete = [
-                'current_menu_split_index',
-                'current_menu_split_start',
-                'current_menu_split_end',
-                'current_menu_chunks',
-                'current_menu_has_back_action',
+            $toDelete = [
+                'currentMenuSplitIndex',
+                'currentMenuSplitStart',
+                'currentMenuSplitEnd',
+                'currentMenuChunks',
+                'currentMenuHasBackAction',
             ];
 
-            foreach ($to_delete as $value) {
-                unset($this->kernel->session_data[$value]);
+            foreach ($toDelete as $value) {
+                unset($this->session->data[$value]);
             }
         }
     }
 
-    public function menuToString($menu_actions, $menu_msg = '')
+    public function menuToString($menuActions, $menu_msg = '')
     {
         $menu_string = $menu_msg . "\n\n";
 
-        foreach ($menu_actions as $menu_item_number => $menu_item_str) {
+        foreach ($menuActions as $menu_item_number => $menu_item_str) {
             $menu_string .= "$menu_item_number. $menu_item_str\n";
         }
 
         return trim($menu_string);
-    }
-
-    public function sessionData($id, $silent = true)
-    {
-        if ($id !== '') {
-            if ($silent && !isset($this->kernel->session_data[$id])) {
-                return null;
-            }
-
-            return $this->kernel->session_data[$id];
-        }
-
-        return $this->kernel->session_data;
-    }
-
-    public function sessionSave($id, $value)
-    {
-        $this->kernel->session_data[$id] = $value;
-        return $this;
     }
 
     public function get($id)

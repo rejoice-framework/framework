@@ -79,4 +79,36 @@ function hasPassed($date, $format = 'd/m/Y')
 
 var_dump(hasPassed('7/06/2020'));
 
-echo '<br>' . date('d/m/Y', Date::future(7));
+echo '<br>' . date('d/m/Y', Date::futureDay(7));
+
+var_dump(parse_ini_file('sample.ini', true, INI_SCANNER_TYPED));
+var_dump(['HOST' => 'localhost', 'USER' => 'db_user10', 'DRIVER' => 'mysql']);
+
+$params = [
+    'driver' => 'mysql',
+    'host' => '173.16.0.8',
+    'port' => 3308,
+    'user' => 'root',
+    'password' => 'rootpwd',
+    'dbname' => 'txtgh_infosevo_prince',
+];
+$dsn = $params['driver'];
+$dsn .= ':host=' . $params['host'];
+$dsn .= ';port=' . $params['port'];
+$dsn .= ';dbname=' . $params['dbname'];
+
+$user = $params['user'];
+$pass = $params['password'];
+
+try {
+    return new \PDO($dsn, $user, $pass, [
+        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+
+    ]);
+} catch (\PDOException $e) {
+    exit('Unable to connect to the database.<br/><br/><span style="color:violet;">Database Parameters</span>:<br/>Driver: "' . $params['driver'] .
+        '"<br/>Host: "' . $params['host'] . '"<br/>Port: "' . $params['port'] . '"<br/>Database: "' . $params['dbname'] .
+        '"<br/>User: "' . $params['user'] . '"<br/>Password: "' . $params['password'] . '"<br/><br/>Also check if the parameters are correct, if the "<strong>' .
+        $params['driver'] . "</strong>\" service is running on the server which host the database and if there is an effective internet cconnection between the server that hosts your appication's server and the server that hosts the database(s)." .
+        '<br/><br/><span style="color:red;">ERROR: ' . $e->getMessage() . '</span>');
+}

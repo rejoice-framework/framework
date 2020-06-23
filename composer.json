@@ -1,6 +1,6 @@
 {
-  "name": "prinx/rejoice",
-  "type": "project",
+  "name": "prinx/rejoice-library",
+  "type": "library",
   "description": "Write easily your USSD based applications.",
   "keywords": [
     "ussd",
@@ -22,9 +22,6 @@
     "php": ">=5.6.0",
     "prinx/dotenv": ">=0.1.0",
     "prinx/phputils": ">=0.1.0"
-  },
-  "require-dev": {
-    "prinx/ussd-simulator": ">=0.1.0"
   },
   "config": {
     "optimize-autoloader": true

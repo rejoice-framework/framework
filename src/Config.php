@@ -1,13 +1,28 @@
 <?php
+
+/*
+ * This file is part of the Rejoice package.
+ *
+ * (c) Prince Dorcis <princedorcis@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Prinx\Rejoice;
 
+/**
+ * Common configurations of the framework
+ *
+ * @author Prince Dorcis <princedorcis@gmail.com>
+ */
 class Config
 {
     protected $config = [];
 
     public function __construct()
     {
-        $this->setConfig([
+        $this->setAll([
             'menus_root_path' => realpath(__DIR__ . '/../../../../app/Menus/'),
             'config_root_path' => realpath(__DIR__ . '/../../../../config/'),
             'storage_root_path' => realpath(__DIR__ . '/../../../../storage/logs/'),
@@ -42,7 +57,7 @@ class Config
         $this->config[$name] = $value;
     }
 
-    public function setConfig($config)
+    public function setAll($config)
     {
         $this->config = $config;
     }

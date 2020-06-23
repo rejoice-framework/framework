@@ -1,9 +1,12 @@
 <?php
-/**
- * Handle the USSD Session: save and retrieve the session data from the database
+
+/*
+ * This file is part of the Rejoice package.
  *
- * @author Prince Dorcis <princedorcis@gmail.com>
- * @license MIT
+ * (c) Prince Dorcis <princedorcis@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace Prinx\Rejoice;
@@ -12,25 +15,29 @@ require_once 'constants.php';
 require_once 'Database.php';
 require_once 'Session.php';
 require_once 'SessionInterface.php';
+
 // use Session;
 // use SessionInterface;
-
+/**
+ * Handle the USSD Session: save and retrieve the session data from the database
+ *
+ * @author Prince Dorcis <princedorcis@gmail.com>
+ */
 class DatabaseSession extends Session implements SessionInterface
 {
     protected $db;
+    protected $tableName;
+    protected $tableNameSuffix = '_ussd_sessions';
 
-    protected $table_name;
-    protected $table_name_suffix = '_ussd_sessions';
-
-    public function __construct($ussd_lib)
+    public function __construct($app)
     {
-        parent::__construct($ussd_lib);
+        parent::__construct($app);
 
-        $this->table_name = strtolower($ussd_lib->id()) . $this->table_name_suffix;
+        $this->tableName = strtolower($app->id()) . $this->tableNameSuffix;
 
         $this->loadDB();
 
-        if ($ussd_lib->appParams()['environment'] !== PROD) {
+        if ($app->params('environment') !== PROD) {
             $this->createSessionTableIfNotExists();
         }
 
@@ -44,7 +51,7 @@ class DatabaseSession extends Session implements SessionInterface
 
     private function createSessionTableIfNotExists()
     {
-        $sql = "CREATE TABLE IF NOT EXISTS `$this->table_name`(
+        $sql = "CREATE TABLE IF NOT EXISTS `$this->tableName`(
                   `id` INT(11) NOT NULL AUTO_INCREMENT,
                   `msisdn` VARCHAR(20) NOT NULL,
                   `session_id` VARCHAR(50) NOT NULL,
@@ -61,15 +68,15 @@ class DatabaseSession extends Session implements SessionInterface
 
     public function delete()
     {
-        $sql = "DELETE FROM $this->table_name WHERE msisdn = :msisdn";
+        $sql = "DELETE FROM $this->tableName WHERE msisdn = :msisdn";
         $result = $this->db->prepare($sql);
         $result->execute(['msisdn' => $this->msisdn]);
         $result->closeCursor();
     }
 
-    public function resetData()
+    public function hardReset()
     {
-        $sql = "UPDATE $this->table_name SET session_data=null WHERE msisdn = :msisdn";
+        $sql = "UPDATE $this->tableName SET session_data=null WHERE msisdn = :msisdn";
         $result = $this->db->prepare($sql);
         $result->execute(['msisdn' => $this->msisdn]);
         $result->closeCursor();
@@ -88,11 +95,10 @@ class DatabaseSession extends Session implements SessionInterface
 
     public function retrieveData()
     {
-        $sql = "SELECT (session_data) FROM $this->table_name WHERE msisdn = :msisdn";
+        $sql = "SELECT (session_data) FROM $this->tableName WHERE msisdn = :msisdn";
 
         $req = $this->db->prepare($sql);
         $req->execute(['msisdn' => $this->msisdn]);
-
         $result = $req->fetchAll(\PDO::FETCH_ASSOC);
         $req->closeCursor();
 
@@ -100,18 +106,15 @@ class DatabaseSession extends Session implements SessionInterface
             return [];
         }
 
-        $session_data = $result[0]['session_data'];
+        $sessionData = $result[0]['session_data'];
 
-        $data = ($session_data !== '') ? json_decode($session_data, true) : [];
-
-        // var_dump($data);
-        return $data;
+        return $sessionData !== '' ? json_decode($sessionData, true) : [];
     }
 
     public function updateId()
     {
         $req = $this->db
-            ->prepare("UPDATE $this->table_name SET session_id = :session_id WHERE msisdn = :msisdn");
+            ->prepare("UPDATE $this->tableName SET session_id = :session_id WHERE msisdn = :msisdn");
 
         $req->execute([
             'session_id' => $this->id,
@@ -121,14 +124,9 @@ class DatabaseSession extends Session implements SessionInterface
         return $req->closeCursor();
     }
 
-    public function data()
-    {
-        return $this->data;
-    }
-
     public function previousSessionNotExists()
     {
-        $sql = "SELECT COUNT(*) FROM $this->table_name WHERE msisdn = :msisdn";
+        $sql = "SELECT COUNT(*) FROM $this->tableName WHERE msisdn = :msisdn";
         $result = $this->db->prepare($sql);
         $result->execute(['msisdn' => $this->msisdn]);
 
@@ -139,8 +137,10 @@ class DatabaseSession extends Session implements SessionInterface
         return $nb_rows <= 0;
     }
 
-    public function save($data = [])
+    public function save()
     {
+        $data = $this->data;
+
         if ($this->previousSessionNotExists()) {
             return $this->createDataRecord($data);
         }
@@ -150,7 +150,7 @@ class DatabaseSession extends Session implements SessionInterface
 
     public function createDataRecord($data)
     {
-        $sql = "INSERT INTO $this->table_name (session_data, msisdn, session_id) VALUES (:session_data, :msisdn, :session_id)";
+        $sql = "INSERT INTO $this->tableName (session_data, msisdn, session_id) VALUES (:session_data, :msisdn, :session_id)";
 
         $result = $this->db->prepare($sql);
         $result->execute([
@@ -164,7 +164,7 @@ class DatabaseSession extends Session implements SessionInterface
 
     public function updateDataRecord($data)
     {
-        $sql = "UPDATE $this->table_name SET session_data = :session_data WHERE msisdn = :msisdn";
+        $sql = "UPDATE $this->tableName SET session_data = :session_data WHERE msisdn = :msisdn";
 
         $result = $this->db->prepare($sql);
 

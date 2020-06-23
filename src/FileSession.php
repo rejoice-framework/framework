@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * This file is part of the Rejoice package.
+ *
+ * (c) Prince Dorcis <princedorcis@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Prinx\Rejoice;
 
 require_once 'constants.php';
@@ -7,14 +17,19 @@ require_once 'SessionInterface.php';
 // use Session;
 // use SessionInterface;
 
+/**
+ * Handles file session storage
+ *
+ * @author Prince Dorcis <princedorcis@gmail.com>
+ */
 class FileSession extends Session implements SessionInterface
 {
     protected $storage = '/../../../../storage/sessions/';
     protected $file;
 
-    public function __construct($ussd_lib)
+    public function __construct($app)
     {
-        parent::__construct($ussd_lib);
+        parent::__construct($app);
 
         $this->id = trim($this->msisdn, '+');
         $this->file = realpath(__DIR__ . $this->storage) . '/' . $this->id;
@@ -26,22 +41,22 @@ class FileSession extends Session implements SessionInterface
         unlink($this->file);
     }
 
-    public function resetData()
+    public function hardReset()
     {
         file_put_contents($this->file, '{}');
     }
 
     public function retrievePreviousData()
     {
-        $data = $this->retrieveData();
+        $this->data = $this->retrieveData();
 
-        if (!empty($data)) {
+        if (!empty($this->data)) {
             // $this->delete();
-            $data['id'] = $this->ussd_lib->sessionId();
-            $this->save($data);
+            $this->data['id'] = $this->app->sessionId();
+            $this->save();
         }
 
-        return $data;
+        return $this->data;
     }
 
     public function retrieveData()
@@ -68,8 +83,13 @@ class FileSession extends Session implements SessionInterface
         return false;
     }
 
-    public function save($data = [])
+    public function save()
     {
-        return file_put_contents($this->file, json_encode($data));
+        return file_put_contents($this->file, json_encode($this->data));
+    }
+
+    public function file()
+    {
+        return $this->file;
     }
 }

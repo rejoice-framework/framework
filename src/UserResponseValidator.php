@@ -1,9 +1,24 @@
 <?php
+
+/*
+ * This file is part of the Rejoice package.
+ *
+ * (c) Prince Dorcis <princedorcis@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Prinx\Rejoice;
 
 use Prinx\Utils\Date;
 use Prinx\Utils\Str;
 
+/**
+ * Defines the methods to easily validate the user's response.
+ *
+ * @author Prince Dorcis <princedorcis@gmail.com>
+ */
 class UserResponseValidator
 {
 
@@ -33,7 +48,7 @@ class UserResponseValidator
                     break;
                 }
             } else {
-                throw new Exception('Unknown validation rule `' . $exploded_rule[0] . '`');
+                throw new \Exception('Unknown validation rule `' . $exploded_rule[0] . '`');
             }
         }
 
@@ -60,7 +75,7 @@ class UserResponseValidator
 
         if (!(floatval($num) <= floatval($max))) {
             $v->validated = false;
-            $v->error = 'The response must be greater than ' . $min;
+            $v->error = 'The response must be greater than ' . $max;
         }
 
         return $v;

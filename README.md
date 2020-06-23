@@ -556,7 +556,7 @@ class USSDApp
 {
     protected $default_date_format = 'd/m/Y';
 
-    protected $app_params = [
+    protected $appParams = [
         'id' => 'first_ussd_app',
         'environment' => 'dev',
         'end_on_user_error' => false,
@@ -746,7 +746,7 @@ class USSDApp
 
     public function appParams()
     {
-        return $this->app_params;
+        return $this->appParams;
     }
 
     public function menus()
