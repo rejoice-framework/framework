@@ -6,14 +6,14 @@
     "ussd",
     "whatsapp"
   ],
-  "homepage": "https://github.com/Prinx/rejoice",
+  "homepage": "https://github.com/prinx/rejoice",
   "license": "MIT",
   "authors": [
     {
       "name": "Prince Damien Dorcis-Akpaglo",
       "email": "princedorcis@gmail.com",
-      "role": "Developer",
-      "homepage": "https://github.com/Prinx"
+      "role": "Maintainer",
+      "homepage": "https://prinx.github.io"
     }
   ],
   "minimum-stability": "dev",
