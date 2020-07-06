@@ -1,18 +1,18 @@
 {
-  "name": "prinx/rejoice",
-  "type": "project",
+  "name": "prinx/rejoice-framework",
+  "type": "library",
   "description": "Write easily your USSD based applications.",
   "keywords": [
     "ussd",
     "whatsapp"
   ],
-  "homepage": "https://github.com/Prinx/rejoice",
+  "homepage": "https://github.com/Prinx/rejoice-framework",
   "license": "MIT",
   "authors": [
     {
       "name": "Prince Damien Dorcis-Akpaglo",
       "email": "princedorcis@gmail.com",
-      "role": "Developer",
+      "role": "Maintainer",
       "homepage": "https://github.com/Prinx"
     }
   ],
@@ -21,7 +21,7 @@
   "require": {
     "php": ">=5.6.0",
     "prinx/dotenv": ">=0.1.0",
-    "prinx/phputils": ">=0.1.0"
+    "prinx/phputils": "dev-master"
   },
   "require-dev": {
     "prinx/ussd-simulator": ">=0.1.0"
@@ -38,7 +38,7 @@
         "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
       ],
       "post-create-project-cmd": [
-        "@php artisan key:generate --ansi"
+        ""
       ]
     }
   }
