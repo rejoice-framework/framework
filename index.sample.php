@@ -148,7 +148,7 @@ class USSDApp
         $date = $this->create_date_from_format($response);
 
         if ($date === false) {
-            $this->app->setError('Invalid birthdate format.');
+            $this->addError('Invalid birthdate format.');
             return false;
         }
 
@@ -157,7 +157,7 @@ class USSDApp
         $age = $this->calculate_age($response);
 
         if (!$this->is_valid_date($date) || !$this->age_within($min, $max, $age)) {
-            $this->app->setError('Invalid birthdate.');
+            $this->addError('Invalid birthdate.');
             return false;
         }
 

@@ -85,7 +85,8 @@ class FileSession extends Session implements SessionInterface
 
     public function save()
     {
-        return file_put_contents($this->file, json_encode($this->data));
+        $data = $this->app->params('environment') === DEV ? json_encode($this->data, JSON_PRETTY_PRINT) : json_encode($this->data);
+        return file_put_contents($this->file, $data);
     }
 
     public function file()

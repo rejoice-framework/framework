@@ -37,7 +37,7 @@ class UserResponse implements \ArrayAccess
         $index = $index === -1 ? $len - 1 : $index;
 
         if (!isset($this->responses[$menuName][$index])) {
-            if (!$silent) {
+            if ($silent) {
                 return null;
             }
 
@@ -54,6 +54,11 @@ class UserResponse implements \ArrayAccess
         }
 
         return $this->responses[$menuName];
+    }
+
+    public function all($menuName)
+    {
+        return $this->getAll($menuName);
     }
 
     public function has($menuName, $index = -1)

@@ -21,7 +21,7 @@ return [
     'default_end_msg' => 'Thank you!',
     'end_on_user_error' => false,
     'end_on_unhandled_action' => false,
-    'validate_shortcode' => false,
+    'validate_ussd_code' => false,
     'connect_app_db' => false,
 
     /*

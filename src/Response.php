@@ -29,7 +29,7 @@ class Response
 
     public function end($sentMsg = '', $hard = true)
     {
-        $this->app->setEndMethodAlreadyCalled(true);
+        $this->app->setResponseAlreadySentToUser(true);
         $message = $sentMsg !== '' ? $sentMsg : $this->app->params('default_end_msg');
         $this->sendLast($message, $hard);
     }
@@ -53,19 +53,21 @@ class Response
         return json_encode($fields);
     }
 
-    public function send($message, $ussdRequestType = APP_REQUEST_ASK_USER_RESPONSE, $hard = false)
-    {
+    public function send(
+        $message,
+        $ussdRequestType = APP_REQUEST_ASK_USER_RESPONSE,
+        $hard = false
+    ) {
         /*
          * Sometimes, we need to send the response to the user and do
          * another staff before ending the script. Those times, we just
-         * need to echo the response. That is the soft response snding.
+         * need to echo the response. That is the soft response sending.
          * Sometimes we need to terminate the script immediately when sending
          * the response; for exemple when the developer himself will call the
-         * end function from his code.
+         * 'hardEnd' method from the 'before' method.
          */
         if ($hard) {
-            echo $this->format($message, $ussdRequestType);
-            exit;
+            exit($this->format($message, $ussdRequestType));
         } else {
             /*
              * All these ob_start, ob_flush, etc are just to be able to send the
@@ -89,7 +91,11 @@ class Response
             echo $this->format($message, $ussdRequestType);
 
             header('Content-Encoding: none');
-            //header('Content-Length: ' . ob_get_length());
+
+            if (error_get_last() === null) {
+                header('Content-Length: ' . ob_get_length());
+            }
+
             header('Connection: close');
             ob_end_flush();
             ob_flush();
@@ -105,7 +111,7 @@ class Response
             $this->send($message, APP_REQUEST_END, $hard);
         }
 
-        // $this->app->session()->reset();
+        $this->app->session()->hardReset();
     }
 
     public function hardEnd($message = '')

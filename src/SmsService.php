@@ -20,9 +20,14 @@ class SmsService
 {
     protected $app;
 
+    /**
+     * SMS payload. Consists of the message to send, the sender name and the recipient number
+     *
+     * @var array
+     */
     protected $data;
 
-    public function __construct($app)
+    public function __construct(Kernel $app)
     {
         $this->app = $app;
     }

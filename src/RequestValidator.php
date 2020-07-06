@@ -33,33 +33,33 @@ class RequestValidator extends Validator
     {
         if (
             $this->app->ussdRequestType() === APP_REQUEST_INIT &&
-            $this->app->params('validate_shortcode')
+            $this->app->params('validate_ussd_code')
         ) {
-            $shortcodeCorrect = $this->validateShortcode(
+            $ussdCodeCorrect = $this->validateShortcode(
                 $this->app->userResponse(),
-                env('SHORTCODE', null)
+                env('USSD_CODE', null)
             );
 
-            if (!$shortcodeCorrect) {
+            if (!$ussdCodeCorrect) {
                 $this->app->addWarningInSimulator(
-                    'INVALID SHORTCODE <strong>' . $this->app->userResponse() .
-                    '</strong><br/>Use the shortcode defined in the .env file.'
+                    'INVALID USSD_CODE <strong>' . $this->app->userResponse() .
+                    '</strong><br/>Use the ussd code defined in the .env file.'
                 );
 
-                $this->app->hardEnd('INVALID SHORTCODE');
+                $this->app->hardEnd('INVALID USSD_CODE');
             }
         }
     }
 
     public function validateShortcode(
-        $sent_shortcode,
-        $defined_shortcode
+        $sent_ussdCode,
+        $defined_ussdCode
     ) {
-        if ($defined_shortcode === null) {
-            exit('No "SHORTCODE" value found in the `.env` file. Kindly specify the shortcode application shortcode in the `.env` file.<br><br>Eg.<br>SHORTCODE=*380*75#');
+        if ($defined_ussdCode === null) {
+            exit('No "USSD_CODE" value found in the `.env` file. Kindly specify the ussd code application ussd code in the `.env` file.<br><br>Eg.<br>USSD_CODE=*380*75#');
         }
 
-        if ($sent_shortcode !== $defined_shortcode) {
+        if ($sent_ussdCode !== $defined_ussdCode) {
             return false;
         }
 
@@ -73,7 +73,7 @@ class RequestValidator extends Validator
             exit('Invalid request parameters received.');
         }
 
-        foreach (ALLOWED_REQUEST_PARAMS as $value) {
+        foreach (REQUIRED_REQUEST_PARAMS as $value) {
             if (!isset($requestParams[$value])) {
                 exit("'" . $value . "' is missing in the request parameters.");
             }

@@ -27,7 +27,6 @@ require_once 'SmsService.php';
 
 // include_once realpath(__DIR__) . '/../../../../app/Helpers/helpers.php';
 
-use App\Helpers\Log;
 use Prinx\Rejoice\Config;
 use Prinx\Utils\HTTP;
 use Prinx\Utils\Str;
@@ -41,30 +40,242 @@ use Prinx\Utils\URL;
 
 class Kernel
 {
+    /**
+     * App default name
+     *
+     * @var string
+     */
     protected $appName = 'default';
+
+    /**
+     * Contains all the defined databases connetions
+     *
+     * @var string
+     */
     protected $appDBs = [];
+
+    /**
+     * Applications parameters retrieved from the config/app.php
+     *
+     * @var array
+     */
     protected $params = [];
+
+    /**
+     * Instance of the configurations of the framework itself
+     *
+     * @var Config
+     */
+    protected $config;
+    /**
+     * Instance of the USSD session
+     *
+     * @var Session
+     */
     protected $session;
+
+    /**
+     * HTTP request wrapper instance
+     *
+     * @var Request
+     */
     protected $request;
+
+    /**
+     * Class holding the response to send to the user
+     *
+     * @var Response
+     */
+    protected $response;
+
+    /**
+     * The request validator instance
+     *
+     * @var RequestValidator
+     */
     protected $validator;
+
+    /**
+     * Class holding the menus and all the on-the-fly generated menu actions
+     *
+     * @var Menus
+     */
     protected $menus;
+
+    /**
+     * Default logger instance
+     *
+     * @var Log
+     */
     protected $logger;
+
+    /**
+     * Menu entity of the current menu
+     *
+     * @var MenuEntity|null
+     */
     protected $currentMenuEntity = null;
+
+    /**
+     * Menu entity of the next menu
+     *
+     * @var MenuEntity|null
+     */
     protected $nextMenuEntity = null;
+
+    /**
+     * Custom request type
+     *
+     * The custom request type help define a request type for handling restart
+     * from last session and other requests.
+     *
+     * @var string
+     */
     protected $customUssdRequestType;
+
+    /**
+     * Next menu name
+     *
+     * Based on the response of the user. This is generated
+     * from the menu flow or the default next menu parameter or method
+     *
+     * @var string|null
+     */
     protected $nextMenuName = null;
+
+    /**
+     * True if the current menu is splitted
+     *
+     * The current menu is automatically splitted when the framework detects
+     * that it will overflows. An automatic pagination is then performed.
+     *
+     * Do not rely on this pagination if the data will be a lot. Use rather the
+     * more sophisticated Paginator trait to handle the pagination if the data
+     * is a lot the amount of data that will be rendered is not known
+     *
+     * @var boolean
+     */
     protected $currentMenuSplitted = false;
+
+    /**
+     * If the current menu is splitted, returns the index of the current
+     * displayed chunk of the whole string to display
+     *
+     * @var integer
+     */
     protected $currentMenuSplitIndex = 0;
+
+    /**
+     * True if the currentmenuSplitIndex is 0, meaning if the current displayed
+     * page is the first menu chunk to display.
+     *
+     * This is mainly used to handle the display of the back option
+     * The back option must not appear on the first menu chunk
+     *
+     * @var boolean
+     */
     protected $currentMenuSplitStart = false;
+
+    /**
+     * True if the current displayed page is the last menu chunk to display
+     *
+     * This is mainly used to handle the display of the show more option.
+     * The show more option must not appear on the last menu chunk
+     *
+     * @var boolean
+     */
     protected $currentMenuSplitEnd = false;
+
+    /**
+     * True if the current menu has a back option
+     *
+     * This helps to properly handle the paginate back option when the menu is
+     * splitted. If the menu does not contain a back option, a back option is
+     * automatically added on the last screen of the paginated menu. But it's
+     * important to know that the back option will take the user to the
+     * previous menu only if the previous menu is the first chunk (if
+     * currentMenuSplitStart === true)
+     *
+     * @var boolean
+     */
     protected $currentMenuHasBackAction = false;
+
+    /**
+     * Maximum numbers of characters that can be displayed on a USSD screen
+     *
+     * @var integer
+     */
     protected $maxUssdPageContent = 147;
+
+    /**
+     * Maximum new lines that can be displayed on a USSD screen
+     *
+     * @var integer
+     */
     protected $maxUssdPageLines = 10;
+
+    /**
+     * The current user response validation error
+     *
+     * @var string
+     */
     protected $error = '';
+
+    /**
+     * The SMS to send.
+     *
+     * This allows to differientiate the SMS to send from the string to send
+     * back to the user. Sometimes we need to append to the the
+     * string we are sending back to the user, some other information like
+     * 'Press cancel to finish', information we do not want to send via SMS. So
+     * as soon as the menu string has been generated, if sending sms has been
+     * activated, we save it inside the sms before we append anything else to
+     * the menu string.
+     *
+     * @var string
+     */
     protected $sms = '';
-    protected $endMethodAlreadyCalled = false;
+
+    /**
+     * True if the response has already been sent to the user but the script is
+     * continuing, In other terms, this is true if the developer calls by
+     * themselves, one of the methods `respond`, `respondAndContinue`,
+     * `softEnd`. If this is true, the framework will terminate the script as
+     * soon as the `before` method  of the menu entity has been called (the
+     * menu entity inside which the `respond` menthod was called).
+     *
+     * @var boolean
+     */
+    protected $responseAlreadySentToUser = false;
+
+    /**
+     * True if the application databases have been loaded
+     *
+     * @var boolean
+     */
     protected $appDbLoaded = false;
+
+    /**
+     * Set to true if the user has gone back to the previous menu (using the
+     * __back option)
+     *
+     * @var boolean
+     */
     protected $hasComeBack = false;
+
+    /**
+     * Set to true if the user has resumed from a previous session
+     *
+     * @var boolean
+     */
+    protected $hasResumeFromLastSession = false;
+
+    /**
+     * The response of the user after applying the save_as parameter and/or the saveResponseAs menu entity method
+     *
+     * @var mixed
+     */
+    protected $userSavedResponse = null;
 
     public function __construct($appName)
     {
@@ -76,6 +287,13 @@ class Kernel
         $this->validator = new RequestValidator($this);
     }
 
+    /**
+     * Run the USSD application
+     *
+     * Exit the application when an error occurs.
+     *
+     * @return void
+     */
     public function run()
     {
         try {
@@ -87,7 +305,7 @@ class Kernel
         } catch (\Throwable $th) {
             $message = $th->getMessage() . "\nin file " . $th->getFile();
             $message .= ":" . $th->getLine();
-            $this->logger->info($message);
+            $this->logger->critical($message);
             exit($message);
         }
     }
@@ -110,11 +328,6 @@ class Kernel
         $sessionDriver = (require $sessionConfigPath)['driver'];
         $session = $this->config('default_namespace') . ucfirst($sessionDriver) . 'Session';
         $this->session = new $session($this);
-        // echo '<br>';
-        // echo '<br>';
-        // echo '<br>';
-        // var_dump($this->session->data());
-
     }
 
     public function loadMenus()
@@ -187,7 +400,9 @@ class Kernel
 
     protected function runLastSessionState()
     {
-        $this->setCurrentMenuName($menu = $this->backHistoryPop());
+        $this->hasResumeFromLastSession = true;
+        $this->sessionSave('has_resume_from_last_session', true);
+        $this->setCurrentMenuName($this->backHistoryPop());
         $this->runState($this->currentMenuName());
     }
 
@@ -224,7 +439,7 @@ class Kernel
         $this->loadMenuEntity($currentMenu, 'currentMenuEntity');
 
         $responseExistsInMenuActions =
-        isset($this->menus[$currentMenu][ACTIONS][$response][ITEM_ACTION]);
+            isset($this->menus[$currentMenu][ACTIONS][$response][ITEM_ACTION]);
 
         $nextMenu = $this->menus->getNextMenuName(
             $response,
@@ -232,15 +447,13 @@ class Kernel
             $responseExistsInMenuActions
         );
 
-        // echo $nextMenu;
-
         $userError = $nextMenu === false;
 
         $mustValidateResponse = $this->mustValidateResponse(
-            $currentMenu,
             $userError,
             $responseExistsInMenuActions,
-            $nextMenu
+            $nextMenu,
+            $currentMenu
         );
 
         if ($mustValidateResponse) {
@@ -277,10 +490,7 @@ class Kernel
             return;
         }
 
-        if (
-            $actionLater = $this->menus->forcedFlowIfExists($currentMenu, $response)
-        ) {
-            // $this->menus->saveForcedFlow($actionLater/* , $currentMenu, $response */);
+        if ($actionLater = $this->menus->forcedFlowIfExists($currentMenu, $response)) {
             $this->menus->saveForcedFlow($actionLater);
         }
 
@@ -288,41 +498,64 @@ class Kernel
 
         $this->saveUserResponse($response);
 
-        $this->callAfterMenuHook($response, $currentMenu, $nextMenu);
+        $this->callAfterMenuHook($response);
 
-        // Todo: search for a proper way of determining if moving to next menu
-        if (
-            $nextMenu === APP_END ||
-            $nextMenu === APP_WELCOME ||
-            !in_array($nextMenu, RESERVED_MENU_IDs)
-        ) {
-            $this->callOnMoveToNextMenuHook($response, $currentMenu, $nextMenu);
+        if ($this->isMovingToMenu($nextMenu)) {
+            $this->callOnMoveToNextMenuHook($response);
         }
 
         if (URL::isUrl($nextMenu)) {
-            $this->callOnMoveToNextMenuHook($response, $currentMenu, $nextMenu);
+            $this->callOnMoveToNextMenuHook($response);
             return $this->switchToRemoteUssd($nextMenu);
         }
 
         return $this->runAppropriateState($nextMenu);
     }
 
-    public function mustValidateResponse($currentMenu, $userError, $responseExistsInMenuActions, $nextMenu)
+    /**
+     * Determines if the user is moving to a next menu (he is not comming back or he is not moving the next page of the same menu)
+     *
+     * @param string $nextMenu
+     * @return boolean
+     *
+     * @todo Search a proper way of determining if moving to next menu
+     */
+    public function isMovingToMenu($nextMenu)
     {
-        return (
-            (isset($this->menus[$currentMenu][DEFAULT_MENU_ACTION]) /* ||
-        isset($this->menus[$currentMenu][ITEM_LATER]) */) &&
-            !$userError &&
-            !$responseExistsInMenuActions &&
-            !in_array($nextMenu, RESERVED_MENU_IDs)
-        );
+        return ($nextMenu === APP_END ||
+            $nextMenu === APP_WELCOME ||
+            !in_array($nextMenu, RESERVED_MENU_IDs));
     }
 
     /**
-     * Load Menu Entity
+     * Determines if user's response for this particular menu must be validated.
      *
-     * @param string $class
-     * @param string $type ('current'|'next')
+     * Not all response should be validated. Only responses that have not been
+     * expressly defined by the developer will be validated. Hence, any reponse
+     * for a menu that has a default_next_menu parameter must be validated (the
+     * developer has to specify the validation rules or validate himself in the
+     * `validate` method of the menu entity)
+     *
+     * @param string $currentMenu
+     * @param string $userError
+     * @param boolean $responseExistsInMenuActions The response has already been specified by the developer
+     * @param string $nextMenu
+     * @return boolean
+     */
+    public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu, $currentMenu)
+    {
+        return (
+            /*(isset($this->menus[$currentMenu][DEFAULT_MENU_ACTION]) /* ||
+            isset($this->menus[$currentMenu][ITEM_LATER])) &&*/!$userError &&
+            !$responseExistsInMenuActions &&
+            !in_array($nextMenu, RESERVED_MENU_IDs));
+    }
+
+    /**
+     * Load the Menu Entity of a particular menu
+     *
+     * @param string $menuName
+     * @param string $entityType ('currentMenuEntity'|'nextMenuEntity')
      * @return void
      */
     public function loadMenuEntity($menuName, $entityType)
@@ -335,6 +568,12 @@ class Kernel
         }
     }
 
+    /**
+     * Call the proper method to run for the specific next menu
+     *
+     * @param string $nextMenu
+     * @return void
+     */
     protected function runAppropriateState($nextMenu)
     {
         switch ($nextMenu) {
@@ -360,7 +599,6 @@ class Kernel
 
             case APP_CONTINUE_LAST_SESSION:
                 // $this->setCurrentMenuName($menu = $this->backHistoryPop());
-                // var_dump($menu);
                 $this->runLastSessionState();
                 break;
 
@@ -378,81 +616,85 @@ class Kernel
         }
     }
 
+    /**
+     * Switch the treatment of the ussd request to the remote ussd.
+     *
+     * From here any subsequent request will be forward to the remote ussd
+     *
+     * @param string $nextMenu
+     * @return void
+     */
     protected function switchToRemoteUssd($nextMenu)
     {
         $this->session->setMetadata('switched_ussd_endpoint', $nextMenu);
         $this->session->setMetadata('ussd_has_switched', true);
         $this->session->save();
-
         $this->setUssdRequestType(APP_REQUEST_INIT);
 
         return $this->processFromRemoteUssd($nextMenu);
     }
 
+    /**
+     * Save user's response in the session.
+     *
+     * If there is a `save_as` parameter in the menu flow, the value of the
+     * `save_as` parameter is rather saved.
+     *
+     * If there is a `saveResponseAs` method in the menu entity of the
+     * particular menu, its result is rather saved.
+     * 
+     * If both `save_as` and `saveResponseAs` method are available, the 
+     * `save_as` parameter has the precedence
+     *
+     * @param string $userResponse
+     * @return void
+     */
     protected function saveUserResponse($userResponse)
     {
         $toSave = $userResponse;
-        $alreadyGotSaveAsResponse = false;
+        $name = $this->currentMenuName();
+        $saveResponseMethod = MENU_ENTITY_SAVE_RESPONSE_AS;
 
-        $method = MENU_ENTITY_SAVE_RESPONSE_AS;
+        if (isset($this->menus[$name][ACTIONS][$userResponse][SAVE_RESPONSE_AS])) {
+            // echo $name;
+            // echo $userResponse;
+            // var_dump($this->menus[$name][ACTIONS][$userResponse]);
+            $toSave = $this->menus[$name][ACTIONS][$userResponse][SAVE_RESPONSE_AS];
 
-        if (
+            // echo $toSave;
+        } elseif (
             // !(
             //     $userResponseExistsInMenuActions &&
             //     in_array($nextMenuName, RESERVED_MENU_IDs, true)
             // ) &&
             $this->currentMenuEntity &&
-            method_exists($this->currentMenuEntity, $method)
+            method_exists($this->currentMenuEntity, $saveResponseMethod)
         ) {
             $toSave = call_user_func(
-                [$this->currentMenuEntity, $method],
-                $toSave, $this->userPreviousResponses()
+                [$this->currentMenuEntity, $saveResponseMethod],
+                $toSave,
+                $this->userPreviousResponses()
             );
 
             if ($toSave === null) {
-                $this->response->addWarningInSimulator('The method `' . $method .
-                    '` in the class ' . $this->currentMenuEntity . ' returns `NULL`.
+                $class = get_class($this->currentMenuEntity);
+                $this->response->addWarningInSimulator('The method `' . $saveResponseMethod .
+                    '` in the class ' . $class . ' returns `NULL`.
                  That may means the method does not return anything or you are
                   deliberately returning NULL. <strong>NULL will be saved as
                   the user\'s response</strong>! Check that method (' .
-                    $this->currentMenuEntity . '::' . $method . ') if you think it
-                  must return something else.'
-                );
-            }
-
-            $alreadyGotSaveAsResponse = true;
-        }
-
-        $name = $this->currentMenuName();
-
-        if (
-            isset($this->menus[$name][ACTIONS][$userResponse][SAVE_RESPONSE_AS])
-        ) {
-            if (!$alreadyGotSaveAsResponse) {
-                $toSave = $this->menus[$name]
-                    [ACTIONS]
-                    [$userResponse]
-                    [SAVE_RESPONSE_AS];
-                $alreadyGotSaveAsResponse = true;
-            } else {
-                $this->response->addWarningInSimulator('There is a `' . $method .
-                    '` method in the class ' . $this->currentMenuEntity . ' while this menu (' . $name . ') contains a `' . SAVE_RESPONSE_AS . '` attribute. The `' . $method .
-                    '` method has precedence on the menu attribute. Its return value will be used as the user\'s response instead of the `' . SAVE_RESPONSE_AS . '` attribute.'
-                );
+                    $class . '::' . $saveResponseMethod . ') if you think it
+                  must return something else.');
             }
         }
+        // var_dump($toSave);
 
+        $this->userSavedResponse = $toSave;
         $this->userPreviousResponsesAdd($toSave);
     }
 
-    public function validateFromMenu($menuName, $response)
+    public function validateResponseFromRules($response, $rules)
     {
-        if (!isset($this->menus[$menuName][VALIDATE])) {
-            return true;
-        }
-
-        $rules = $this->menus[$menuName][VALIDATE];
-
         $validation = UserResponseValidator::validate($response, $rules);
 
         if (!$validation->validated) {
@@ -460,6 +702,17 @@ class Kernel
         }
 
         return $validation->validated;
+    }
+
+    public function validateFromMenuFlow($menuName, $response)
+    {
+        if (!isset($this->menus[$menuName][VALIDATE])) {
+            return true;
+        }
+
+        $rules = $this->menus[$menuName][VALIDATE];
+
+        return $this->validateResponseFromRules($response, $rules);
     }
 
     public function validateFromMenuEntity($nextMenuName, $response)
@@ -472,16 +725,30 @@ class Kernel
             method_exists($this->currentMenuEntity, $validateMethod)
         ) {
 
-            $validated = call_user_func(
+            $validation = call_user_func(
                 [$this->currentMenuEntity, $validateMethod],
-                $response, $this->userPreviousResponses()
+                $response,
+                $this->userPreviousResponses()
             );
 
-            if (!is_bool($validated)) {
-                throw new \Exception('The method `' . $validateMethod . '` inside `' . $this->currentMenuEntity . '` class must return a boolean.');
+            // The validation is suppose to be validation rules
+            if (is_array($validation) || is_string($validation)) {
+                return $this->validateResponseFromRules($response, $validation);
             }
 
-            return $validated;
+            if (is_object($validation)) {
+                if (!property_exists($validation, 'validated')) {
+                    throw new \Exception('The object returned from the `' . $validateMethod . '` method does not seem to be a correct validation object. Please return a result of  `' . UserResponseValidator::class . '::validate($response, $rules)` or return an array of validation rules or a boolean.');
+                }
+
+                return $validation->validated;
+            }
+
+            if (!is_bool($validation)) {
+                throw new \Exception('The method `' . $validateMethod . '` inside `' . get_class($this->currentMenuEntity) . '` class must return either an array of validation rules or a string of validation rules or a result of  <i>' . UserResponseValidator::class . '::validate($response, $rules)</i> or a boolean. But got ' . gettype($validation));
+            }
+
+            return $validation;
         }
 
         return true;
@@ -492,7 +759,7 @@ class Kernel
         $menuName,
         $nextMenuName
     ) {
-        $validated = $this->validateFromMenu($menuName, $response);
+        $validated = $this->validateFromMenuFlow($menuName, $response);
 
         return $validated ? $this->validateFromMenuEntity($nextMenuName, $response) : $validated;
     }
@@ -511,11 +778,8 @@ class Kernel
         return false;
     }
 
-    protected function callAfterMenuHook(
-        $userResponse,
-        $menuName,
-        $nextMenuName
-    ) {
+    protected function callAfterMenuHook($userResponse)
+    {
         $afterMethod = MENU_ENTITY_AFTER;
 
         if (
@@ -524,16 +788,14 @@ class Kernel
         ) {
             call_user_func(
                 [$this->currentMenuEntity, $afterMethod],
-                $userResponse, $this->userPreviousResponses()
+                $userResponse,
+                $this->userPreviousResponses()
             );
         }
     }
 
-    protected function callOnMoveToNextMenuHook(
-        $userResponse,
-        $menuName,
-        $nextMenuName
-    ) {
+    protected function callOnMoveToNextMenuHook($userResponse)
+    {
         $onMoveToNextMenuMethod = MENU_ENTITY_ON_MOVE_TO_NEXT_MENU;
 
         if (
@@ -542,7 +804,8 @@ class Kernel
         ) {
             call_user_func(
                 [$this->currentMenuEntity, $onMoveToNextMenuMethod],
-                $userResponse, $this->userPreviousResponses()
+                $userResponse,
+                $this->userPreviousResponses()
             );
         }
     }
@@ -597,7 +860,7 @@ class Kernel
         }
     }
 
-    protected function callFeedMenuMessageHook($menuName)
+    protected function messageFromMenuEntity($menuName)
     {
         $resultCallBefore = '';
 
@@ -618,18 +881,18 @@ class Kernel
                 !is_string($resultCallBefore) &&
                 !is_array($resultCallBefore)
             ) {
-                throw new \Exception("STRING OR ARRAY EXPECTED.\nThe function '" . $callBefore . "' in class '" . $this->nextMenuEntity . "' must return either a string or an associative array. If it returns a string, the string will be appended to the message of the menu. If it return an array, the library will parse the menu message and replace all words that are in the form :indexofthearray: by the value associated in the array. Check the documentation to learn more on how to use the '" . $callBefore . "' functions.");
+                throw new \RuntimeException("STRING OR ARRAY EXPECTED.\nThe function '" . $callBefore . "' in class '" . get_class($this->nextMenuEntity) . "' must return either a string or an associative array. If it returns a string, the string will be appended to the message of the menu. If it return an array, the library will parse the menu message and replace all words that are in the form :indexofthearray: by the value associated in the array. Check the documentation to learn more on how to use the '" . $callBefore . "' functions.");
             }
         } else {
             if (!is_string($resultCallBefore)) {
-                throw new \Exception("STRING EXPECTED.\nThe function '" . $callBefore . "' in class '" . $this->nextMenuEntity . "' must return a string if the menu itself does not have any message. Check the documentation to learn more on how to use the '" . $callBefore . "' functions.");
+                throw new \RuntimeException("STRING EXPECTED.\nThe function '" . $callBefore . "' in class '" . get_class($this->nextMenuEntity) . "' must return a string if the menu itself does not have any message. Check the documentation to learn more on how to use the '" . $callBefore . "' functions.");
             }
         }
 
         return $resultCallBefore;
     }
 
-    protected function callFeedActionsHook($menuName)
+    protected function actionsFromMenuEntity()
     {
         $actionHookResult = [];
         $actionHook = MENU_ENTITY_ACTIONS;
@@ -645,13 +908,13 @@ class Kernel
         }
 
         if (!is_array($actionHookResult)) {
-            throw new \Exception("ARRAY EXPECTED.\nThe method '" . $actionHook . "' in class '" . $this->nextMenuEntity . "' must return an associative array.");
+            throw new \RuntimeException("ARRAY EXPECTED.\nThe method '" . $actionHook . "' in class '" . get_class($this->nextMenuEntity) . "' must return an associative array.");
         }
 
         return $actionHookResult;
     }
 
-    protected function callBeforeHook($menuName)
+    protected function callBeforeHook()
     {
         $callBefore = MENU_ENTITY_BEFORE;
 
@@ -670,18 +933,17 @@ class Kernel
     {
         $this->loadMenuEntity($nextMenuName, 'nextMenuEntity');
 
-        $this->callBeforeHook($nextMenuName);
+        $this->callBeforeHook();
 
-        // The softEnd or harEnd method can be called inside
-        // the `before` method. If so, we terminate the script here
-        if ($this->endMethodAlreadyCalled) {
-            $this->session->hardReset();
+        // The response can be sent inside the `before` hook.
+        // If so, we terminate the script here, as the task of the rest of
+        // this method is to format the response and send it to the user
+        if ($this->responseAlreadySentToUser) {
             exit;
         }
 
-        $message = $this->currentMenuMessage($nextMenuName);
-
-        $actions = $this->currentMenuActions($nextMenuName);
+        $message = $this->menuMessage($nextMenuName);
+        $actions = $this->menuActions($nextMenuName);
 
         if ($this->isLastMenuPage($actions)) {
             $isUssdChannel = $this->isUssdChannel();
@@ -702,7 +964,7 @@ class Kernel
             if (
                 !$isUssdChannel ||
                 ($isUssdChannel &&
-                    !$this->contentOverflows($message))
+                    !$this->willOverflow($message))
             ) {
                 $this->runLastState($message);
                 return;
@@ -732,80 +994,113 @@ class Kernel
         $this->setParam('allow_timeout', true);
     }
 
-    public function contentOverflows($message)
+    public function willOverflow($message)
     {
-        return strlen($message) > $this->maxUssdPageContent || count(explode("\n", $message)) > $this->maxUssdPageLines;
+        return (strlen($message) > $this->maxUssdPageContent() ||
+            count(explode("\n", $message)) > $this->maxUssdPageLines());
     }
 
+    /**
+     * Check if the menu will be the last to show to the user
+     *
+     * Any menu that does not have actions will be the last to show to the user
+     * (no actions means the developer is no more waiting for any response, so
+     * the user can no more input something)
+     *
+     * @param array $actions
+     * @return boolean
+     */
     protected function isLastMenuPage($actions)
     {
         return empty($actions);
-        // return !isset($this->menus[$menuName][ACTIONS]);
     }
 
-    protected function currentMenuMessage($nextMenuName)
+    /**
+     * Returns the message to be displayed for a particular menu
+     *
+     * The message is composed of 1. An error if there is one (eg: invalid
+     * input error), 2. the message returned by the menu entity of this
+     * particular menu and 3. the message specified in the menu flow.
+     * Note that if the menu entity returns an array, we don't concatenate the
+     * messages, we rather search in the message specified in the menu flow if
+     * there is placeholders that match each index of the array and we replace
+     * each placeholder by its value.
+     *
+     * @param string $menuName
+     * @return string
+     */
+    protected function menuMessage($menuName)
     {
-        $message = $this->getErrorIfExists($nextMenuName);
-        $resultCallBefore = $this->callFeedMenuMessageHook($nextMenuName);
+        $message = $this->getErrorIfExists($menuName);
+        $menuEntityMessage = $this->messageFromMenuEntity($menuName);
 
-        if (isset($this->menus[$nextMenuName][MSG])) {
+        if (isset($this->menus[$menuName][MSG])) {
+            $menuFlowMessage = $this->menus[$menuName][MSG];
 
-            $menu_msg = $this->menus[$nextMenuName][MSG];
-
-            if (is_string($resultCallBefore)) {
-                if (empty($menu_msg)) {
-                    $menu_msg = $resultCallBefore;
+            if (is_string($menuEntityMessage)) {
+                if (empty($menuFlowMessage)) {
+                    $menuFlowMessage = $menuEntityMessage;
                 } else {
-                    $menu_msg = $resultCallBefore ? $resultCallBefore . "\n" . $menu_msg : $menu_msg;
+                    $menuFlowMessage = $menuEntityMessage ? $menuEntityMessage . "\n" . $menuFlowMessage : $menuFlowMessage;
                 }
-            } elseif (is_array($resultCallBefore)) {
-                foreach ($resultCallBefore as $pattern_name => $value) {
+            } elseif (is_array($menuEntityMessage)) {
+                foreach ($menuEntityMessage as $pattern_name => $value) {
                     $pattern = '/' . MENU_MSG_PLACEHOLDER . $pattern_name . MENU_MSG_PLACEHOLDER . '/';
-                    $menu_msg = preg_replace($pattern, $value, $menu_msg);
+                    $menuFlowMessage = preg_replace($pattern, $value, $menuFlowMessage);
                 }
             }
 
-            $message .= $message ? "\n" . $menu_msg : $menu_msg;
+            $message .= $message ? "\n" . $menuFlowMessage : $menuFlowMessage;
         } else {
             if (empty($message)) {
-                $message = $resultCallBefore;
+                $message = $menuEntityMessage;
             } else {
-                $message = $resultCallBefore ? $resultCallBefore . "\n" . $message : $message;
+                $message = $menuEntityMessage ?  $message . "\n" . $menuEntityMessage : $message;
             }
         }
 
         return $message;
     }
 
-    protected function currentMenuActions($nextMenuName)
+    /**
+     * Return all the actions of the current menu.
+     *
+     * The actions come from two places: the actions defined in the menu flow
+     * and the actions returned by the `actions` method in the menu entity of
+     * the particular menu.
+     * For each action, we save the extra parameters (the next menu to call,
+     * the save_as parameter, etc.) in the session (persistMenuActions). and we
+     * return only the messages for display purpose.
+     *
+     * @param string $menuName
+     * @return array
+     */
+    protected function menuActions($menuName)
     {
         $this->currentMenuHasBackAction = false;
 
-        $actionsFromMenuFlow = $this->menus[$nextMenuName][ACTIONS] ?? [];
-        $actionsFromMenuEntity = $this->callFeedActionsHook($nextMenuName);
+        $actionsFromMenuFlow = $this->menus[$menuName][ACTIONS] ?? [];
+        $actionsFromMenuEntity = $this->actionsFromMenuEntity();
 
-        // print_r($nextMenuName);
-        // print_r($actionsFromMenuEntity);
-        // print_r($actionsFromMenuFlow);
-        // print_r($this->menus[$nextMenuName]);
-        // exit;
-
-        $actions = array_replace(
-            $actionsFromMenuFlow,
-            $actionsFromMenuEntity
-        );
+        // `array_merge` reorder the array, a behavior that we don't want here
+        // The actions should be in the same order defined by the developer
+        $actions = array_replace($actionsFromMenuFlow, $actionsFromMenuEntity);
 
         $toDisplay = [];
         $toSave = [];
 
-        foreach ($actions as $index => $value) {
-            // To be reviewed
+        foreach ($actions as $actionTrigger => $value) {
+            /*
+             * Weird behavior of `array_search`!
+             * It returns true if $actionTrigger is '0'
+             * To be reviewed
+             */
             if (
-                $index == '0' ||
-                array_search($index, RESERVED_MENU_ACTIONS) === false
+                $actionTrigger == '0' ||
+                array_search($actionTrigger, RESERVED_MENU_ACTIONS) === false
             ) {
-                $toDisplay[$index] = $value[ITEM_MSG];
-                $toSave[$index] = $value;
+                $toDisplay[$actionTrigger] = $value[ITEM_MSG];
+                $toSave[$actionTrigger] = $value;
 
                 if (
                     !$this->currentMenuHasBackAction &&
@@ -818,13 +1113,13 @@ class Kernel
             }
         }
 
-        $this->persistMenuActions($toSave, $nextMenuName);
+        $this->persistMenuActions($toSave, $menuName);
         return $toDisplay;
     }
 
-    protected function persistMenuActions($actions, $nextMenuName)
+    protected function persistMenuActions($actions, $menuName)
     {
-        $this->setMenuActions($actions, $nextMenuName);
+        $this->setMenuActions($actions, $menuName);
     }
 
     protected function runWelcomeState()
@@ -865,8 +1160,6 @@ class Kernel
             $this->response->send($menuString);
         }
 
-        // $this->send->response($menuString);
-
         if (
             $nextMenuName !== APP_SPLITTED_MENU_NEXT &&
             $nextMenuName !== APP_SPLITTED_MENU_BACK
@@ -897,7 +1190,7 @@ class Kernel
         }
     }
 
-    public function runLastState($message = '')
+    protected function runLastState($message = '')
     {
         $message = trim($message);
 
@@ -972,10 +1265,12 @@ class Kernel
             $this->session->data['user_previous_responses'][$id] = [];
         }
 
+        // var_dump($id);
+        // var_dump($response);
         $this->session->data['user_previous_responses'][$id][] = $response;
     }
 
-    public function userPreviousResponses($menuName = null)
+    public function userPreviousResponses($menuName = null, $default = null)
     {
         if (!$this->session->hasMetadata('user_previous_responses')) {
             $this->session->setMetadata('user_previous_responses', []);
@@ -986,7 +1281,15 @@ class Kernel
 
         $responses = new UserResponse($previousSavedResponses);
 
-        return $menuName ? $responses[$menuName] : $responses;
+        if ($menuName) {
+            if (!$responses->has($menuName) && \func_num_args() > 1) {
+                return $default;
+            }
+
+            return $responses->get($menuName);
+        }
+
+        return $responses;
     }
 
     protected function runSameState()
@@ -1017,13 +1320,13 @@ class Kernel
         }
     }
 
-    public function runPaginateForwardState()
+    protected function runPaginateForwardState()
     {
         $this->callOnPaginateForwardHook();
         $this->runSameState();
     }
 
-    public function runPaginateBackState()
+    protected function runPaginateBackState()
     {
         $this->callOnPaginateBackHook();
         $this->runSameState();
@@ -1031,13 +1334,11 @@ class Kernel
 
     protected function runInvalidInputState($error = '')
     {
-        if ($error) {
-            $this->setError($error);
-        } else {
-            $error = empty($this->error()) ? $this->params('default_error_msg') : $this->error();
-            $this->setError($error);
+        if (!$error) {
+            $error = $this->error() ?: $this->params('default_error_msg');
         }
 
+        $this->setError($error);
         $this->runState($this->currentMenuName());
     }
 
@@ -1046,32 +1347,52 @@ class Kernel
      * is 'exit'
      * TO BE REVIEWED.
      */
-    function exit($message = '') {
+    function exit($message = '')
+    {
         $this->response->hardEnd($message);
     }
 
-    public function insertMenuActions($actions, $replace = false, $menuName = '')
+    /**
+     * Add actions to the actions of a particualr menu.
+     *
+     * Any action that has the same index will be overwritten by the new action
+     * in the actionBag. If the parameter replace is true, the old actions will
+     * be rather completely replaced by the new actionBag.
+     *
+     * @param array $actionBag
+     * @param boolean $replace
+     * @param string $menuName
+     * @return array
+     */
+    public function insertMenuActions($actionBag, $replace = false, $menuName = '')
     {
+        // To be reviewed: how to get the proper menu name, when not specified
         $menuName = $menuName ?: $this->nextMenuName();
-        // echo $menuName;
         $menuName = $menuName ?: $this->currentMenuName();
+
         if (!$this->session->hasMetadata(CURRENT_MENU_ACTIONS)) {
             $this->session->setMetadata(CURRENT_MENU_ACTIONS, [ACTIONS => []]);
         }
 
         if ($replace) {
-            $allActions = $this->session->metadata(CURRENT_MENU_ACTIONS);
-            $allActions[ACTIONS] = $actions;
-            $this->session->setMetadata(CURRENT_MENU_ACTIONS, $allActions);
+            $oldActions = $this->session->metadata(CURRENT_MENU_ACTIONS);
+            $oldActions[ACTIONS] = $actionBag;
+            $this->session->setMetadata(CURRENT_MENU_ACTIONS, $oldActions);
         } else {
-            foreach ($actions as $key => $value) {
-                $this->session->data[CURRENT_MENU_ACTIONS][ACTIONS][$key] = $value;
+            foreach ($actionBag as $actionTrigger => $actionParams) {
+                $this->session->data[CURRENT_MENU_ACTIONS][ACTIONS][$actionTrigger] = $actionParams;
             }
         }
 
-        return $this->menus->insertMenuActions($actions, $menuName, $replace);
+        return $this->menus->insertMenuActions($actionBag, $menuName, $replace);
     }
 
+    /**
+     * Empty, for this request, the actionBag of a particular menu
+     *
+     * @param string $menuName
+     * @return void
+     */
     public function emptyActionsOfMenu($menuName)
     {
         $this->session->removeMetadata(CURRENT_MENU_ACTIONS);
@@ -1089,55 +1410,109 @@ class Kernel
         $this->nextMenuName = $id;
     }
 
+    /**
+     * Returns the next menu name or null if it has not yet been retieved by
+     * the framework
+     *
+     * The next menu name is retrieved from the menu flow in the menus.php file,
+     * the actions or the default next menu parameter and is defined only when
+     * the user's response has been successfully validated.
+     * This means this will give the expected result (the proper menu name
+     * based on the user's response) in all the methods that run before the
+     * user response is validated (after, onMoveToNextMenu), but will be the
+     * same as the `menuName` in all the methods that run before the user sends
+     * a response or before the response is validated: (before, message,
+     * actions, validate, saveResponseAs)
+     *
+     *
+     * @return string
+     */
     public function nextMenuName()
     {
         return $this->nextMenuName;
     }
 
+    /**
+     * Returns the previous menu name
+     *
+     * @return string
+     * @throws \RuntimeException If nothing is in the history
+     */
     public function previousMenuName()
     {
         $length = count($this->backHistory());
 
         if (!$length) {
-            throw new \Exception("Can't get a previous menu. 'back_history' is empty.");
+            throw new \RuntimeException("Can't get a previous menu. 'back_history' is empty.");
         }
 
         return $this->backHistory()[$length - 1];
     }
 
     /**
-     * Allow developer to save a value in the session
+     * Allows developer to save a value in the session
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return void
      */
-    public function sessionSave($name, $value)
+    public function sessionSave($key, $value)
     {
-        $this->session->set($name, $value);
+        $this->session->set($key, $value);
     }
 
     /**
-     * Allow developer to retrieve information (s)he saved in the session.
+     * Allows developer to retrieve a previously saved value from the session.
+     *
+     * Returns the value associated to $key, if found. If the $key is not
+     * in the session, it returns the $default passed. If no $default was
+     * passed, it throws an exception.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     *
+     * @throws \Exception If the key is not found and no default has been passed
      */
-    public function sessionGet($name, $default = null)
+    public function sessionGet($key, $default = null)
     {
-        return $this->session($name, $default);
+        return $this->session($key, $default);
     }
 
     /**
      * Allow developer to check if the session contains an index.
+     *
+     * @param string $key
+     * @return boolean
      */
-    public function sessionHas($name)
+    public function sessionHas($key)
     {
-        return $this->session->has($name);
+        return $this->session->has($key);
     }
 
-    public function sessionRemove($name)
+    /**
+     * Allow the developer to remove a key from the session
+     *
+     * @param string $key
+     * @return boolean True if the key exists and has been removed
+     */
+    public function sessionRemove($key)
     {
-        $this->session->remove($name);
+        return $this->session->remove($key);
     }
 
+    /**
+     * Allow the developer to retrieve a value from the session.
+     * This is identical to `sessionGet`
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     *
+     * @throws \Exception If $key not found and no $default passed.
+     */
     public function session($key = null, $default = null)
     {
-        // echo 'CALLED';
-        // echo '<br>';
         if (!$key) {
             return $this->session;
         }
@@ -1145,6 +1520,11 @@ class Kernel
         return $this->session->get($key, $default);
     }
 
+    /**
+     * Returns the menu history bag
+     *
+     * @return array
+     */
     public function backHistory()
     {
         if (!$this->session->hasMetadata('back_history')) {
@@ -1154,6 +1534,12 @@ class Kernel
         return $this->session->metadata('back_history');
     }
 
+    /**
+     * Add a menu name to the history stack
+     *
+     * @param string $menuName
+     * @return void
+     */
     protected function backHistoryPush($menuName)
     {
         $history = $this->backHistory();
@@ -1161,6 +1547,12 @@ class Kernel
         $this->session->setMetadata('back_history', $history);
     }
 
+    /**
+     * Remove a menu from the menu history stack.
+     * The popped menu name is returned.
+     *
+     * @return string
+     */
     protected function backHistoryPop()
     {
         $history = $this->backHistory();
@@ -1169,43 +1561,84 @@ class Kernel
         return $lastMenu;
     }
 
+    /**
+     * Load the application's configured databases.
+     *
+     * @return void
+     */
     public function loadAppDBs()
     {
         $this->appDBs = Database::loadAppDBs();
         $this->appDbLoaded = true;
     }
 
-    public function db($id = '')
+    /**
+     * Returns a specific configured database connection.
+     * It returns the default connection if no connection name is provided
+     *
+     * @param string $connectionName
+     * @return \PDO The PDO connection
+     *
+     * @throws \Exception If no it's unable to retrieve the configuration of the specified connection
+     * @throws \Exception If no connectionNane passed and no default connection has been configured
+     * @throws \Exception If connection to app database has not been activated in the application parameters (it is activated by default)
+     */
+    public function db($connectionName = '')
     {
         if ($this->params('connect_app_db')) {
-            $id = $id === '' ? 'default' : $id;
+            $connectionName = $connectionName ?: 'default';
 
             if (!$this->appDbLoaded) {
                 $this->loadAppDBs();
             }
 
-            if ($id === 'default' && !isset($this->appDBs['default'])) {
+            if ($connectionName === 'default' && !isset($this->appDBs['default'])) {
                 throw new \Exception('No default database set! Kindly update your database configurations in "config/database.php". <br/> At least one database has to have the index "default" in the array return in "config/database.php". If not, you will need to specify the name of the database you want to load.');
-            } elseif (!isset($this->appDBs[$id])) {
-                throw new \Exception('No database configuration set with the name "' . $id . '" in "config/database.php"!');
+            } elseif (!isset($this->appDBs[$connectionName])) {
+                throw new \Exception('No database configuration set with the name "' . $connectionName . '" in "config/database.php"!');
             }
 
-            return $this->appDBs[$id];
+            return $this->appDBs[$connectionName];
         } else {
             throw new \Exception('Database not connected. Please set "connect_app_db" to boolean `true` in the "config/app.php" to enable connection to the database.');
         }
     }
 
+    /**
+     * Returns the maximum number of characters that can appear on one page of the screen of the targetted channel.
+     *
+     * For example, USSD screen will not support, in average, more than 147 characters.
+     * This will be unlimited if the channel is whatsapp (or any other whatsapp-like channel)
+     *
+     * Will return -1 for unlimited characters
+     *
+     * @return int
+     */
     public function maxUssdPageContent()
     {
         return $this->maxUssdPageContent;
     }
 
+    /**
+     * Returns the maximum number of lines (\n) that can appear on one page of the screen of the targetted channel.
+     *
+     * For example, USSD screen will not support, in average, more than 10 new lines.
+     * This will be unlimited if the channel is whatsapp (or any other whatsapp-like channel)
+     *
+     * Will return -1 for unlimited lines
+     *
+     * @return int
+     */
     public function maxUssdPageLines()
     {
         return $this->maxUssdPageLines;
     }
 
+    /**
+     * Check if the user has gone back to arrived to the current menu
+     *
+     * @return boolean
+     */
     public function hasComeBack()
     {
         return $this->hasComeBack;
@@ -1230,9 +1663,9 @@ class Kernel
         return $namespace;
     }
 
-    public function setEndMethodAlreadyCalled($methodCalled)
+    public function setResponseAlreadySentToUser($sent)
     {
-        $this->endMethodAlreadyCalled = $methodCalled;
+        $this->responseAlreadySentToUser = $sent;
     }
 
     public function menusNamespace()
@@ -1253,8 +1686,8 @@ class Kernel
     public function menuEntityClass($menuName)
     {
         return MENU_ENTITIES_NAMESPACE .
-        $this->menuEntitiesNamespace() . '\\' .
-        $this->menuEntityNamespace($menuName);
+            $this->menuEntitiesNamespace() . '\\' .
+            $this->menuEntityNamespace($menuName);
     }
 
     public function currentMenuEntity()
@@ -1297,6 +1730,11 @@ class Kernel
         return $this->request->input('sessionID');
     }
 
+    /**
+     * Raw user response
+     *
+     * @return string
+     */
     public function userResponse()
     {
         return $this->request->input('ussdString');
@@ -1322,11 +1760,23 @@ class Kernel
         return $this;
     }
 
+    /**
+     * Returns a request parameter
+     *
+     * @param string $name
+     * @return mixed
+     */
     public function params($name)
     {
         return $this->params[$name];
     }
 
+    /**
+     * Retrieve the request input
+     *
+     * @param string $name
+     * @return mixed
+     */
     public function request($name = null)
     {
         if (!$name) {
@@ -1336,6 +1786,11 @@ class Kernel
         return $this->request->input($name);
     }
 
+    /**
+     * Instance of the response to send back to the user
+     *
+     * @return Response
+     */
     public function response()
     {
         return $this->response;
@@ -1366,26 +1821,64 @@ class Kernel
         $this->customUssdRequestType = $requestType;
     }
 
+    public function userSavedResponse()
+    {
+        return $this->userSavedResponse;
+    }
+
+    /**
+     * Send SMS to a number
+     *
+     * If no msisdn is passed, the current msidn is used.
+     * The sender name and endpoint can be configure in the env file or
+     * directly in the config/app.php file
+     *
+     * @param string $message
+     * @param string $msisdn
+     * @param string $senderName
+     * @param string $endpoint
+     * @return void
+     */
     public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
     {
-        $smsService = new SmsService($this);
+        if (!$this->params('send_sms_enabled')) {
+            return;
+        }
 
+        $smsService = new SmsService($this);
         return $smsService->send($message, $msisdn, $senderName, $endpoint);
     }
 
-    public function config($name = null)
+    /**
+     * Return a config parameter
+     *
+     * @param string $key
+     * @return mixed
+     * @throws \Exception
+     */
+    public function config($key = null)
     {
-        if (!$name) {
+        if (!$key) {
             return $this->config;
-        } elseif ($this->config->has($name)) {
-            return $this->config->get($name);
+        } elseif ($this->config->has($key)) {
+            return $this->config->get($key);
         }
 
-        throw new \Exception('Key `' . $name . '` not found in the config');
+        throw new \Exception('Key `' . $key . '` not found in the config');
     }
 
     public function logger()
     {
         return $this->logger;
+    }
+
+    public function hasResumeFromLastSessionOnThisMenu()
+    {
+        return $this->hasResumeFromLastSession;
+    }
+
+    public function hasResumeFromLastSession()
+    {
+        return $this->session('has_resume_from_last_session', null);
     }
 }

@@ -19,28 +19,35 @@ require_once 'constants.php';
  */
 class Menus implements \ArrayAccess
 {
+    /**
+     * Instance of the kernel
+     *
+     * @var Kernel
+     */
     protected $app;
-    protected $menus = [];
-    protected $menuAskUserBeforeReloadLastSession = [
-        ASK_USER_BEFORE_RELOAD_LAST_SESSION => [
-            'message' => 'Do you want to continue from where you left?',
-            'actions' => [
-                '1' => [
-                    ITEM_MSG => 'Continue last session',
-                    ITEM_ACTION => APP_CONTINUE_LAST_SESSION,
-                ],
-                '2' => [
-                    ITEM_MSG => 'Restart',
-                    ITEM_ACTION => APP_WELCOME,
-                ],
-            ],
-        ],
-    ];
 
+    /**
+     * The menus retrieved from the menus.php|json file
+     *
+     * @var array
+     */
+    protected $menus = [];
+
+    /**
+     * Path of the menus.php file
+     *
+     * @var string
+     */
     protected $menusPhp = '';
+
+    /**
+     * Path of the menus.json file
+     *
+     * @var string
+     */
     protected $menusJson = '';
 
-    public function __construct($app)
+    public function __construct(Kernel $app)
     {
         $this->app = $app;
         $this->session = $app->session();
@@ -53,6 +60,7 @@ class Menus implements \ArrayAccess
     {
         return $this->app->config('menus_root_path') . '/' . $this->app->menusNamespace();
     }
+
     public function hydrateMenus($app)
     {
         $this->menus = $this->retrieveMenus();
@@ -62,10 +70,37 @@ class Menus implements \ArrayAccess
             $this->insertMenuActions($modifications, $app->currentMenuName());
         }
 
-        $this->menus = array_merge(
-            $this->menus,
-            $this->menuAskUserBeforeReloadLastSession
-        );
+        if ($this->app->params('ask_user_before_reload_last_session')) {
+            $this->menus = array_merge(
+                $this->menus,
+                $this->menuAskUserBeforeReloadLastSession()
+            );
+        }
+    }
+
+    public function menuAskUserBeforeReloadLastSession()
+    {
+        $message = $this->app->params('message_ask_user_before_reload_last_session');
+        $lastSessionTrigger = $this->app->params('last_session_trigger');
+        $lastSessionDisplay = $this->app->params('last_session_display');
+        $restartSessionTrigger = $this->app->params('restart_session_trigger');
+        $restartSessionDisplay = $this->app->params('restart_session_display');
+
+        return [
+            ASK_USER_BEFORE_RELOAD_LAST_SESSION => [
+                'message' => $message,
+                'actions' => [
+                    $lastSessionTrigger => [
+                        ITEM_MSG => $lastSessionDisplay,
+                        ITEM_ACTION => APP_CONTINUE_LAST_SESSION,
+                    ],
+                    $restartSessionTrigger => [
+                        ITEM_MSG => $restartSessionDisplay,
+                        ITEM_ACTION => APP_WELCOME,
+                    ],
+                ],
+            ],
+        ];
     }
 
     public function modifyMenus($modifications)
@@ -81,6 +116,16 @@ class Menus implements \ArrayAccess
         }
     }
 
+    /**
+     * Insert an action to the action bag
+     *
+     * Return the modified action bag
+     *
+     * @param array $actions
+     * @param string $menuName
+     * @param boolean $replace
+     * @return array
+     */
     public function insertMenuActions($actions, $menuName, $replace = false)
     {
         if (!isset($this->menus[$menuName][ACTIONS])) {
@@ -94,12 +139,14 @@ class Menus implements \ArrayAccess
                 $this->menus[$menuName][ACTIONS][$key] = $value;
             }
         }
+
+        return $this->menus[$menuName][ACTIONS];
     }
 
     public function setMenuActions($actions, $menuName)
     {
         $this->emptyActionsOfMenu($menuName);
-        $this->insertMenuActions($actions, $menuName, true);
+        return $this->insertMenuActions($actions, $menuName, true);
     }
 
     public function emptyActionsOfMenu($menuName)

@@ -6,7 +6,7 @@ use Prinx\Rejoice\Database;
 use Prinx\Utils\Date;
 use Prinx\Utils\Str;
 
-echo Str::internationaliseNumber('233 (54 54-66 796');
+echo Str::internationaliseNumber('233 (54 54-66 796', '');
 echo '<br>';
 
 var_dump(preg_match('/^(\+|00)?[0-9-() ]{8,}$/', '00233 (54 54-66 796'));

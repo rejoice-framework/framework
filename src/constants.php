@@ -82,7 +82,7 @@ define('PROD', 'prod');
 define('DEV', 'dev');
 
 define(
-    'ALLOWED_REQUEST_PARAMS',
+    'REQUIRED_REQUEST_PARAMS',
     [
         'msisdn',
         'network',
