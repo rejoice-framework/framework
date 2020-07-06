@@ -6,7 +6,7 @@ This library helps you write easily your USSD applications.
 
 ### 1.
 
-This is a Work In Progress. The tutorial is been updated regularly.
+**This is a Work In Progress.** The tutorial is been updated regularly.
 
 ### 2.
 
