@@ -2,7 +2,7 @@
 require_once realpath(__DIR__) . '/../../../autoload.php';
 require_once 'constants.php';
 
-use Prinx\Rejoice\Database;
+use Prinx\Rejoice\Foundation\Database;
 use Prinx\Utils\Date;
 use Prinx\Utils\Str;
 

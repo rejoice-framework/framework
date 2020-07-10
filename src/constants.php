@@ -113,8 +113,8 @@ define('RESERVED_MENU_ACTIONS', [
     VALIDATE,
 ]);
 
-define('MENU_ENTITY_VALIDATE_RESPONSE', 'validateResponse');
-define('MENU_ENTITY_SAVE_RESPONSE_AS', 'saveResponseAs');
+define('MENU_ENTITY_VALIDATE_RESPONSE', 'validate');
+define('MENU_ENTITY_SAVE_RESPONSE_AS', 'saveAs');
 define('MENU_ENTITY_DEFAULT_NEXT_MENU', 'defaultNextMenu');
 define('MENU_ENTITY_MESSAGE', 'message');
 define('MENU_ENTITY_ACTIONS', 'actions');
@@ -124,6 +124,6 @@ define('MENU_ENTITY_ON_MOVE_TO_NEXT_MENU', 'onMoveToNextMenu');
 define('MENU_ENTITY_ON_BACK', 'onBack');
 define('MENU_ENTITY_ON_PAGINATE_FORWARD', 'onPaginateForward');
 define('MENU_ENTITY_ON_PAGINATE_BACK', 'onPaginateBack');
-define('MENU_ENTITIES_NAMESPACE_PREFIX', 'MenuEntities');
+define('MENU_ENTITIES_NAMESPACE_PREFIX', 'Menus');
 define('MENU_ENTITIES_NAMESPACE', 'App\\' . MENU_ENTITIES_NAMESPACE_PREFIX . '\\');
-define('MENUS_NAMESPACE_PREFIX', 'Menus');
+define('MENUS_NAMESPACE_PREFIX', 'menus');
