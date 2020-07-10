@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice;
+namespace Prinx\Rejoice\Console;
 
 use Symfony\Component\Console\Application;
 
@@ -23,7 +23,7 @@ class ConsoleApp
     public function run()
     {
         $app = new Application('Rejoice Console', 'v1.0.0');
-        $commands = require_once realpath(__DIR__ . '/../../../../config/') . '/commands.php';
+        $commands = require_once realpath(__DIR__ . '/../../../../../config/') . '/commands.php';
 
         foreach ($commands as $command) {
             $app->add(new $command);
