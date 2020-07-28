@@ -24,9 +24,9 @@
     "prinx/notify": "dev-master",
     "prinx/phputils": "dev-master",
     "prinx/dir-dot-config": "dev-master",
-    "prinx/php-string-utils": "dev-master",
-    "prinx/php-array-utils": "dev-master",
-    "prinx/php-os-utils": "dev-master"
+    "prinx/string-utils": "dev-master",
+    "prinx/array-utils": "dev-master",
+    "prinx/os-utils": "dev-master"
   },
   "require-dev": {
     "prinx/ussd-simulator": "dev-master",
