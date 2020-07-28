@@ -11,20 +11,14 @@
 
 namespace Prinx\Rejoice\Foundation;
 
-require_once __DIR__ . '/../constants.php';
+require_once __DIR__ . '/../../constants.php';
 
-use Prinx\Rejoice\Foundation\Database;
-use Prinx\Rejoice\Foundation\FrameworkConfig;
-use Prinx\Rejoice\Foundation\Request;
-use Prinx\Rejoice\Foundation\RequestValidator;
-use Prinx\Rejoice\Foundation\Response;
-use Prinx\Rejoice\Foundation\UserResponse;
-use Prinx\Rejoice\Foundation\UserResponseValidator;
+use Prinx\Notify\Log;
+use Prinx\Os;
 use Prinx\Rejoice\Menu\Menus;
-use Prinx\Rejoice\Utils\Log;
 use Prinx\Rejoice\Utils\SmsService;
+use Prinx\Str;
 use Prinx\Utils\HTTP;
-use Prinx\Utils\Str;
 use Prinx\Utils\URL;
 
 /**
@@ -32,40 +26,32 @@ use Prinx\Utils\URL;
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-
 class Kernel
 {
-    /**
-     * App default name
-     *
-     * @var string
-     */
+
     protected $appName = '';
 
     /**
      * Contains all the defined databases connetions
      *
-     * @var string
+     * @var \PDO[]
      */
     protected $appDBs = [];
 
     /**
-     * Applications parameters retrieved from the config/app.php
-     *
-     * @var array
+     * @var PathConfig
      */
-    protected $params = [];
+    protected $path;
 
     /**
-     * Instance of the configurations of the framework itself
-     *
-     * @var FrameworkConfig
+     * @var Config
      */
-    protected $frameworkConfig;
+    protected $config;
+
     /**
      * Instance of the USSD session
      *
-     * @var Session
+     * @var \Prinx\Rejoice\Session\Session
      */
     protected $session;
 
@@ -98,23 +84,17 @@ class Kernel
     protected $menus;
 
     /**
-     * Default logger instance
-     *
      * @var Log
      */
     protected $logger;
 
     /**
-     * Menu entity of the current menu
-     *
-     * @var Menu|null
+     * @var \Prinx\Rejoice\Menu\BaseMenu|null
      */
     protected $currentMenuEntity = null;
 
     /**
-     * Menu entity of the next menu
-     *
-     * @var Menu|null
+     * @var \Prinx\Rejoice\Menu\BaseMenu|null
      */
     protected $nextMenuEntity = null;
 
@@ -129,14 +109,14 @@ class Kernel
     protected $customUssdRequestType;
 
     /**
-     * Next menu name
-     *
-     * Based on the response of the user. This is generated
-     * from the menu flow or the default next menu parameter or method
-     *
-     * @var string|null
+     * @var string
      */
-    protected $nextMenuName = null;
+    protected $menuInProcess = 'none';
+
+    /**
+     * @var string
+     */
+    protected $nextMenuName = '';
 
     /**
      * True if the current menu is splitted
@@ -146,7 +126,7 @@ class Kernel
      *
      * Do not rely on this pagination if the data will be a lot. Use rather the
      * more sophisticated Paginator trait to handle the pagination if the data
-     * is a lot the amount of data that will be rendered is not known
+     * is a lot of if the amount of data that will be rendered is not known
      *
      * @var boolean
      */
@@ -196,20 +176,6 @@ class Kernel
     protected $currentMenuHasBackAction = false;
 
     /**
-     * Maximum numbers of characters that can be displayed on a USSD screen
-     *
-     * @var integer
-     */
-    protected $maxUssdPageContent = 147;
-
-    /**
-     * Maximum new lines that can be displayed on a USSD screen
-     *
-     * @var integer
-     */
-    protected $maxUssdPageLines = 10;
-
-    /**
      * The current user response validation error
      *
      * @var string
@@ -217,15 +183,14 @@ class Kernel
     protected $error = '';
 
     /**
-     * The SMS to send.
-     *
-     * This allows to differientiate the SMS to send from the string to send
-     * back to the user. Sometimes we need to append to the the
-     * string we are sending back to the user, some other information like
-     * 'Press cancel to finish', information we do not want to send via SMS. So
-     * as soon as the menu string has been generated, if sending sms has been
-     * activated, we save it inside the sms before we append anything else to
-     * the menu string.
+     * This does not content the sms the user may send on the fly directly by
+     * calling the sending sms function. It is rather used when the same menu
+     * string message has to be sent to the user as SMS. Sometimes we need to
+     * append to the string we are sending back to the user, some other
+     * information like 'Press cancel to finish', information we do not want to
+     * send via SMS. So as soon as the menu string has been generated, if
+     * sending sms has been activated, we save it inside the sms before we
+     * append anything else to the menu string.
      *
      * @var string
      */
@@ -237,7 +202,7 @@ class Kernel
      * themselves, one of the methods `respond`, `respondAndContinue`,
      * `softEnd`. If this is true, the framework will terminate the script as
      * soon as the `before` method  of the menu entity has been called (the
-     * menu entity inside which the `respond` menthod was called).
+     * menu entity inside which the menthod was called).
      *
      * @var boolean
      */
@@ -265,6 +230,8 @@ class Kernel
      */
     protected $hasResumeFromLastSession = false;
 
+    protected $menuNamespaceDelimiter = '::';
+
     /**
      * The response of the user after applying the save_as parameter and/or the saveAs menu entity method
      *
@@ -275,9 +242,16 @@ class Kernel
     public function __construct($appName = '')
     {
         $this->appName = $appName;
-        $this->logger = new Log;
-        $this->frameworkConfig = new FrameworkConfig;
-        $this->request = new Request;
+        $this->path = new PathConfig;
+        $this->logger = new Log(
+            $this->path('app_default_log_file'),
+            $this->path('app_default_cache_file')
+        );
+        $this->config = new Config([
+            $this->path('app_config_dir'),
+            $this->path('default_config_dir'),
+        ]);
+        $this->request = new Request($this);
         $this->response = new Response($this);
         $this->validator = new RequestValidator($this);
     }
@@ -293,17 +267,37 @@ class Kernel
     {
         ob_start();
         try {
-            $this->loadAppParams();
             $this->validateRequest();
             $this->startSession();
             $this->loadMenus();
+            // throw new \Exception("Error Processing Request", 1);
             $this->handleUserRequest();
+
         } catch (\Throwable $th) {
-            $message = $th->getMessage() . "\nin file " . $th->getFile();
-            $message .= ":" . $th->getLine();
+            $message = $this->formatExceptionMessage($th);
             $this->logger->critical($message);
-            exit($message);
+            $this->fail($message);
         }
+    }
+
+    public function formatExceptionMessage($exception)
+    {
+        $message = '<strong>' . $exception->getMessage() . '</strong> in file ' . $exception->getFile() . ' on line ' . $exception->getLine();
+        $message .= "<br><br>Processing menu: " . $this->menuInProcess;
+
+        if (class_exists($this->menuEntityClass($this->menuInProcess))) {
+            $menuPath = $this->path('app_menu_class_dir');
+
+            $appNamespace = $this->createAppNamespace();
+            $menuPath .= $appNamespace ? $appNamespace . '/' : '';
+            $menuPath .= $this->menuEntityRelativePath($this->menuInProcess) . '.php';
+
+            $message .= ' in file ' . Os::toPathStyle($menuPath);
+        }
+
+        $message .= '<br><br><strong>Stack trace:</strong><br>' . preg_replace('/(#[0-9]+)/', '<br><strong style="background:grey;padding:5px;">$1</strong>', $exception->getTraceAsString());
+
+        return $message;
     }
 
     public function validateRequest()
@@ -311,18 +305,29 @@ class Kernel
         $this->validator->validate();
     }
 
-    public function loadAppParams()
+    /**
+     * Get a configuration variable from the config
+     *
+     * Returns the config object instance if no parameter passed
+     *
+     * @param string $key
+     * @param mixed $default The default to return if the configuration is not found
+     * @param boolean $silent If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @return Config|mixed
+     * @throws \RuntimeException
+     */
+    public function config($key = null, $default = null)
     {
-        $params = require_once $this->frameworkConfig('app_config_path');
-        $defaultParams = require_once __DIR__ . '/../params.php';
-        $this->params = array_replace($defaultParams, $params);
+        $args = func_get_args();
+
+        return $this->config->get(...$args);
     }
 
     public function startSession()
     {
-        $sessionConfigPath = $this->frameworkConfig('session_config_path');
+        $sessionConfigPath = $this->path('app_session_config_file');
         $sessionDriver = (require $sessionConfigPath)['driver'];
-        $session = $this->frameworkConfig('default_namespace') . 'Session\\' . ucfirst($sessionDriver) . 'Session';
+        $session = DEFAULT_NAMESPACE . 'Session\\' . ucfirst($sessionDriver) . 'Session';
         $this->session = new $session($this);
     }
 
@@ -331,14 +336,40 @@ class Kernel
         $this->menus = new Menus($this);
     }
 
+    public function isFirstRequest()
+    {
+        return $this->ussdRequestType() === APP_REQUEST_INIT;
+    }
+
+    public function forceRestart()
+    {
+        $this->setCustomUssdRequestType(APP_REQUEST_INIT);
+    }
+
+    public function attemptsToCallSubMenuDirectly()
+    {
+        return (!$this->isFirstRequest() &&
+            $this->session->isNew());
+    }
+
+    public function doesNotAllowDirectSubMenuCall()
+    {
+        return !$this->config('app.allow_direct_sub_menu_call');
+    }
+
     protected function handleUserRequest()
     {
-        if (
-            $this->ussdRequestType() === APP_REQUEST_INIT &&
-            $this->session->isPrevious()
+        if ($this->isFirstRequest() && $this->session->isPrevious()) {
+            // var_dump($this->session->data());
+            $this->prepareToLaunchFromPreviousSession();
+        } elseif (
+            $this->attemptsToCallSubMenuDirectly() &&
+            $this->doesNotAllowDirectSubMenuCall()
         ) {
-            $this->prepareToLaunchFromPreviousSessionState();
+            $this->forceRestart();
         }
+
+        $this->menuInProcess = $this->currentMenuName();
 
         switch ($this->ussdRequestType()) {
             case APP_REQUEST_INIT:
@@ -376,12 +407,11 @@ class Kernel
         }
     }
 
-    public function prepareToLaunchFromPreviousSessionState()
+    public function prepareToLaunchFromPreviousSession()
     {
         if (
-            $this->params('ask_user_before_reload_last_session') &&
-            !empty($this->session->metadata()) &&
-            $this->session->metadata('current_menu_name') !== WELCOME_MENU_NAME
+            $this->config('app.ask_user_before_reload_last_session') &&
+            $this->session->metadata('current_menu_name', false) !== WELCOME_MENU_NAME
         ) {
             $this->setCustomUssdRequestType(APP_REQUEST_ASK_USER_BEFORE_RELOAD_LAST_SESSION);
         } else {
@@ -391,23 +421,23 @@ class Kernel
 
     public function hasComeBackAfterNoTimeoutFinalResponse()
     {
-        return $this->mustNotTimeout() && empty($this->session->metadata());
+        return $this->session->mustNotTimeout() && $this->session->isNew();
     }
 
     protected function runLastSessionState()
     {
         $this->hasResumeFromLastSession = true;
         $this->sessionSave('has_resume_from_last_session', true);
-        $this->setCurrentMenuName($this->backHistoryPop());
+        $this->saveCurrentMenuName($this->historyBagPop());
         $this->runState($this->currentMenuName());
     }
 
-    public function currentMenuName()
+    public function currentMenuName(): string
     {
         return $this->session->metadata('current_menu_name', 'welcome');
     }
 
-    protected function setCurrentMenuName($name)
+    protected function saveCurrentMenuName($name): void
     {
         $this->session->setMetadata('current_menu_name', $name);
     }
@@ -421,12 +451,10 @@ class Kernel
     {
         $response = $this->userResponse();
 
-        /*
-         * Do not use empty() to check the user response. The expected response
-         * can for e.g. be 0 (zero), which empty() sees like empty.
-         */
-        if ($response === '') {
-            $this->runInvalidInputState('Empty response not allowed');
+        // Do not use empty() to check the user response. The expected response
+        // can for e.g. be 0 (zero), which empty() sees like empty.
+        if ('' === $response) {
+            $this->runInvalidInputState($this->config('menu.empty_response_error'));
             return;
         }
 
@@ -443,7 +471,7 @@ class Kernel
             $responseExistsInMenuActions
         );
 
-        $userError = $nextMenu === false;
+        $userError = false === $nextMenu;
 
         $mustValidateResponse = $this->mustValidateResponse(
             $userError,
@@ -463,8 +491,8 @@ class Kernel
         }
 
         if ($userError) {
-            if ($this->params('end_on_user_error')) {
-                $this->response->hardEnd($this->default_error_msg);
+            if ($this->config('app.end_on_user_error')) {
+                $this->response->hardEnd($this->config('menu.default_error_message'));
             } else {
                 $this->runInvalidInputState();
             }
@@ -473,14 +501,16 @@ class Kernel
         }
 
         if (!$this->menus->menuStateExists($nextMenu)) {
+            $class = $this->menuEntityClass($nextMenu);
             $this->response->addWarningInSimulator(
-                'The next menu `' . $nextMenu . '` cannot be found.'
+                'Neither the menu "' . $nextMenu . '" nor the class "' . $class . '" was found. '
             );
 
-            if ($this->params('end_on_unhandled_action')) {
-                $this->response->hardEnd('Action not handled.');
+            $unhandledActionMessage = $this->config('menu.unhandled_action_message');
+            if ($this->config('app.end_on_unhandled_action')) {
+                $this->response->hardEnd($unhandledActionMessage);
             } else {
-                $this->runInvalidInputState('Action not handled.');
+                $this->runInvalidInputState($unhandledActionMessage);
             }
 
             return;
@@ -496,13 +526,13 @@ class Kernel
 
         $this->callAfterMenuHook($response);
 
-        if ($this->isMovingToMenu($nextMenu)) {
-            $this->callOnMoveToNextMenuHook($response);
-        }
-
         if (URL::isUrl($nextMenu)) {
             $this->callOnMoveToNextMenuHook($response);
             return $this->switchToRemoteUssd($nextMenu);
+        }
+
+        if ($this->isMovingToMenu($nextMenu)) {
+            $this->callOnMoveToNextMenuHook($response);
         }
 
         return $this->runAppropriateState($nextMenu);
@@ -518,8 +548,7 @@ class Kernel
      */
     public function isMovingToMenu($nextMenu)
     {
-        return ($nextMenu === APP_END ||
-            $nextMenu === APP_WELCOME ||
+        return (APP_END === $nextMenu || APP_WELCOME === $nextMenu ||
             !in_array($nextMenu, RESERVED_MENU_IDs));
     }
 
@@ -541,7 +570,7 @@ class Kernel
     public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu, $currentMenu)
     {
         return (
-            /*(isset($this->menus[$currentMenu][DEFAULT_MENU_ACTION]) /* ||
+            /*(isset($this->menus[$currentMenu][DEFAULT_NEXT_MENU]) /* ||
             isset($this->menus[$currentMenu][ITEM_LATER])) &&*/!$userError &&
             !$responseExistsInMenuActions &&
             !in_array($nextMenu, RESERVED_MENU_IDs));
@@ -594,7 +623,6 @@ class Kernel
                 break;
 
             case APP_CONTINUE_LAST_SESSION:
-                // $this->setCurrentMenuName($menu = $this->backHistoryPop());
                 $this->runLastSessionState();
                 break;
 
@@ -663,11 +691,11 @@ class Kernel
         ) {
             $toSave = call_user_func(
                 [$this->currentMenuEntity, $saveResponseMethod],
-                $toSave,
+                $userResponse,
                 $this->userPreviousResponses()
             );
 
-            if ($toSave === null) {
+            if (null === $toSave) {
                 $class = get_class($this->currentMenuEntity);
                 $this->response->addWarningInSimulator('The method `' . $saveResponseMethod .
                     '` in the class ' . $class . ' returns `NULL`.
@@ -831,7 +859,7 @@ class Kernel
 
     protected function getErrorIfExists($menuName)
     {
-        if ($this->error() && $menuName === $this->currentMenuName()) {
+        if ($this->error() && $this->currentMenuName() === $menuName) {
             return $this->error();
         }
 
@@ -921,13 +949,15 @@ class Kernel
 
     protected function runState($nextMenuName)
     {
+        $this->menuInProcess = $nextMenuName;
+
         $this->loadMenuEntity($nextMenuName, 'nextMenuEntity');
 
         $this->callBeforeHook();
 
-        // The response can be sent inside the `before` hook.
-        // If so, we terminate the script here, as the task of the rest of
-        // this method is to format the response and send it to the user
+        // If the developer has already sent the response (for example in the
+        //`before` method), we terminate the script here, as the task of the
+        // rest of this method is to format the response and send it to the user
         if ($this->responseAlreadySentToUser) {
             exit;
         }
@@ -935,26 +965,26 @@ class Kernel
         $message = $this->menuMessage($nextMenuName);
         $actions = $this->menuActions($nextMenuName);
 
-        if ($this->isLastMenuPage($actions)) {
+        if ($this->menus->isLastPage($nextMenuName, $actions, $this->nextMenuEntity)) {
             $isUssdChannel = $this->isUssdChannel();
 
-            /* We save message for SMS before we add any "Cancel" message,
-             * which is only let the user cancel the ussd prompt
-             */
+            // We save message for SMS before we add any "Cancel" message,
+            // which is only let the user cancel the ussd prompt
             $this->sms = $message;
 
             if (
                 $isUssdChannel &&
-                $this->mustNotTimeout() &&
-                $this->params('cancel_msg')
+                $this->session->mustNotTimeout() &&
+                $cancelMessage = $this->config('menu.cancel_message')
             ) {
-                $message .= "\n\n" . $this->params('cancel_msg');
+                $sep = $this->app->config('menu.seperator_menu_string_and_cancel_message');
+                $message .= $sep . $cancelMessage;
             }
 
             if (
                 !$isUssdChannel ||
                 ($isUssdChannel &&
-                    !$this->willOverflow($message))
+                    !$this->menus->willOverflowWith($message))
             ) {
                 $this->runLastState($message);
                 return;
@@ -974,35 +1004,9 @@ class Kernel
         return $this->channel() === 'USSD';
     }
 
-    public function mustNotTimeout()
-    {
-        return $this->params('allow_timeout') === false;
-    }
-
     public function allowTimeout()
     {
-        $this->setParam('allow_timeout', true);
-    }
-
-    public function willOverflow($message)
-    {
-        return (strlen($message) > $this->maxUssdPageContent() ||
-            count(explode("\n", $message)) > $this->maxUssdPageLines());
-    }
-
-    /**
-     * Check if the menu will be the last to show to the user
-     *
-     * Any menu that does not have actions will be the last to show to the user
-     * (no actions means the developer is no more waiting for any response, so
-     * the user can no more input something)
-     *
-     * @param array $actions
-     * @return boolean
-     */
-    protected function isLastMenuPage($actions)
-    {
-        return empty($actions);
+        $this->config()->set('app.allow_timeout', true);
     }
 
     /**
@@ -1085,8 +1089,7 @@ class Kernel
              * It returns true if $actionTrigger is '0'
              * To be reviewed
              */
-            if (
-                $actionTrigger == '0' ||
+            if ('0' == $actionTrigger ||
                 array_search($actionTrigger, RESERVED_MENU_ACTIONS) === false
             ) {
                 $toDisplay[$actionTrigger] = $value[ITEM_MSG];
@@ -1094,10 +1097,7 @@ class Kernel
 
                 if (
                     !$this->currentMenuHasBackAction &&
-                    isset($value[ITEM_ACTION]) &&
-                    $value[ITEM_ACTION] === APP_BACK ||
-                    $value[ITEM_ACTION] === APP_PAGINATE_BACK
-                ) {
+                    isset($value[ITEM_ACTION]) && APP_BACK === $value[ITEM_ACTION] || APP_PAGINATE_BACK === $value[ITEM_ACTION]) {
                     $this->currentMenuHasBackAction = true;
                 }
             }
@@ -1115,9 +1115,10 @@ class Kernel
     protected function runWelcomeState()
     {
         if (!$this->menus->has(WELCOME_MENU_NAME)) {
-            throw new \Exception('No welcome menu defined. There must be at least one menu named `welcome` which will be the first displayed menu.');
+            throw new \RuntimeException('No welcome menu defined. There must be at least one menu named `welcome` which will be the first displayed menu.');
         }
 
+        $this->historyBagNew();
         $this->session->reset();
         $this->runState(WELCOME_MENU_NAME);
     }
@@ -1130,11 +1131,11 @@ class Kernel
     ) {
         $menuString = '';
 
-        if ($nextMenuName === APP_SPLITTED_MENU_NEXT) {
+        if (APP_SPLITTED_MENU_NEXT === $nextMenuName) {
             $menuString = $this->menus->getSplitMenuStringNext();
             $hasBackAction = $this->session
                 ->metadata('currentMenuHasBackAction');
-        } elseif ($nextMenuName === APP_SPLITTED_MENU_BACK) {
+        } elseif (APP_SPLITTED_MENU_BACK === $nextMenuName) {
             $menuString = $this->menus->getSplitMenuStringBack();
             $hasBackAction = $this->session
                 ->metadata('currentMenuHasBackAction');
@@ -1146,38 +1147,45 @@ class Kernel
             );
         }
 
-        if ($this->params('environment') !== DEV) {
+        // In production mode send the response as soon as it is ready, before doing other processing
+        if ($this->isProdEnv()) {
             $this->response->send($menuString);
         }
 
-        if (
-            $nextMenuName !== APP_SPLITTED_MENU_NEXT &&
-            $nextMenuName !== APP_SPLITTED_MENU_BACK
-        ) {
+        if (APP_SPLITTED_MENU_NEXT !== $nextMenuName && APP_SPLITTED_MENU_BACK !== $nextMenuName) {
             if (
                 $this->currentMenuName() &&
-                $this->currentMenuName() !== WELCOME_MENU_NAME &&
-                $nextMenuName !== ASK_USER_BEFORE_RELOAD_LAST_SESSION &&
-                !empty($this->backHistory()) &&
-                $nextMenuName === $this->previousMenuName()
-            ) {
-                $this->backHistoryPop();
+                $this->currentMenuName() !== WELCOME_MENU_NAME && ASK_USER_BEFORE_RELOAD_LAST_SESSION !== $nextMenuName &&
+                !empty($this->historyBag()) && $this->previousMenuName() === $nextMenuName) {
+                $this->historyBagPop();
             } elseif (
-                $this->currentMenuName() &&
-                $nextMenuName !== $this->currentMenuName() &&
+                $this->currentMenuName() && $this->currentMenuName() !== $nextMenuName &&
                 $this->currentMenuName() !== ASK_USER_BEFORE_RELOAD_LAST_SESSION
             ) {
-                $this->backHistoryPush($this->currentMenuName());
+                $this->historyBagPush($this->currentMenuName());
             }
 
-            $this->setCurrentMenuName($nextMenuName);
+            $this->saveCurrentMenuName($nextMenuName);
         }
 
         $this->session->save();
-        // In development mode send the response only after everything has been done
-        if ($this->params('environment') === DEV) {
+
+        // In development mode sending the response is the last thing.
+        // Helpful, if ever an error happens in the last processing (above) and
+        // also to `mesure` how much time the overall processing lasts.
+        if ($this->isDevEnv()) {
             $this->response->send($menuString);
         }
+    }
+
+    public function isDevEnv()
+    {
+        return in_array($this->config('app.environment'), DEV_ENV);
+    }
+
+    public function isProdEnv()
+    {
+        return !$this->isDevEnv();
     }
 
     protected function runLastState($message = '')
@@ -1187,13 +1195,13 @@ class Kernel
         /*
          * In production, for timeout reason, push immediately the response
          * before doing any other thing, especially calling an API, like
-         * sending a message, which may take time.
+         * sending a message, sending mobile money, etc., which may take time.
          */
-        if ($this->params('environment') !== DEV) {
+        if ($this->isProdEnv()) {
             $this->response->softEnd($message);
         }
 
-        if ($message && $this->params('always_send_sms_at_end')) {
+        if ($message && $this->config('app.always_send_sms_at_end')) {
             $sms = $this->sms ? $this->sms : $message;
             $this->sendSms($sms);
         }
@@ -1203,11 +1211,28 @@ class Kernel
          * the last thing, to be able to receive any ever error, warning or
          * info in the simulator.
          */
-        if ($this->params('environment') === DEV) {
+        if ($this->isDevEnv()) {
             $this->response->softEnd($message);
         }
 
         $this->session->hardReset();
+    }
+
+    public function fail($error)
+    {
+        // Get the session data before sending the response. As soon as the response is sent, the session is cleared.
+        $sessionData = $this->session->data();
+
+        $this->response->addErrorInSimulator($error);
+        $this->response->softEnd(
+            $this->config('menu.application_failed_message')
+        );
+
+        $log = "Error:\n" . $error . "\n\nUser session:\n" . json_encode($sessionData, JSON_PRETTY_PRINT);
+
+        $this->logger->emergency($log);
+        $this->sendSms("ERROR\n" . substr($error, 0, 140));
+        exit;
     }
 
     protected function runPreviousState()
@@ -1255,8 +1280,6 @@ class Kernel
             $this->session->data['user_previous_responses'][$id] = [];
         }
 
-        // var_dump($id);
-        // var_dump($response);
         $this->session->data['user_previous_responses'][$id][] = $response;
     }
 
@@ -1325,20 +1348,11 @@ class Kernel
     protected function runInvalidInputState($error = '')
     {
         if (!$error) {
-            $error = $this->error() ?: $this->params('default_error_msg');
+            $error = $this->error() ?: $this->config('menu.default_error_message');
         }
 
         $this->setError($error);
         $this->runState($this->currentMenuName());
-    }
-
-    /**
-     * The formatter is removing the public|protected when the method name
-     * is 'exit'
-     * TO BE REVIEWED.
-     */
-    function exit($message = '') {
-        $this->response->hardEnd($message);
     }
 
     /**
@@ -1429,13 +1443,13 @@ class Kernel
      */
     public function previousMenuName()
     {
-        $length = count($this->backHistory());
+        $length = count($this->historyBag());
 
         if (!$length) {
-            throw new \RuntimeException("Can't get a previous menu. 'back_history' is empty.");
+            throw new \RuntimeException("Can't get a previous menu. 'history_bag' is empty.");
         }
 
-        return $this->backHistory()[$length - 1];
+        return $this->historyBag()[$length - 1];
     }
 
     /**
@@ -1491,8 +1505,9 @@ class Kernel
     }
 
     /**
-     * Allow the developer to retrieve a value from the session.
+     * Allows the developer to retrieve a value from the session.
      * This is identical to `sessionGet`
+     * Returns the session instance if no parameter passed
      *
      * @param string $key
      * @param mixed $default
@@ -1514,13 +1529,18 @@ class Kernel
      *
      * @return array
      */
-    public function backHistory()
+    public function historyBag()
     {
-        if (!$this->session->hasMetadata('back_history')) {
-            $this->session->setMetadata('back_history', []);
+        if (!$this->session->hasMetadata('history_bag')) {
+            $this->historyBagNew();
         }
 
-        return $this->session->metadata('back_history');
+        return $this->session->metadata('history_bag');
+    }
+
+    public function historyBagNew()
+    {
+        $this->session->setMetadata('history_bag', []);
     }
 
     /**
@@ -1529,11 +1549,11 @@ class Kernel
      * @param string $menuName
      * @return void
      */
-    protected function backHistoryPush($menuName)
+    protected function historyBagPush($menuName)
     {
-        $history = $this->backHistory();
+        $history = $this->historyBag();
         array_push($history, $menuName);
-        $this->session->setMetadata('back_history', $history);
+        $this->session->setMetadata('history_bag', $history);
     }
 
     /**
@@ -1542,11 +1562,11 @@ class Kernel
      *
      * @return string
      */
-    protected function backHistoryPop()
+    protected function historyBagPop()
     {
-        $history = $this->backHistory();
+        $history = $this->historyBag();
         $lastMenu = array_pop($history);
-        $this->session->setMetadata('back_history', $history);
+        $this->session->setMetadata('history_bag', $history);
         return $lastMenu;
     }
 
@@ -1557,7 +1577,13 @@ class Kernel
      */
     public function loadAppDBs()
     {
-        $this->appDBs = Database::loadAppDBs();
+        $params = $this->config('database');
+
+        if (!$params) {
+            throw new \Exception('Invalid application database configuration');
+        }
+
+        $this->appDBs = Database::loadAppDBs($params);
         $this->appDbLoaded = true;
     }
 
@@ -1574,14 +1600,14 @@ class Kernel
      */
     public function db($connectionName = '')
     {
-        if ($this->params('connect_app_db')) {
+        if ($this->config('app.connect_app_db')) {
             $connectionName = $connectionName ?: 'default';
 
             if (!$this->appDbLoaded) {
                 $this->loadAppDBs();
             }
 
-            if ($connectionName === 'default' && !isset($this->appDBs['default'])) {
+            if ('default' === $connectionName && !isset($this->appDBs['default'])) {
                 throw new \Exception('No default database set! Kindly update your database configurations in "config/database.php". <br/> At least one database has to have the index "default" in the array return in "config/database.php". If not, you will need to specify the name of the database you want to load.');
             } elseif (!isset($this->appDBs[$connectionName])) {
                 throw new \Exception('No database configuration set with the name "' . $connectionName . '" in "config/database.php"!');
@@ -1594,36 +1620,6 @@ class Kernel
     }
 
     /**
-     * Returns the maximum number of characters that can appear on one page of the screen of the targetted channel.
-     *
-     * For example, USSD screen will not support, in average, more than 147 characters.
-     * This will be unlimited if the channel is whatsapp (or any other whatsapp-like channel)
-     *
-     * Will return -1 for unlimited characters
-     *
-     * @return int
-     */
-    public function maxUssdPageContent()
-    {
-        return $this->maxUssdPageContent;
-    }
-
-    /**
-     * Returns the maximum number of lines (\n) that can appear on one page of the screen of the targetted channel.
-     *
-     * For example, USSD screen will not support, in average, more than 10 new lines.
-     * This will be unlimited if the channel is whatsapp (or any other whatsapp-like channel)
-     *
-     * Will return -1 for unlimited lines
-     *
-     * @return int
-     */
-    public function maxUssdPageLines()
-    {
-        return $this->maxUssdPageLines;
-    }
-
-    /**
      * Check if the user has gone back to arrived to the current menu
      *
      * @return boolean
@@ -1633,28 +1629,13 @@ class Kernel
         return $this->hasComeBack;
     }
 
-    public function createAppNamespace($suffix = '')
+    public function createAppNamespace()
     {
-        // If no app name is provided, its means the menus or menu entities are
-        // all in their respective root folders. No app namespace will be used
         if (!$this->appName) {
             return '';
         }
 
         $namespace = Str::pascalCase($this->appName);
-
-        // // $pos = strpos(
-        // //     $namespace,
-        // //     $suffix,
-        // //     strlen($namespace) - strlen($suffix)
-        // // );
-
-        // // $notAlreadySuffixed = $pos === -1 || $pos !== 0;
-        // $notAlreadySuffixed = !Str::startsWith($namespace, $suffix);
-
-        // if ($notAlreadySuffixed) {
-        $namespace .= $suffix;
-        // }
 
         return $namespace;
     }
@@ -1664,19 +1645,29 @@ class Kernel
         $this->responseAlreadySentToUser = $sent;
     }
 
-    public function specificAppMenusNamespace()
-    {
-        return $this->createAppNamespace(MENUS_NAMESPACE_PREFIX);
-    }
-
     public function specificAppMenuEntitiesNamespace()
     {
-        return $this->createAppNamespace(MENU_ENTITIES_NAMESPACE_PREFIX);
+        return $this->createAppNamespace();
     }
 
-    public function menuEntityName($menuName)
+    public function menuNamespaceDelimiter()
     {
-        return Str::pascalCase($menuName);
+        return $this->menuNamespaceDelimiter;
+    }
+
+    public function menuEntityRelativePath($menuName, $delimiter = '\\')
+    {
+        $entityRelativePathChunks = explode($this->menuNamespaceDelimiter, $menuName);
+
+        if (count($entityRelativePathChunks) <= 1) {
+            return Str::pascalCase($menuName);
+        } else {
+            $entityRelativePathChunks = array_map(function ($element) {
+                return Str::pascalCase($element);
+            }, $entityRelativePathChunks);
+
+            return join($delimiter, $entityRelativePathChunks);
+        }
     }
 
     public function menuEntityClass($menuName)
@@ -1684,7 +1675,7 @@ class Kernel
         $appNamespace = $this->specificAppMenuEntitiesNamespace();
         $appNamespace .= $appNamespace ? '\\' : '';
 
-        $class = MENU_ENTITIES_NAMESPACE . $appNamespace . $this->menuEntityName($menuName);
+        $class = MENU_ENTITIES_NAMESPACE . $appNamespace . $this->menuEntityRelativePath($menuName);
         return $class;
     }
 
@@ -1700,12 +1691,7 @@ class Kernel
 
     public function id()
     {
-        return $this->params('id');
-    }
-
-    public function setParam($name, $value)
-    {
-        return $this->params[$name] = $value;
+        return $this->config('app.id');
     }
 
     public function error()
@@ -1715,17 +1701,21 @@ class Kernel
 
     public function msisdn()
     {
-        return $this->request->input('msisdn');
+        return $this->request->input(
+            $this->config('app.request_param_user_phone_number')
+        );
     }
 
     public function network()
     {
-        return $this->request->input('network');
+        return $this->request->input(
+            $this->config('app.request_param_user_phone_number')
+        );
     }
 
     public function sessionId()
     {
-        return $this->request->input('sessionID');
+        return $this->request->input($this->config('app.request_param_session_id'));
     }
 
     /**
@@ -1735,7 +1725,9 @@ class Kernel
      */
     public function userResponse()
     {
-        return $this->request->input('ussdString');
+        return $this->request->input(
+            $this->config('app.request_param_user_response')
+        );
     }
 
     public function channel()
@@ -1745,28 +1737,19 @@ class Kernel
 
     public function ussdRequestType()
     {
-        if ($this->customUssdRequestType !== null) {
+        if (null !== $this->customUssdRequestType) {
             return $this->customUssdRequestType;
         }
 
-        return $this->request->input('ussdServiceOp');
+        return $this->request->input(
+            $this->config('app.request_param_request_type')
+        );
     }
 
     public function setError(string $error = '')
     {
         $this->error = $error;
         return $this;
-    }
-
-    /**
-     * Returns a request parameter
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function params($name)
-    {
-        return $this->params[$name];
     }
 
     /**
@@ -1782,6 +1765,11 @@ class Kernel
         }
 
         return $this->request->input($name);
+    }
+
+    public function menus()
+    {
+        return $this->menus;
     }
 
     /**
@@ -1809,7 +1797,10 @@ class Kernel
             throw new \Exception($message);
         }
 
-        $this->request->forceInput('ussdServiceOp', $requestType);
+        $this->request->forceInput(
+            $this->config('app.request_param_request_type'),
+            $requestType
+        );
 
         return $this;
     }
@@ -1839,7 +1830,7 @@ class Kernel
      */
     public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
     {
-        if (!$this->params('send_sms_enabled')) {
+        if (!$this->config('app.send_sms_enabled')) {
             return;
         }
 
@@ -1848,21 +1839,21 @@ class Kernel
     }
 
     /**
-     * Return a config parameter
+     * Return a path to a file or a folder
      *
      * @param string $key
-     * @return mixed
-     * @throws \Exception
+     * @return string
+     * @throws \RuntimeException
      */
-    public function frameworkConfig($key = null)
+    public function path($key = null)
     {
         if (!$key) {
-            return $this->frameworkConfig;
-        } elseif ($this->frameworkConfig->has($key)) {
-            return $this->frameworkConfig->get($key);
+            return $this->path;
+        } elseif ($this->path->has($key)) {
+            return $this->path->get($key);
         }
 
-        throw new \Exception('Key `' . $key . '` not found in the config');
+        throw new \RuntimeException("Key '$key' not found in the config");
     }
 
     public function logger()

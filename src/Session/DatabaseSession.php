@@ -12,15 +12,11 @@
 namespace Prinx\Rejoice\Session;
 
 use Prinx\Rejoice\Foundation\Database;
+use Prinx\Rejoice\Foundation\Kernel;
 use Prinx\Rejoice\Session\Session;
 
-require_once __DIR__ . '/../constants.php';
-require_once __DIR__ . '/../Foundation/Database.php';
-require_once __DIR__ . '/Session.php';
-require_once __DIR__ . '/SessionInterface.php';
+require_once __DIR__ . '/../../constants.php';
 
-// use Session;
-// use SessionInterface;
 /**
  * Handle the USSD Session: save and retrieve the session data from the database
  *
@@ -32,7 +28,7 @@ class DatabaseSession extends Session implements SessionInterface
     protected $tableName;
     protected $tableNameSuffix = '_ussd_sessions';
 
-    public function __construct($app)
+    public function __construct(Kernel $app)
     {
         parent::__construct($app);
 
@@ -40,7 +36,7 @@ class DatabaseSession extends Session implements SessionInterface
 
         $this->loadDB();
 
-        if ($app->params('environment') !== PROD) {
+        if ($app->isDevEnv()) {
             $this->createSessionTableIfNotExists();
         }
 
@@ -49,12 +45,13 @@ class DatabaseSession extends Session implements SessionInterface
 
     public function loadDB()
     {
-        $this->db = Database::loadSessionDB();
+        $params = $this->app->config('session');
+        $this->db = Database::loadSessionDB($params);
     }
 
     private function createSessionTableIfNotExists()
     {
-        $sql = "CREATE TABLE IF NOT EXISTS `$this->tableName`(
+        $sql = "CREATE TABLE IF NOT EXISTS `$this->tableName` (
                   `id` INT(11) NOT NULL AUTO_INCREMENT,
                   `msisdn` VARCHAR(20) NOT NULL,
                   `session_id` VARCHAR(50) NOT NULL,
@@ -98,7 +95,9 @@ class DatabaseSession extends Session implements SessionInterface
 
     public function retrieveData()
     {
-        $sql = "SELECT (session_data) FROM $this->tableName WHERE msisdn = :msisdn";
+        $sql = "SELECT session_data
+                FROM $this->tableName
+                WHERE msisdn = :msisdn";
 
         $req = $this->db->prepare($sql);
         $req->execute(['msisdn' => $this->msisdn]);
@@ -116,8 +115,11 @@ class DatabaseSession extends Session implements SessionInterface
 
     public function updateId()
     {
-        $req = $this->db
-            ->prepare("UPDATE $this->tableName SET session_id = :session_id WHERE msisdn = :msisdn");
+        $req = $this->db->prepare(
+            "UPDATE $this->tableName
+            SET session_id = :session_id
+            WHERE msisdn = :msisdn"
+        );
 
         $req->execute([
             'session_id' => $this->id,

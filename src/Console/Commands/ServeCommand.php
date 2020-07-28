@@ -1,33 +1,36 @@
 <?php
-namespace Prinx\Rejoice\Console;
+namespace Prinx\Rejoice\Console\Commands;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SimulatorCommand extends SmileCommand
+/**
+ * This command is not used
+ * To be reviewed
+ */
+class ServeCommand extends FrameworkCommand
 {
     public function configure()
     {
-        $this->setName('simulator:run')
-            ->setDescription('Run the USSD simulator')
-            ->setHelp('This command allow you to test your USSD application')
+        $this->setName('serve')
+            ->setDescription('Run the USSD application')
+            ->setHelp('This command allow you to run your USSD application on a PHP development server')
             ->addOption(
                 'port',
                 'p',
                 InputOption::VALUE_OPTIONAL,
-                'Specify the port on which to run the simulator',
-                '8001'
+                'Specify the port on which to run the application',
+                '8000'
             );
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $simulatorPath = realpath(__DIR__ . '/../../../ussd-simulator/src/');
+        $simulatorPath = realpath(__DIR__ . '/../../../../../');
         if (!is_dir($simulatorPath)) {
             $output->writeln([
-                '<fg=red>Simulator not found.</>',
-                'Use `composer require prinx/ussd-simulator` to install it.',
+                '<fg=red>index.php not found.</>',
             ]);
             return SmileCommand::FAILURE;
         }
@@ -53,6 +56,7 @@ class SimulatorCommand extends SmileCommand
         return SmileCommand::SUCCESS;
     }
 
+    // To be reviewed
     public function portAvailabe($port, $ip = '127.0.0.1')
     {
         $connection = fsockopen($ip, $port);

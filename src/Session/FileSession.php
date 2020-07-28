@@ -11,13 +11,10 @@
 
 namespace Prinx\Rejoice\Session;
 
+use Prinx\Rejoice\Foundation\Kernel;
 use Prinx\Rejoice\Session\Session;
 
-require_once __DIR__ . '/../constants.php';
-require_once __DIR__ . '/Session.php';
-require_once __DIR__ . '/SessionInterface.php';
-// use Session;
-// use SessionInterface;
+require_once __DIR__ . '/../../constants.php';
 
 /**
  * Handles file session storage
@@ -26,21 +23,28 @@ require_once __DIR__ . '/SessionInterface.php';
  */
 class FileSession extends Session implements SessionInterface
 {
-    protected $storage = __DIR__ . '/../../../../../storage/sessions/';
-    protected $file;
+    protected $file = null;
 
-    public function __construct($app)
+    public function __construct(Kernel $app)
     {
         parent::__construct($app);
 
         $this->id = trim($this->msisdn, '+');
-        $this->file = realpath($this->storage) . '/' . $this->id;
+        $this->file = $this->generateSessionFileName($app);
         $this->start();
+    }
+
+    public function generateSessionFileName($app)
+    {
+        $filename = \hash('sha256', base64_encode($this->id));
+        return $app->path('session_root_dir') . $filename;
     }
 
     public function delete()
     {
-        unlink($this->file);
+        if ($this->file && file_exists($this->file)) {
+            unlink($this->file);
+        }
     }
 
     public function hardReset()
@@ -68,7 +72,7 @@ class FileSession extends Session implements SessionInterface
         }
 
         $jsonData = file_get_contents($this->file);
-        $data = ($jsonData !== '') ?
+        $data = ('' !== $jsonData) ?
         json_decode($jsonData, true) : [];
 
         return $data;
@@ -87,7 +91,8 @@ class FileSession extends Session implements SessionInterface
 
     public function save()
     {
-        $data = $this->app->params('environment') === DEV ? json_encode($this->data, JSON_PRETTY_PRINT) : json_encode($this->data);
+        $data = $this->app->isDevEnv() ? json_encode($this->data, JSON_PRETTY_PRINT) : json_encode($this->data);
+
         return file_put_contents($this->file, $data);
     }
 

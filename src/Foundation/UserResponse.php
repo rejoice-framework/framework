@@ -26,11 +26,11 @@ class UserResponse implements \ArrayAccess
     public function get($menuName, $silent = false, $index = -1)
     {
         if (!isset($this->responses[$menuName])) {
-            if (!$silent) {
+            if ($silent) {
                 return null;
             }
 
-            throw new \Exception('No user response for the menu ' . $menuName);
+            throw new \Exception('No user response associated to the menu "' . $menuName . '"');
         }
 
         $len = count($this->responses[$menuName]);

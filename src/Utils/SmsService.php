@@ -41,10 +41,10 @@ class SmsService
         }
 
         $recipient = trim($msisdn ?: $this->app->msisdn());
-        $sender = trim($senderName ?: $this->app->params('sms_sender_name'));
+        $sender = trim($senderName ?: $this->app->config('app.sms_sender_name'));
         $this->data = compact('recipient', 'sender', 'message');
 
-        $endpoint = $endpoint ?: $this->app->params('sms_endpoint');
+        $endpoint = $endpoint ?: $this->app->config('app.sms_endpoint');
         $response = $this->callSmsApi($this->data, $endpoint);
 
         $this->handleResponse($response);

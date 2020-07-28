@@ -11,8 +11,8 @@
 
 namespace Prinx\Rejoice\Foundation;
 
+use Prinx\Str;
 use Prinx\Utils\Date;
-use Prinx\Utils\Str;
 
 /**
  * Defines the methods to easily validate the user's response.
@@ -372,12 +372,12 @@ class UserResponseValidator
         $v->validated = true;
 
         $matched = preg_match($pattern, $str);
-        if ($matched === 0) {
+        if (0 === $matched) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['regex'] ??
                 'The response does not match the pattern.';
-        } elseif ($matched === false) {
+        } elseif (false === $matched) {
             throw new \Exception("Error in the validation regex: " . $pattern);
         }
 

@@ -37,7 +37,7 @@ trait Paginator
      *
      * @return  int
      */
-    abstract public function paginationTotal();
+    abstract public function paginationCountAll();
 
     /**
      * Defines how the items will be displayed to the user.
@@ -46,25 +46,33 @@ trait Paginator
      * returned by `paginationFetch`. And its return value will be added to the
      * actions
      *
-     * The option is what will be displayed to the user as option to select.
+     * The trigger is what will be displayed to the user as option to select.
      * It's automatically handled by the Paginator
      *
      * @param array $row
-     * @param string $option
+     * @param string $trigger
      * @return array
      */
-    abstract public function paginationInsertAction($row, $option);
+    abstract public function itemAction($row, $trigger);
 
     public function before()
     {
-        $this->increaseTotalPaginationRowsRetrieved();
+        $this->paginate();
     }
 
-    public function increaseTotalPaginationRowsRetrieved()
+    public function paginate()
     {
-        $previoulyRetrieved = $this->paginationGet('previously_retrieved');
-        $currentlyRetrieved = count($this->paginationFetch());
-        $total = $previoulyRetrieved + $currentlyRetrieved;
+        if (
+            $this->hasResumeFromLastSessionOnThisMenu() ||
+            !empty($this->error())
+        ) {
+            $this->moveFetchCursorBackOnce();
+        }
+
+        $this->retrievedRows = $this->paginationFetch();
+        $this->currentItemsCount = count($this->retrievedRows);
+        $previoulyRetrievedCount = $this->paginationGet('previously_retrieved');
+        $total = $previoulyRetrievedCount + $this->currentItemsCount;
         $this->paginationSave('previously_retrieved', $total);
     }
 
@@ -77,8 +85,8 @@ trait Paginator
     {
         $actions = [];
 
-        if ($data = $this->paginationFetch()) {
-            $fetchedCount = count($data);
+        if ($data = $this->retrievedRows) {
+            $fetchedCount = $this->currentItemsCount();
             $this->paginationSave('showed_on_current_page', $fetchedCount);
 
             if ($fetchedCount) {
@@ -89,7 +97,7 @@ trait Paginator
             $option = $this->paginationGet('previously_retrieved') - $this->paginationGet('showed_on_current_page');
 
             foreach ($data as $row) {
-                $action = $this->paginationInsertAction($row, ++$option);
+                $action = $this->itemAction($row, ++$option);
                 $actions = $this->mergeAction($actions, $action);
             }
 
@@ -107,6 +115,16 @@ trait Paginator
         return $actions;
     }
 
+    public function paginationTotal()
+    {
+        if (!($total = $this->paginationGet('total'))) {
+            $total = $this->paginationCountAll();
+            $this->paginationSave('total', $total);
+        }
+
+        return $total;
+    }
+
     /**
      * Check if the current screen is the first screen of the pagination
      *
@@ -115,7 +133,7 @@ trait Paginator
     public function isPaginationFirstPage()
     {
         return ($this->paginationGet('previously_retrieved') <=
-            $this->paginationTotalToShowPerPage());
+            $this->maxItemsPerPage());
     }
 
     /**
@@ -147,7 +165,11 @@ trait Paginator
     public function onPaginateBack()
     {
         $this->setMenuActions([]);
+        $this->moveFetchCursorBackTwice();
+    }
 
+    public function moveFetchCursorBackTwice()
+    {
         $ids = $this->paginationGet('last_retrieved_ids');
 
         /*
@@ -160,7 +182,7 @@ trait Paginator
         $this->paginationSave('last_retrieved_ids', $ids);
 
         $previoulyRetrieved = $this->paginationGet('previously_retrieved');
-        $previoulyRetrieved -= ($this->paginationTotalToShowPerPage() +
+        $previoulyRetrieved -= ($this->maxItemsPerPage() +
             $this->paginationGet('showed_on_current_page'));
         $previoulyRetrieved = $previoulyRetrieved > 0 ? $previoulyRetrieved : 0;
         $this->paginationSave('previously_retrieved', $previoulyRetrieved);
@@ -174,6 +196,11 @@ trait Paginator
      * @return void
      */
     public function onMoveToNextMenu()
+    {
+        $this->moveFetchCursorBackOnce();
+    }
+
+    public function moveFetchCursorBackOnce()
     {
         $ids = $this->paginationGet('last_retrieved_ids');
         array_pop($ids);
@@ -194,26 +221,36 @@ trait Paginator
         $this->onPaginateBack();
     }
 
+    public function bindPaginationParams($req)
+    {
+        $offset = $this->lastRetrievedId();
+        $limit = $this->maxItemsPerPage();
+        $req->bindParam('offset', $offset, \PDO::PARAM_INT);
+        $req->bindParam('limit', $limit, \PDO::PARAM_INT);
+    }
+
+    public function currentRetrievedItems()
+    {
+        return $this->currentRetrievedItems ?? [];
+    }
+
     /**
      * The actual number of items showed on the current screen
      *
-     * This cannot be greater than the `paginationTotalToShowPerPage`
+     * This cannot be greater than the `maxItemsPerPage`
      * This is actually handled automatically by the Paginator. It is just the
      * count of the number of items that have been retrieved on the particular
      * page of the pagination
      *
      * @return int
      */
-    public function paginationTotalShowedOnCurrentPage()
+    public function currentItemsCount()
     {
-        // $totalShowed = $this->paginationGet('showed_on_current_page');
-        // return $totalShowed ?: count($this->paginationFetch());
-
-        if (!isset($this->paginationTotalShowedOnCurrentPage)) {
-            $this->paginationTotalShowedOnCurrentPage = count($this->paginationFetch());
+        if (!isset($this->currentItemsCount)) {
+            $this->currentItemsCount = count($this->currentRetrievedItems());
         }
 
-        return $this->paginationTotalShowedOnCurrentPage;
+        return $this->currentItemsCount;
     }
 
     /**
@@ -250,7 +287,7 @@ trait Paginator
      */
     public function paginationSave($key, $value)
     {
-        $this->makeSessionSupportsPagination();
+        $this->makeSessionSupportPagination();
         $pagination = $this->sessionGet('pagination');
         $pagination[$this->menuName()][$key] = $value;
         $this->sessionSave('pagination', $pagination);
@@ -264,7 +301,7 @@ trait Paginator
      */
     public function paginationGet($key)
     {
-        $this->makeSessionSupportsPagination();
+        $this->makeSessionSupportPagination();
         return $this->sessionGet('pagination')[$this->menuName()][$key];
     }
 
@@ -273,7 +310,7 @@ trait Paginator
      *
      * @return void
      */
-    public function makeSessionSupportsPagination()
+    public function makeSessionSupportPagination()
     {
         $sessionAlreadySupportsPagination = $this->sessionHas('pagination');
         $sessionAlreadySupportsPaginationOnCurrentMenu = isset(
@@ -327,9 +364,9 @@ trait Paginator
      *
      * @return int
      */
-    public function paginationTotalToShowPerPage()
+    public function maxItemsPerPage()
     {
-        return $this->paginationTotalToShowPerPage ?? $this->app->params('pagination_default_to_show_per_page');
+        return $this->maxItemsPerPage ?? $this->app->config('menu.pagination_default_to_show_per_page');
     }
 
     /**

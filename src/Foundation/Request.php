@@ -11,7 +11,7 @@
 
 namespace Prinx\Rejoice\Foundation;
 
-use Prinx\Utils\Str;
+use Prinx\Str;
 
 /**
  * Handles the request to the framework
@@ -24,15 +24,12 @@ class Request
     protected $query = [];
 
     protected $input = [
-        'msisdn' => '',
-        'ussdString' => '',
-        'ussdServiceOp' => '',
-        'network' => '',
         'channel' => 'USSD',
     ];
 
-    public function __construct()
+    public function __construct(Kernel $app)
     {
+        $this->app = $app;
         $this->hydrateInput($_POST);
         $this->hydrateQuery($_GET);
     }
@@ -40,16 +37,16 @@ class Request
     public function hydrateInput($requestParams)
     {
         $input = [];
-        // foreach (REQUIRED_REQUEST_PARAMS as $param) {
-        //     $input[$param] = $this->sanitize($requestParams[$param]);
-        // }
-
         foreach ($requestParams as $param => $value) {
             $input[$param] = $this->sanitize($value);
         }
 
-        if (isset($input['msisdn'])) {
-            $input['msisdn'] = Str::internationaliseNumber($input['msisdn'], '233');
+        $msisdnKey = $this->app->config('app.request_param_user_phone_number');
+        if (isset($input[$msisdnKey])) {
+            $input[$msisdnKey] = Str::internationaliseNumber(
+                $input[$msisdnKey],
+                $this->app->config('app.country_phone_prefix')
+            );
         }
 
         if (isset($requestParams['channel'])) {

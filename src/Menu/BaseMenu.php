@@ -11,57 +11,59 @@
 
 namespace Prinx\Rejoice\Menu;
 
+use Prinx\Notify\Log;
+use Prinx\Os;
 use Prinx\Rejoice\Foundation\Kernel;
-use Prinx\Rejoice\Utils\Log;
+use Prinx\Str;
 
 /**
  * Provides shortcuts to app methods and properties for the user App
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  *
- * @method void before(UserResponse $userPreviousResponses)
+ * @ method void before(UserResponse $userPreviousResponses)
  * Allows you to run a custom script before the menu is displayed to the user.
  * This method runs before every other method of the current menu entity
  *
- * @method string|array message(UserResponse $userPreviousResponses)
+ * @ method string|array message(UserResponse $userPreviousResponses)
  * Returns the message to display at top of the current menu screen. If it
  * returns an array, the indexes of the array will be assumed to be
  * placeholders inside the menu message defined in the menus.php file for this
  * particular menu.
  *
- * @method array actions(UserResponse $userPreviousResponses)
+ * @ method array actions(UserResponse $userPreviousResponses)
  * Returns the actions of the current menu
  *
- * @method UserResponseValidator|array|boolean validate(string $response)
+ * @ method UserResponseValidator|array|string|boolean validate(string $response, UserResponse $userPreviousResponses)
  * Validate the user's response. If it returns false, an invalid input error
  * will be sent to the user. You can customize the error by calling the
  * `addError` or `setError` method of the menu entity (Eg: $this->setError("The
  * age must be greater than 5"))
  *
- * @method mixed saveAs(string $response)
+ * @ method mixed saveAs(string $response, UserResponse $userPreviousResponses)
  * Allows to modify the user's response before saving it in the session.
  *
- * @method void after(string $response, UserResponse $userPreviousResponses)
+ * @ method void after(string $response, UserResponse $userPreviousResponses)
  * Allows you to run a custom script after the menu response has
  * been processed and the response of the user has passed the validation
  *
- * @method mixed onMoveToNextMenu(string $response, UserResponse $userPreviousResponses)
+ * @ method mixed onMoveToNextMenu(string $response, UserResponse $userPreviousResponses)
  * Allows you to run a custom script after the menu response has
  * been processed and the user is moving the next screen. The back screen
  * (previous screen), the welcome screen, same screen, paginate screens (back
  * or forward) are not considered as next screen. Hence, this method will not
  * run for them. Instead use the after `method` if you want to consider them.
  *
- * @method mixed onBack(UserResponse $userPreviousResponses)
+ * @ method mixed onBack(UserResponse $userPreviousResponses)
  * Run when user goes back by using the __back magic menu
  *
- * @method mixed onPaginateForward(UserResponse $userPreviousResponses)
+ * @ method mixed onPaginateForward(UserResponse $userPreviousResponses)
  * Runs when when user moving forward in on a paginable menu
  *
- * @method mixed onPaginateBack(UserResponse $userPreviousResponses)
+ * @ method mixed onPaginateBack(UserResponse $userPreviousResponses)
  * Runs when when user moving back in on a paginable menu
  */
-class BaseMenu
+class BaseMenu/* implements \ArrayAccess */
 {
     /**
      * The instance of the application
@@ -90,58 +92,6 @@ class BaseMenu
     }
 
     /**
-     * Validate the user's response. If it returns false, an invalid input
-     * error will be sent to the user.
-     * You can customize the error by calling the `addError` or `setError`
-     * method of the menu entity (Eg: $this->setError("The age must be greater
-     * than 5"))
-     *
-     * @param  $response
-     * @return \Prinx\Rejoice\Foundation\UserResponseValidator|array|boolean
-     */
-    // public function validate(...$args)
-    // {
-    //     return $this->validate(...$args);
-    // }
-
-    /**
-     * Validate the user's response.
-     *
-     * If it returns false, an invalid input error will be sent to the user.
-     * You can customize the error by calling the `setError` method of the menu
-     * entity (Eg: $this->setError("The age must be greater than 5"))
-     *
-     * @param string $response
-     * @return boolean
-     */
-    // public function validate(...$args)
-    // {
-    //     return true;
-    // }
-
-    /**
-     * Allows you to modify the user's response before saving it in the session.
-     *
-     * @param string $response
-     * @return mixed
-     */
-    // public function saveAs($args = null)
-    // {
-    //     return $args;
-    // }
-
-    /**
-     * Allows you to modify the user's response before saving it in the session.
-     *
-     * @param string $response
-     * @return mixed
-     */
-    // public function saveAs(...$args)
-    // {
-    //     return $this->saveAs($args[0]);
-    // }
-
-    /**
      * Sends the final response screen to the user but allows you to continue
      * the script.
      *
@@ -152,12 +102,13 @@ class BaseMenu
     {
         if (
             $this->app->isUssdChannel() &&
-            !$this->app->params('allow_timeout') &&
-            $this->app->params('cancel_msg')
+            !$this->app->config('app.allow_timeout') &&
+            $this->app->config('menu.cancel_message')
         ) {
-            $temp = $msg . "\n\n" . $this->app->params('cancel_msg');
+            $sep = $this->app->config('menu.seperator_menu_string_and_cancel_message');
+            $temp = $msg . $sep . $this->app->config('menu.cancel_message');
 
-            $msg = $this->willOverflow($temp) ? $msg : $temp;
+            $msg = $this->willOverflowWith($temp) ? $msg : $temp;
         }
 
         return $this->response()->softEnd($msg);
@@ -243,7 +194,7 @@ class BaseMenu
      */
     public function log($data, $level = 'info')
     {
-        if (!$this->params('log_enabled')) {
+        if (!$this->config('app.log_enabled')) {
             return;
         }
 
@@ -258,12 +209,20 @@ class BaseMenu
     public function logger()
     {
         if (!$this->logger) {
-            $dir = $this->app->frameworkConfig('logs_root_path') . '/menus/' . date('Y-m-d');
+            $dir = $this->app->path('log_root_dir') . 'menus/' . date('Y-m-d');
+            $dir = Os::toPathStyle($dir);
+
+            $exploded = explode($this->menuNamespaceDelimiter(), $this->name);
+
+            $menuName = Str::pascalCase(array_pop($exploded));
+            $menuRelativePath = $exploded ? join(Os::slash(), $exploded) : '';
+            $dir = !$menuRelativePath ?: $dir . '/' . $menuRelativePath;
+
             if (!is_dir($dir)) {
                 mkdir($dir, 0777, true);
             }
 
-            $file = $dir . '/' . $this->name . '.log';
+            $file = $dir . '/' . $menuName . '.log';
             $cache = $dir . '/.count';
             $this->logger = new Log($file, $cache);
         }
@@ -294,17 +253,21 @@ class BaseMenu
     /**
      * Merge an action array with an actionBag
      *
-     * @param array $actionToAdd
      * @param array $actionBag
+     * @param array $mergeWith
      * @return array
      */
-    public function mergeAction($actionBag, $actionToAdd)
+    public function mergeAction($actionBag, $mergeWith)
     {
-        return array_replace($actionBag, $actionToAdd);
+        return array_replace($actionBag, $mergeWith);
     }
 
     /**
-     * Insert a `go-back to main menu` option into the actions
+     * Add a `go to main menu` action into the actions
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
      *
      * @param string $option
      * @param string $display
@@ -316,7 +279,11 @@ class BaseMenu
     }
 
     /**
-     * Return a `go-back to main menu` option, as an array
+     * Return a `go to main menu` action bag
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
      *
      * @param string $trigger
      * @param string $display
@@ -324,8 +291,8 @@ class BaseMenu
      */
     public function mainMenuAction($trigger = '', $display = '')
     {
-        $trigger = $trigger ?: $this->app->params('welcome_action_trigger');
-        $display = $display ?: $this->app->params('welcome_action_display');
+        $trigger = $trigger ?: $this->app->config('menu.welcome_action_trigger');
+        $display = $display ?: $this->app->config('menu.welcome_action_display');
 
         return [
             $trigger => [
@@ -336,7 +303,11 @@ class BaseMenu
     }
 
     /**
-     * Insert a `go-back to previous menu` option into the actions
+     * Insert a `go to previous menu` action into the actions
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
      *
      * @param string $trigger
      * @param string $display
@@ -348,7 +319,11 @@ class BaseMenu
     }
 
     /**
-     * Return a `go-back to previous menu` option, as an array
+     * Return an action bag containing a `go to previous menu` option, as an array
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
      *
      * @param string $trigger
      * @param string $display
@@ -357,8 +332,8 @@ class BaseMenu
     public function backAction($trigger = '', $display = '')
     {
         $trigger = $trigger ?: $this->backTrigger();
-        $trigger = $trigger ?: $this->app->params('back_action_trigger');
-        $display = $display ?: $this->app->params('back_action_display');
+        $trigger = $trigger ?: $this->app->config('menu.back_action_trigger');
+        $display = $display ?: $this->app->config('menu.back_action_display');
 
         return [
             $trigger => [
@@ -369,7 +344,11 @@ class BaseMenu
     }
 
     /**
-     * Insert a `paginate back` option into the actions
+     * Insert a `paginate back` action into the actions
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
      *
      * @param string $trigger
      * @param string $display
@@ -381,7 +360,11 @@ class BaseMenu
     }
 
     /**
-     * Return a `paginate back` option, as an array
+     * Return a `paginate back` action, as an array
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
      *
      * @param string $trigger
      * @param string $display
@@ -390,8 +373,8 @@ class BaseMenu
     public function paginateBackAction($trigger = '', $display = '')
     {
         $trigger = $trigger ?: $this->backTrigger();
-        $trigger = $trigger ?: $this->app->params('paginate_back_trigger');
-        $display = $display ?: $this->app->params('paginate_back_display');
+        $trigger = $trigger ?: $this->app->config('menu.paginate_back_trigger');
+        $display = $display ?: $this->app->config('menu.paginate_back_display');
 
         return [
             $trigger => [
@@ -402,7 +385,11 @@ class BaseMenu
     }
 
     /**
-     * Insert a `paginate forward` option into the actions
+     * Insert a `paginate forward` action into the actions
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
      *
      * @param string $trigger
      * @param string $display
@@ -410,21 +397,24 @@ class BaseMenu
      */
     public function insertPaginateForwardAction($trigger = '', $display = '')
     {
-        $this->insertMenuActions($this->paginateForwardAction($trigger, $display));
-        return $this;
+        return $this->insertMenuActions($this->paginateForwardAction($trigger, $display));
     }
 
     /**
-     * Return a `paginate forward` option
+     * Return a `paginate forward` action
      *
-     * @param string $option
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
+     *
+     * @param string $trigger
      * @param string $display
      * @return array
      */
     public function paginateForwardAction($trigger = '', $display = '')
     {
-        $trigger = $trigger ?: $this->app->params('paginate_forward_trigger');
-        $display = $display ?: $this->app->params('paginate_forward_display');
+        $trigger = $trigger ?: $this->app->config('menu.paginate_forward_trigger');
+        $display = $display ?: $this->app->config('menu.paginate_forward_display');
 
         return [
             $trigger => [
@@ -432,6 +422,57 @@ class BaseMenu
                 ITEM_ACTION => APP_PAGINATE_FORWARD,
             ],
         ];
+    }
+
+    /**
+     * Insert a `end USSD` action into the actions
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
+     *
+     * @param string $trigger
+     * @param string $display
+     * @return array The modified action bag
+     */
+    public function insertEndAction($trigger = '', $display = '')
+    {
+        return $this->insertMenuActions($this->endAction($trigger, $display));
+    }
+
+    /**
+     * Return a `end USSD` action
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file)
+     * Same for the display
+     *
+     * @param string $trigger
+     * @param string $display
+     * @return array
+     */
+    public function endAction($trigger = '', $display = '')
+    {
+        $trigger = $trigger ?: $this->app->config('menu.end_trigger');
+        $display = $display ?: $this->app->config('menu.end_display');
+
+        return [
+            $trigger => [
+                ITEM_MSG => $display,
+                ITEM_ACTION => APP_END,
+            ],
+        ];
+    }
+
+    /**
+     * Return an action bag after adding the back action to it
+     *
+     * @param array $actionBag
+     * @return array
+     */
+    public function withBack($actionBag = [])
+    {
+        return $this->mergeAction($actionBag, $this->backAction());
     }
 
     /**
@@ -591,12 +632,12 @@ class BaseMenu
 
     public function mustNotTimeout()
     {
-        return $this->app->mustNotTimeout();
+        return $this->app->session()->mustNotTimeout();
     }
 
-    public function willOverflow($message)
+    public function willOverflowWith($message)
     {
-        return $this->app->willOverflow($message);
+        return $this->app->menus()->willOverflowWith($message);
     }
 
     /**
@@ -671,13 +712,13 @@ class BaseMenu
      */
     public function previousMenuName()
     {
-        $length = count($this->backHistory());
+        $length = count($this->historyBag());
 
         if (!$length) {
             throw new \RuntimeException("Can't get a previous menu. 'back_history' is empty.");
         }
 
-        return $this->backHistory()[$length - 1];
+        return $this->historyBag()[$length - 1];
     }
 
     /**
@@ -752,9 +793,9 @@ class BaseMenu
      *
      * @return array
      */
-    public function backHistory()
+    public function historyBag()
     {
-        return $this->app->backHistory();
+        return $this->app->historyBag();
     }
 
     public function db($name = '')
@@ -769,5 +810,35 @@ class BaseMenu
         }
 
         throw new \BadMethodCallException('Undefined method `' . $method . '` in class ' . get_class($this));
+    }
+
+    // ArrayAccess Interface
+    public function offsetExists($offset)
+    {
+        $method = Str::camelCase($offset);
+
+        return in_array($method, MENU_HOOKS, true) && method_exists($this, $method);
+    }
+
+    public function offsetGet($offset)
+    {
+        $method = Str::camelCase($offset);
+
+        $args = in_array($method, RECEIVE_USER_RESPONSE, true) ? [
+            $this->userResponse(),
+            $this->userPreviousResponses(),
+        ] : [$this->userPreviousResponses()];
+
+        return call_user_func([$this, $method], ...$args);
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        // Nothing to do
+    }
+
+    public function offsetUnset($offset)
+    {
+        // Nothing to do
     }
 }

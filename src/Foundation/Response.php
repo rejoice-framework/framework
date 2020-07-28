@@ -20,9 +20,15 @@ use Prinx\Rejoice\Foundation\Kernel;
  */
 class Response
 {
+    protected $simulatorMetadata = ['info', 'warning', 'error'];
+
+    protected $errorInSimulator = [];
+
     protected $warningInSimulator = [];
 
     protected $infoInSimulator = [];
+
+    protected $app;
 
     public function __construct(Kernel $app)
     {
@@ -32,24 +38,26 @@ class Response
     public function end($sentMsg = '', $hard = true)
     {
         $this->app->setResponseAlreadySentToUser(true);
-        $message = $sentMsg !== '' ? $sentMsg : $this->app->params('default_end_msg');
+        $message = '' !== $sentMsg ? $sentMsg : $this->app->config('menu.default_end_message');
         $this->sendLast($message, $hard);
     }
 
     protected function format($message, $requestType)
     {
+        $messageParam = $this->app->config('app.request_param_menu_string');
+        $ussdServiceOpParam = $this->app->config('app.request_param_request_type');
+        $sessionIDParam = $this->app->config('app.request_param_session_id');
+
         $fields = array(
-            'message' => trim($message),
-            'ussdServiceOp' => $requestType,
-            'sessionID' => $this->app->sessionId(),
+            $messageParam => trim($message),
+            $ussdServiceOpParam => $requestType,
+            $sessionIDParam => $this->app->sessionId(),
         );
 
-        if ($this->warningInSimulator) {
-            $fields['WARNING'] = $this->warningInSimulator;
-        }
-
-        if ($this->infoInSimulator) {
-            $fields['INFO'] = $this->infoInSimulator;
+        foreach ($this->simulatorMetadata as $metadata) {
+            if ($this->{$metadata . 'InSimulator'}) {
+                $fields[$metadata] = $this->{$metadata . 'InSimulator'};
+            }
         }
 
         return json_encode($fields);
@@ -60,56 +68,39 @@ class Response
         $ussdRequestType = APP_REQUEST_ASK_USER_RESPONSE,
         $hard = false
     ) {
-        /*
-         * Sometimes, we need to send the response to the user and do
-         * another staff before ending the script. Those times, we just
-         * need to echo the response. That is the soft response sending.
-         * Sometimes we need to terminate the script immediately when sending
-         * the response; for exemple when the developer himself will call the
-         * 'hardEnd' method from the 'before' method.
-         */
+        $previouslyDisplayed = trim(ob_get_clean());
+        $error = error_get_last();
+
+        // Something has been echoed in the code but it is not an error
+        if (null === $error && $previouslyDisplayed) {
+            $this->addInfoInSimulator("\n" . $previouslyDisplayed . "\n");
+        } elseif ($error) {
+            $appFailMessage = $this->app->config('menu.application_failed_message');
+
+            if ($message !== $appFailMessage) {
+                $this->addInfoInSimulator("RESPONSE:\n$message");
+            }
+
+            $this->addErrorInSimulator($previouslyDisplayed);
+
+            $hard = true;
+            $ussdRequestType = APP_REQUEST_END;
+            $message = $appFailMessage;
+        }
+
         if ($hard) {
             exit($this->format($message, $ussdRequestType));
         } else {
-            /*
-             * All these ob_start, ob_flush, etc are just to be able to send the
-             * response BUT continue the script (so that the user receive
-             * the response faster, as the USSD times out very quickly)
-             *
-             * ``ignore_user_abort(true);``  Not really needed here
-             * (useful if it was in a browser or cgi where the user
-             * can abort the request.)
-             */
-            // ignore_user_abort(true);
-
-            /*
-             * ``set_time_limit(0);``
-             * In case the script is taking longer than the PHP default
-             * execution time limit
-             */
-            // set_time_limit(0);
-            // ob_start();
-
-            $previousDisplayed = ob_get_clean();
-            if (error_get_last() === null) {
-                $this->addInfoInSimulator($previousDisplayed);
-            }
+            // The response will be sent to the user but the script will continue
 
             $response = $this->format($message, $ussdRequestType);
-
-            if (error_get_last() !== null) {
-                $response = '<span class="text-danger">APPLICATION ERROR</span><br>' . $previousDisplayed . '<br><br><span class="text-primary">USSD RESPONSE</span><br>' . $response;
-            }
 
             echo $response;
 
             header('Content-Encoding: none');
-
-            // if (error_get_last() === null) {
             header('Content-Length: ' . ob_get_length());
-            // }
-
             header('Connection: close');
+
             ob_end_flush();
             ob_flush();
             flush();
@@ -118,7 +109,11 @@ class Response
 
     public function sendLast($message, $hard = false)
     {
-        if ($this->app->isUssdChannel() && $this->app->mustNotTimeout()) {
+        if (
+            $this->app->isUssdChannel() &&
+            $this->app->session()->mustNotTimeout() &&
+            $this->app->session()->hasTimedOut()
+        ) {
             $this->send($message, APP_REQUEST_ASK_USER_RESPONSE, $hard);
         } else {
             $this->send($message, APP_REQUEST_END, $hard);
@@ -153,31 +148,47 @@ class Response
         echo $resJSON;
     }
 
-    public function setWarningInSimulator(array $warn)
+    public function setInSimulator(array $data, string $type)
     {
-        $this->warningInSimulator = $warn;
+        $this->{$type . 'InSimulator'} = $data;
     }
 
-    public function addWarningInSimulator($warn)
+    public function addInSimulator($data, string $type)
     {
-        if (is_array($warn)) {
-            array_merge($this->warningInSimulator, $warn);
+        if (is_array($data)) {
+            array_merge($this->{$type . 'InSimulator'}, $data);
         } else {
-            array_push($this->warningInSimulator, $warn);
+            array_push($this->{$type . 'InSimulator'}, $data);
         }
     }
 
     public function setInfoInSimulator(array $info)
     {
-        $this->infoInSimulator = $info;
+        $this->setInSimulator($info, 'info');
     }
 
     public function addInfoInSimulator($info)
     {
-        if (is_array($info)) {
-            array_merge($this->infoInSimulator, $info);
-        } else {
-            array_push($this->infoInSimulator, $info);
-        }
+        $this->addInSimulator($info, 'info');
+    }
+
+    public function setWarningInSimulator(array $warn)
+    {
+        $this->setInSimulator($warn, 'warning');
+    }
+
+    public function addWarningInSimulator($warn)
+    {
+        $this->addInSimulator($warn, 'warning');
+    }
+
+    public function setErrorInSimulator(array $error)
+    {
+        $this->setInSimulator($error, 'error');
+    }
+
+    public function addErrorInSimulator($error)
+    {
+        $this->addInSimulator($error, 'error');
     }
 }

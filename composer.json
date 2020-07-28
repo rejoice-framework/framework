@@ -20,11 +20,16 @@
   "prefer-stable": true,
   "require": {
     "php": ">=5.6.0",
-    "prinx/dotenv": ">=0.1.0",
-    "prinx/phputils": "dev-master"
+    "prinx/dotenv": "dev-master",
+    "prinx/notify": "dev-master",
+    "prinx/phputils": "dev-master",
+    "prinx/dir-dot-config": "dev-master",
+    "prinx/php-string-utils": "dev-master",
+    "prinx/php-array-utils": "dev-master",
+    "prinx/php-os-utils": "dev-master"
   },
   "require-dev": {
-    "prinx/ussd-simulator": ">=0.1.0",
+    "prinx/ussd-simulator": "dev-master",
     "phpunit/phpunit": "9.2.5"
   },
   "config": {

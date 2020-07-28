@@ -11,8 +11,6 @@
 
 namespace Prinx\Rejoice\Foundation;
 
-require_once 'Validator.php';
-
 use function Prinx\Dotenv\env;
 
 /**
@@ -33,7 +31,7 @@ class RequestValidator extends Validator
     {
         if (
             $this->app->ussdRequestType() === APP_REQUEST_INIT &&
-            $this->app->params('validate_ussd_code')
+            $this->app->config('app.validate_ussd_code')
         ) {
             $ussdCodeCorrect = $this->validateShortcode(
                 $this->app->userResponse(),
@@ -55,8 +53,8 @@ class RequestValidator extends Validator
         $sent_ussdCode,
         $defined_ussdCode
     ) {
-        if ($defined_ussdCode === null) {
-            exit('No "USSD_CODE" value found in the `.env` file. Kindly specify the ussd code application ussd code in the `.env` file.<br><br>Eg.<br>USSD_CODE=*380*75#');
+        if (null === $defined_ussdCode) {
+            $this->app->fail('No "USSD_CODE" value found in the `.env` file. Kindly specify the USSD_CODE variable in the `.env` file.');
         }
 
         if ($sent_ussdCode !== $defined_ussdCode) {
@@ -70,12 +68,12 @@ class RequestValidator extends Validator
     {
         $requestParams = $this->app->request()->input();
         if (!is_array($requestParams)) {
-            exit('Invalid request parameters received.');
+            $this->app->fail('Invalid request parameters received.');
         }
 
         foreach (REQUIRED_REQUEST_PARAMS as $value) {
             if (!isset($requestParams[$value])) {
-                exit("'" . $value . "' is missing in the request parameters.");
+                $this->app->fail("'" . $value . "' is missing in the request parameters.");
             }
         }
 
@@ -83,7 +81,7 @@ class RequestValidator extends Validator
             isset($requestParams['channel']) &&
             !in_array($requestParams['channel'], ALLOWED_REQUEST_CHANNELS)
         ) {
-            exit("Invalid parameter 'channel'.");
+            $this->app->fail("Invalid parameter 'channel'.");
         }
     }
 

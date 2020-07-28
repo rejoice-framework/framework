@@ -12,7 +12,7 @@ namespace Prinx\Rejoice\Menu;
 
 use Prinx\Rejoice\Foundation\Kernel;
 
-require_once __DIR__ . '/../constants.php';
+require_once __DIR__ . '/../../constants.php';
 
 /**
  * Provides the appropriate menu sought by the request and some menus related functions
@@ -49,6 +49,20 @@ class Menus implements \ArrayAccess
      */
     protected $menusJson = '';
 
+    /**
+     * Maximum numbers of characters that can be displayed on a USSD screen
+     *
+     * @var integer
+     */
+    protected $maxPageCharacters = 147;
+
+    /**
+     * Maximum new lines that can be displayed on a USSD screen
+     *
+     * @var integer
+     */
+    protected $maxPageLines = 10;
+
     public function __construct(Kernel $app)
     {
         $this->app = $app;
@@ -56,12 +70,17 @@ class Menus implements \ArrayAccess
         $this->menusPhp = $this->menuPath() . '/menus.php';
         $this->menusJson = $this->menuPath() . '/menus.json';
         $this->hydrateMenus($app);
-        // $this->readMenusResource();
+        $this->maxPageCharacters = $app->config(
+            "channel.{$app->channel()}.max_page_characters"
+        ) ?: $this->maxPageCharacters;
+        $this->maxPageLines = $app->config(
+            "channel.{$app->channel()}.max_page_lines"
+        ) ?: $this->maxPageLines;
     }
 
     public function menuPath()
     {
-        return $this->app->frameworkConfig('menus_root_path') . '/' . $this->app->specificAppMenusNamespace();
+        return $this->app->path('menu_resource_dir') . '/';
     }
 
     public function hydrateMenus($app)
@@ -73,7 +92,7 @@ class Menus implements \ArrayAccess
             $this->insertMenuActions($modifications, $app->currentMenuName());
         }
 
-        if ($app->params('ask_user_before_reload_last_session')) {
+        if ($app->config('app.ask_user_before_reload_last_session')) {
             $this->menus = array_merge(
                 $this->menus,
                 $this->menuAskUserBeforeReloadLastSession()
@@ -83,11 +102,11 @@ class Menus implements \ArrayAccess
 
     public function menuAskUserBeforeReloadLastSession()
     {
-        $message = $this->app->params('message_ask_user_before_reload_last_session');
-        $lastSessionTrigger = $this->app->params('last_session_trigger');
-        $lastSessionDisplay = $this->app->params('last_session_display');
-        $restartSessionTrigger = $this->app->params('restart_session_trigger');
-        $restartSessionDisplay = $this->app->params('restart_session_display');
+        $message = $this->app->config('menu.message_ask_user_before_reload_last_session');
+        $lastSessionTrigger = $this->app->config('menu.last_session_trigger');
+        $lastSessionDisplay = $this->app->config('menu.last_session_display');
+        $restartSessionTrigger = $this->app->config('menu.restart_session_trigger');
+        $restartSessionDisplay = $this->app->config('menu.restart_session_display');
 
         return [
             ASK_USER_BEFORE_RELOAD_LAST_SESSION => [
@@ -186,7 +205,7 @@ class Menus implements \ArrayAccess
             $directory,
             function ($current, $key, $iterator) {
                 $filename = $current->getFilename();
-                if ($filename[0] === '.') {
+                if ('.' === $filename[0]) {
                     return false;
                 }
 
@@ -204,7 +223,6 @@ class Menus implements \ArrayAccess
             $files[] = str_replace(['/', '\\'], '.', $menuName);
         }
 
-        var_dump($files);
         return $files;
     }
 
@@ -215,9 +233,7 @@ class Menus implements \ArrayAccess
     ) {
         if (!empty($forcedFlow = $this->session->metadata(FORCED_MENU_FLOW, []))) {
             $nextMenu = array_shift($forcedFlow);
-            // var_dump($forcedFlow);
             $this->session->setMetadata(FORCED_MENU_FLOW, $forcedFlow);
-            // var_dump($this->session->metadata(FORCED_MENU_FLOW, $forcedFlow));
 
             return $nextMenu;
         }
@@ -236,27 +252,23 @@ class Menus implements \ArrayAccess
 
         if (
             $this->session->metadata('currentMenuSplitted', null) &&
-            !$this->session->metadata('currentMenuSplitEnd', null) &&
-            $userResponse === $this->app->params('splitted_menu_next_trigger')
-        ) {
+            !$this->session->metadata('currentMenuSplitEnd', null) && $this->app->config('menu.splitted_menu_next_trigger') === $userResponse) {
             return APP_SPLITTED_MENU_NEXT;
         }
 
         if (
             $this->session->metadata('currentMenuSplitted', null) &&
-            !$this->session->metadata('currentMenuSplitStart', null) &&
-            $userResponse === $this->app->params('back_action_trigger')
-        ) {
+            !$this->session->metadata('currentMenuSplitStart', null) && $this->app->config('menu.back_action_trigger') === $userResponse) {
             return APP_BACK;
         }
 
-        if (isset($this->menus[$menuName][DEFAULT_MENU_ACTION])) {
-            if (is_array($this->menus[$menuName][DEFAULT_MENU_ACTION])) {
-                return $this->menus[$menuName][DEFAULT_MENU_ACTION][MENU];
+        if (isset($this->menus[$menuName][DEFAULT_NEXT_MENU])) {
+            if (is_array($this->menus[$menuName][DEFAULT_NEXT_MENU])) {
+                return $this->menus[$menuName][DEFAULT_NEXT_MENU][MENU];
             }
 
-            if (is_string($this->menus[$menuName][DEFAULT_MENU_ACTION])) {
-                return $this->menus[$menuName][DEFAULT_MENU_ACTION];
+            if (is_string($this->menus[$menuName][DEFAULT_NEXT_MENU])) {
+                return $this->menus[$menuName][DEFAULT_NEXT_MENU];
             }
 
             throw new \Exception('Default next menu name for the menu "' . $menuName . '" must be an array or a string.');
@@ -292,11 +304,11 @@ class Menus implements \ArrayAccess
         }
 
         if (
-            isset($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
-            is_array($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
-            isset($this->menus[$menuName][DEFAULT_MENU_ACTION][ITEM_LATER])
+            isset($this->menus[$menuName][DEFAULT_NEXT_MENU]) &&
+            is_array($this->menus[$menuName][DEFAULT_NEXT_MENU]) &&
+            isset($this->menus[$menuName][DEFAULT_NEXT_MENU][ITEM_LATER])
         ) {
-            return $this->menus[$menuName][DEFAULT_MENU_ACTION][ITEM_LATER];
+            return $this->menus[$menuName][DEFAULT_NEXT_MENU][ITEM_LATER];
         }
 
         if ($nextMenu = $this->app->getDefaultNextMenuFromMenuEntity()) {
@@ -306,16 +318,9 @@ class Menus implements \ArrayAccess
         }
 
         return null;
-        // return (
-        //     isset($this->menus[$menuName][ITEM_LATER]) ||
-        //     isset($this->menus[$menuName][ACTIONS][$response][ITEM_LATER]) ||
-        //     (isset($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
-        //         is_array($this->menus[$menuName][DEFAULT_MENU_ACTION]) &&
-        //         isset($this->menus[$menuName][DEFAULT_MENU_ACTION][ITEM_LATER]))
-        // );
     }
 
-    public function saveForcedFlow($actionLater/* , $menuName, $response */)
+    public function saveForcedFlow($actionLater)
     {
         $type = gettype($actionLater);
         if (!in_array($type, ['array', 'string'])) {
@@ -328,23 +333,31 @@ class Menus implements \ArrayAccess
 
     public function menuStateExists($menuName)
     {
-        return $menuName !== '' && (
+        return '' !== $menuName && (
             isset($this->menus[$menuName]) ||
             in_array($menuName, RESERVED_MENU_IDs, true) ||
             class_exists($this->app->menuEntityClass($menuName))
         );
     }
 
-    public function splittedMenuNextActionDisplay()
+    public function splittedMenu_NextPageActionDisplay()
     {
-        return ($this->app->params('splitted_menu_next_trigger') . ". " .
-            $this->app->params('splitted_menu_display'));
+        // Will return a string like: '00. More'
+        return (
+            $this->app->config('menu.splitted_menu_next_trigger') .
+            $this->app->config('menu.trigger_decorator') .
+            $this->app->config('menu.splitted_menu_display')
+        );
     }
 
-    public function splittedMenuBackActionDisplay()
+    public function splittedMenu_BackActionDisplay()
     {
-        return ($this->app->params('back_action_trigger') . ". " .
-            $this->app->params('back_action_display'));
+        // A string like: '0. Back'
+        return (
+            $this->app->config('menu.back_action_trigger') .
+            $this->app->config('menu.trigger_decorator') .
+            $this->app->config('menu.back_action_display')
+        );
     }
 
     public function getSplitMenuStringNext()
@@ -398,30 +411,51 @@ class Menus implements \ArrayAccess
 
     public function getMenuString(
         $menuActions,
-        $menu_msg = '',
+        $menuMsg = '',
         $hasBackAction = false
     ) {
-        $menu_string = $this->menuToString($menuActions, $menu_msg);
+        $menuString = $this->menuToString($menuActions, $menuMsg);
 
-        $chunks = explode("\n", $menu_string);
-        $lines = count($chunks);
+        if ($this->app->isUssdChannel()) {
+            return $this->softPaginateIfOverflows($menuString, $hasBackAction);
+        }
 
-        if (
-            strlen($menu_string) > $this->app->maxUssdPageContent() ||
-            $lines > $this->app->maxUssdPageLines()
-        ) {
-            $menuChunks = $this->splitMenu($chunks, $hasBackAction);
-            $menu_string = $menuChunks[0];
+        return $menuString;
+    }
+
+    public function softPaginateIfOverflows($menuString, $hasBackAction)
+    {
+        if ($this->willOverflowWith($menuString)) {
+            $chunks = explode("\n", $menuString);
+            $menuChunks = $this->generateSplittedMenu($chunks, $hasBackAction);
+            $menuString = $menuChunks[0];
 
             $this->saveMenuSplittedState($menuChunks, $hasBackAction);
         } else {
             $this->unsetPreviousSplittedMenuIfExists();
         }
 
-        return $menu_string;
+        return $menuString;
     }
 
-    public function splitMenu($menuStringChunks, $hasBackAction)
+    public function willOverflowWith($message, $includeEdge = false)
+    {
+        if ($includeEdge) {
+            return (
+                $this->app->isUssdChannel() &&
+                (strlen($message) >= $this->maxPageCharacters() ||
+                    count(explode("\n", $message)) >= $this->maxPageLines())
+            );
+        } else {
+            return (
+                $this->app->isUssdChannel() &&
+                (strlen($message) > $this->maxPageCharacters() ||
+                    count(explode("\n", $message)) > $this->maxPageLines())
+            );
+        }
+    }
+
+    public function generateSplittedMenu($menuStringChunks, $hasBackAction)
     {
         $menuChunks = [];
 
@@ -430,80 +464,103 @@ class Menus implements \ArrayAccess
 
         $currentStringWithoutSplitMenu = '';
 
-        $splitted_menu_next = $this->splittedMenuNextActionDisplay();
-        $splitted_menu_back = $this->splittedMenuBackActionDisplay();
+        $splittedMenuNext = $this->splittedMenu_NextPageActionDisplay();
+        $splittedMenuBack = $this->splittedMenu_BackActionDisplay();
 
-        foreach (
-            $menuStringChunks as $menu_item_number => $menu_item_str
-        ) {
-            $split_menu = '';
+        foreach ($menuStringChunks as $menuItemNumber => $menuItemStr) {
+            $splitMenu = '';
 
-            if ($menu_item_number === $first || !isset($menuChunks[0])) {
-                $split_menu = $splitted_menu_next;
+            // Add Goto next page action
+            if ($menuItemNumber === $first || !isset($menuChunks[0])) {
+                $splitMenu = $splittedMenuNext;
 
+                /*
+                 * If the developer has implemented a back action (ie the
+                 * developer wants the user to be able to go back the previous
+                 * menu), we add a back action on the first page.
+                 */
                 if ($hasBackAction) {
-                    $split_menu .= "\n" . $splitted_menu_back;
+                    $splitMenu .= "\n" . $splittedMenuBack;
                 }
-            } elseif ($menu_item_number === $last && !$hasBackAction) {
-                $split_menu = $splitted_menu_back;
-            } elseif ($menu_item_number !== $last) {
-                $split_menu = $splitted_menu_next . "\n" . $splitted_menu_back;
+            } elseif ($menuItemNumber === $last && !$hasBackAction) {
+                /*
+                 * We add a back action at the end only if the developer has
+                 * not already added a back action. We `assume` (and advice) the
+                 * developer to make their back action the last action for this
+                 * to display properly
+                 */
+                $splitMenu = $splittedMenuBack;
+            } elseif ($menuItemNumber !== $last) {
+                // If in the middle, add Next Page action and Back action
+                $splitMenu = $splittedMenuNext . "\n" . $splittedMenuBack;
             }
 
-            $new_line = $menu_item_str;
-            $new_line_with_split_menu = $menu_item_str . "\n" . $split_menu;
-            if (
-                strlen($new_line_with_split_menu) > $this->app->maxUssdPageContent() ||
-                count(explode("\n", $new_line_with_split_menu)) > $this->app->maxUssdPageLines()
-            ) {
-                $max = $this->app->maxUssdPageContent() - strlen("\n" . $splitted_menu_next . "\n" . $splitted_menu_back);
-                exit('The text <br>```<br>' . $menu_item_str . '<br>```<br><br> is too large to be displayed. Consider breaking it in pieces with the newline character (\n). Each piece must not exceed ' . $max . ' characters.');
+            $newLine = $menuItemStr;
+            $newLineWithSplitMenu = $menuItemStr . "\n" . $splitMenu;
 
-                // $exploded = str_split($menu_item_str, $max);
-                // $menu_item_str = join("\n", $exploded);
+            if ($this->willOverflowWith($newLineWithSplitMenu)) {
+                $max = $this->maxPageCharacters() - strlen("\n" . $splittedMenuNext . "\n" . $splittedMenuBack);
+                $this->app->fail('The text <br>```<br>' . $menuItemStr . '<br>```<br><br> is too large to be displayed. Consider breaking it in pieces with the newline character (\n). Each piece must not exceed ' . $max . ' characters.');
             }
 
             /*
              * The order is important here. (setting
-             * current_string_with_split_menu before
+             * currentStringWithSplitMenu before
              * currentStringWithoutSplitMenu)
              */
-            $current_string_with_split_menu = $currentStringWithoutSplitMenu . "\n" . $new_line_with_split_menu;
+            $currentStringWithSplitMenu = $currentStringWithoutSplitMenu . "\n" . $newLineWithSplitMenu;
 
-            $currentStringWithoutSplitMenu .= "\n" . $new_line;
+            $currentStringWithoutSplitMenu .= "\n" . $newLine;
 
-            $next = $menu_item_number + 1;
-            $next_string_with_split_menu = '';
+            $next = $menuItemNumber + 1;
+            $nextStringWithSplitMenu = '';
 
             if ($next < $last) {
-                $next_line = "\n" . $menuStringChunks[$next];
+                $nextLine = "\n" . $menuStringChunks[$next];
 
                 if (!isset($menuChunks[0])) {
-                    $split_menu = "\n" . $splitted_menu_next;
+                    $splitMenu = "\n" . $splittedMenuNext;
                 } else {
-                    $split_menu = "\n" . $splitted_menu_next . "\n" . $splitted_menu_back;
+                    $splitMenu = "\n" . $splittedMenuNext . "\n" . $splittedMenuBack;
                 }
 
-                $next_string_with_split_menu = $currentStringWithoutSplitMenu . $next_line . $split_menu;
+                $nextStringWithSplitMenu = $currentStringWithoutSplitMenu . $nextLine . $splitMenu;
             } else {
-                $next_line = "\n" . $menuStringChunks[$last];
-                $split_menu = $hasBackAction ? '' : "\n" . $splitted_menu_back;
+                $nextLine = "\n" . $menuStringChunks[$last];
+                $splitMenu = $hasBackAction ? '' : "\n" . $splittedMenuBack;
 
-                $next_string_with_split_menu = $currentStringWithoutSplitMenu . $next_line . $split_menu;
+                $nextStringWithSplitMenu = $currentStringWithoutSplitMenu . $nextLine . $splitMenu;
             }
 
             if (
-                strlen($next_string_with_split_menu) >= $this->app->maxUssdPageContent() ||
-                count(explode("\n", $next_string_with_split_menu)) >= $this->app->maxUssdPageLines() ||
-                $menu_item_number === $last
+                $this->willOverflowWith($nextStringWithSplitMenu, true) ||
+                $menuItemNumber === $last
             ) {
-                $menuChunks[] = trim($current_string_with_split_menu);
-                $current_string_with_split_menu = '';
+                $menuChunks[] = trim($currentStringWithSplitMenu);
+                $currentStringWithSplitMenu = '';
                 $currentStringWithoutSplitMenu = '';
             }
         }
 
         return $menuChunks;
+    }
+
+    /**
+     * Check if the menu will be the last to show to the user
+     *
+     * Any menu that does not have actions will be the last to show to the user
+     * (no actions means the developer is no more waiting for any response, so
+     * the user can no more input something)
+     *
+     * @param array $actions
+     * @return boolean
+     */
+    public function isLastPage($menuName, $actions = [], $menuEntity = null)
+    {
+        return (empty($actions) &&
+            isset($this->menus[$menuName][DEFAULT_NEXT_MENU]) &&
+            $menuEntity &&
+            !method_exists($menuEntity, MENU_ENTITY_DEFAULT_NEXT_MENU));
     }
 
     public function saveMenuSplittedState($menuChunks, $hasBackAction)
@@ -535,15 +592,17 @@ class Menus implements \ArrayAccess
         }
     }
 
-    public function menuToString($menuActions, $menu_msg = '')
+    public function menuToString($menuActions, $menuMsg = '')
     {
-        $menu_string = $menu_msg . "\n\n";
+        $sep = $this->app->config('menu.seperator_message_and_actions', "\n\n");
+        $triggerDecorator = $this->app->config('trigger_decorator', '. ');
+        $menuString = $menuMsg . $sep;
 
-        foreach ($menuActions as $menu_item_number => $menu_item_str) {
-            $menu_string .= "$menu_item_number. $menu_item_str\n";
+        foreach ($menuActions as $trigger => $display) {
+            $menuString .= $trigger . $triggerDecorator . $display . "\n";
         }
 
-        return trim($menu_string);
+        return trim($menuString);
     }
 
     public function get($id)
@@ -557,12 +616,43 @@ class Menus implements \ArrayAccess
 
     public function has($id)
     {
-        return isset($this->menus[$id]);
+        return (isset($this->menus[$id]) ||
+            class_exists($this->app->menuEntityClass($id)));
     }
 
     public function getAll()
     {
         return $this->menus;
+    }
+
+    /**
+     * Returns the maximum number of characters that can appear on one page of the screen of the targetted channel.
+     *
+     * For example, USSD screen will not support, in average, more than 147 characters.
+     * This will be unlimited if the channel is whatsapp (or any other whatsapp-like channel)
+     *
+     * Will return -1 for unlimited characters
+     *
+     * @return int
+     */
+    public function maxPageCharacters()
+    {
+        return $this->maxPageCharacters;
+    }
+
+    /**
+     * Returns the maximum number of lines (\n) that can appear on one page of the screen of the targetted channel.
+     *
+     * For example, USSD screen will not support, in average, more than 10 new lines.
+     * This will be unlimited if the channel is whatsapp (or any other whatsapp-like channel)
+     *
+     * Will return -1 for unlimited lines
+     *
+     * @return int
+     */
+    public function maxPageLines()
+    {
+        return $this->maxPageLines;
     }
 
     // ArrayAccess Interface
@@ -589,4 +679,5 @@ class Menus implements \ArrayAccess
     {
         unset($this->menus[$offset]);
     }
+
 }

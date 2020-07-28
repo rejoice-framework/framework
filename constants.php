@@ -15,11 +15,18 @@
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
 
-define('APP_REQUEST_INIT', '1');
-define('APP_REQUEST_END', '17');
-define('APP_REQUEST_CANCELLED', '30');
-define('APP_REQUEST_ASK_USER_RESPONSE', '2');
-define('APP_REQUEST_USER_SENT_RESPONSE', '18');
+use Prinx\Config;
+use Prinx\Rejoice\Foundation\PathConfig;
+
+$paths = new PathConfig;
+$config = new Config($paths->get('app_config_dir'));
+
+define('APP_REQUEST_INIT', $config->get('app.request_init'));
+define('APP_REQUEST_END', $config->get('app.request_end'));
+define('APP_REQUEST_FAILED', $config->get('app.request_failed'));
+define('APP_REQUEST_CANCELLED', $config->get('app.request_cancelled'));
+define('APP_REQUEST_ASK_USER_RESPONSE', $config->get('app.request_ask_user_response'));
+define('APP_REQUEST_USER_SENT_RESPONSE', $config->get('app.request_user_sent_response'));
 define(
     'APP_REQUEST_ASK_USER_BEFORE_RELOAD_LAST_SESSION',
     '__CUSTOM_REQUEST_TYPE1'
@@ -37,7 +44,7 @@ define('ITEM_ACTION', 'next_menu');
 define('ITEM_LATER', 'later');
 
 define('SAVE_RESPONSE_AS', 'save_as');
-define('DEFAULT_MENU_ACTION', 'default_next_menu');
+define('DEFAULT_NEXT_MENU', 'default_next_menu');
 define('MENU', 'menu');
 define('VALIDATE', 'validate');
 define('FORCED_MENU_FLOW', 'forced_menu_flow');
@@ -78,21 +85,18 @@ define('RESERVED_MENU_IDs', [
 define('WELCOME_MENU_NAME', 'welcome');
 define('MENU_MSG_PLACEHOLDER', ':');
 
-define('PROD', 'prod');
-define('DEV', 'dev');
-
 define(
     'REQUIRED_REQUEST_PARAMS',
     [
-        'msisdn',
-        'network',
-        'sessionID',
-        'ussdString',
-        'ussdServiceOp',
+        $config->get('app.request_param_user_phone_number'),
+        $config->get('app.request_param_user_network'),
+        $config->get('app.request_param_session_id'),
+        $config->get('app.request_param_user_response'),
+        $config->get('app.request_param_request_type'),
     ]
 );
 
-define('ALLOWED_REQUEST_CHANNELS', ['USSD', 'WHATSAPP']);
+define('ALLOWED_REQUEST_CHANNELS', ['USSD', 'WHATSAPP', 'CONSOLE']);
 
 define(
     'ASK_USER_BEFORE_RELOAD_LAST_SESSION',
@@ -103,13 +107,8 @@ define('DEVELOPER_SAVED_DATA', 'session_data_accessible_by_app');
 
 define('CURRENT_MENU_ACTIONS', 'modify_menus');
 
-define('DEFAULT_LOG', realpath(__DIR__ . '/../../../../storage/logs/') . '/rejoice.log');
-
-define('DEFAULT_CACHE', realpath(__DIR__ . '/../../../../storage/cache/') . '/rejoice.cache');
-define('LOG_COUNT_CACHE', realpath(__DIR__ . '/../../../../storage/cache/') . '/log-count.cache');
-
 define('RESERVED_MENU_ACTIONS', [
-    DEFAULT_MENU_ACTION,
+    DEFAULT_NEXT_MENU,
     VALIDATE,
 ]);
 
@@ -124,6 +123,30 @@ define('MENU_ENTITY_ON_MOVE_TO_NEXT_MENU', 'onMoveToNextMenu');
 define('MENU_ENTITY_ON_BACK', 'onBack');
 define('MENU_ENTITY_ON_PAGINATE_FORWARD', 'onPaginateForward');
 define('MENU_ENTITY_ON_PAGINATE_BACK', 'onPaginateBack');
-define('MENU_ENTITIES_NAMESPACE_PREFIX', 'Menus');
-define('MENU_ENTITIES_NAMESPACE', 'App\\' . MENU_ENTITIES_NAMESPACE_PREFIX . '\\');
-define('MENUS_NAMESPACE_PREFIX', 'menus');
+
+define('MENU_ENTITIES_NAMESPACE', 'App\\Menus\\');
+
+define('MENU_HOOKS', [
+    MENU_ENTITY_VALIDATE_RESPONSE,
+    MENU_ENTITY_SAVE_RESPONSE_AS,
+    MENU_ENTITY_DEFAULT_NEXT_MENU,
+    MENU_ENTITY_MESSAGE,
+    MENU_ENTITY_ACTIONS,
+    MENU_ENTITY_BEFORE,
+    MENU_ENTITY_AFTER,
+    MENU_ENTITY_ON_MOVE_TO_NEXT_MENU,
+    MENU_ENTITY_ON_BACK,
+    MENU_ENTITY_ON_PAGINATE_FORWARD,
+    MENU_ENTITY_ON_PAGINATE_BACK,
+]);
+
+define('RECEIVE_USER_RESPONSE', [
+    MENU_ENTITY_VALIDATE_RESPONSE,
+    MENU_ENTITY_SAVE_RESPONSE_AS,
+    MENU_ENTITY_AFTER,
+    MENU_ENTITY_ON_MOVE_TO_NEXT_MENU,
+]);
+
+define('DEFAULT_NAMESPACE', 'Prinx\Rejoice\\');
+
+define('DEV_ENV', ['dev', 'development', 'local', 'staging']);

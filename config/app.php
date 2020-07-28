@@ -1,19 +1,9 @@
 <?php
 
-/*
- * This file is part of the Rejoice package.
- *
- * (c) Prince Dorcis <princedorcis@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-require_once 'constants.php';
-
 use function Prinx\Dotenv\env;
 
 return [
+
     /*
      * Unique identifier for this application.
      */
@@ -81,16 +71,6 @@ return [
      */
     'ask_user_before_reload_last_session' => true,
 
-    'message_ask_user_before_reload_last_session' => "Do you want to continue from where you left?",
-
-    'last_session_trigger' => "1",
-
-    'last_session_display' => "Continue last session",
-
-    'restart_session_trigger' => "2",
-
-    'restart_session_display' => "Restart",
-
     /*
      * USSD sessions times out very quickly depending on the network and the
      * device of the user. When it happens, the user is not able to receive the
@@ -101,15 +81,6 @@ return [
      * no matter how long the USSD menu is.
      */
     'allow_timeout' => true,
-
-    /*
-     * If allow_timeout is false, this message will be appended to the last
-     * message to let the user press the cancel button to terminate the request.
-     * This will be displayed only if the user is assessing the application via USSD.
-     * If the user does not press cancel, and rather send a response, the
-     * application itself automatically destroyed the session
-     */
-    'no_timeout_final_response_cancel_msg' => 'Press Cancel to end.',
 
     /*
      * Cancel the session whenever there is an error in the user's response
@@ -126,64 +97,9 @@ return [
     'end_on_unhandled_action' => false,
 
     /*
-     * Default character that will trigger a go back, if the user can go back
-     * on the current menu
+     * If true, you can directly call a sub menu, without passing through
+     * the normal flow (from the welcome menu till the particular sub menu)
      */
-    'back_action_trigger' => '0',
+    'allow_direct_sub_menu_call' => false,
 
-    /*
-     * Default 'go back' expression to display to the user, if the user can go
-     * back on the current menu
-     */
-    'back_action_display' => 'Back',
-
-    /*
-     * Default character that will trigger a go forward, if the user can go
-     * forward on the current menu
-     */
-    'splitted_menu_next_trigger' => '00',
-
-    /*
-     * Default 'go forward' expression to display to the user, if they can go
-     * forward on the current menu
-     */
-    'splitted_menu_display' => 'Next page',
-
-    /*
-     * Default character that will trigger a go forward, if the user can go
-     * forward on the current menu
-     */
-    'paginate_forward_trigger' => '01',
-
-    /*
-     * Default 'paginate forward' expression
-     */
-    'paginate_forward_display' => 'More',
-
-    /*
-     * Number of pagination item to show per page when paginating
-     */
-    'pagination_default_to_show_per_page' => 5,
-
-    /*
-     * Default character that will trigger a paginate back, if the user can
-     * paginate back on the current menu
-     */
-    'paginate_back_trigger' => '0',
-
-    /*
-     * Default 'paginate back' expression
-     */
-    'paginate_back_display' => 'Back',
-
-    /*
-     * Default end message that will be displayed to the user if an `end`
-     * method has been called without passing any message to display.
-     */
-    'default_end_msg' => 'Thank you.',
-
-    /*
-     * Default error message
-     */
-    'default_error_msg' => 'Invalid Input.',
 ];

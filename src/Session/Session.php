@@ -11,10 +11,10 @@
 
 namespace Prinx\Rejoice\Session;
 
+use Prinx\Arr;
 use Prinx\Rejoice\Foundation\Kernel;
-use Prinx\Utils\Arr;
 
-require_once __DIR__ . '/../constants.php';
+require_once __DIR__ . '/../../constants.php';
 
 /**
  * Handle the USSD Session: save and retrieve the session data from the database
@@ -27,6 +27,8 @@ class Session
     protected $app;
     protected $id;
     protected $msisdn;
+    protected $config;
+    protected $isNew = true;
     public $data = [];
 
     public function __construct(Kernel $app)
@@ -34,8 +36,8 @@ class Session
         $this->app = $app;
         $this->id = $app->sessionId();
         $this->msisdn = $app->msisdn();
-
-        $this->driver = (require realpath(__DIR__ . '/../../../../../') . '/config/session.php')['driver'];
+        $this->config = require $app->path('app_session_config_file');
+        $this->driver = $this->config['driver'];
     }
 
     /**
@@ -45,7 +47,17 @@ class Session
      */
     public function isPrevious()
     {
-        return !empty($this->data);
+        return !$this->isNew();
+    }
+
+    /**
+     * Check if the session loaded is a new session
+     *
+     * @return boolean
+     */
+    public function isNew()
+    {
+        return $this->isNew;
     }
 
     /**
@@ -55,22 +67,73 @@ class Session
      */
     protected function start()
     {
-        switch ($this->app->ussdRequestType()) {
-            case APP_REQUEST_INIT:
-                if ($this->app->params('always_start_new_session')) {
-                    $this->deletePreviousData();
-                    $this->data = [];
-                } else {
-                    $this->data = $this->retrievePreviousData();
-                }
+        $this->data = $this->retrievePreviousData();
+        $this->isNew = empty($this->data);
 
-                break;
-
-            case APP_REQUEST_USER_SENT_RESPONSE:
-                $this->data = $this->retrievePreviousData();
-                // var_dump($this->data);
-                break;
+        if ($this->isNew()) {
+            $this->initialise();
+        } elseif ($this->app->isFirstRequest() && $this->hasExpired()) {
+            $this->renew();
         }
+
+        // switch ($this->app->ussdRequestType()) {
+        //     case APP_REQUEST_INIT:
+        //         if ($this->hasExpired()) {
+        //             $this->renew();
+        //         }
+
+        //         break;
+
+        //     case APP_REQUEST_USER_SENT_RESPONSE:
+        //         break;
+        // }
+    }
+
+    public function renew()
+    {
+        $this->deletePreviousData();
+        $this->isNew = true;
+        $this->initialise();
+    }
+
+    public function initialise()
+    {
+        $this->data = [
+            '__last_connection' => microtime(true),
+        ];
+    }
+
+    public function hasExpired()
+    {
+        if ($this->app->config('app.always_start_new_session')) {
+            return true;
+        }
+
+        return $this->hasPassed('lifetime');
+    }
+
+    public function hasTimedOut()
+    {
+        return $this->hasPassed('timeout');
+    }
+
+    public function hasPassed($type)
+    {
+        $allowed = $this->app->config("session.{$type}");
+        $lastConnection = $this->data['__last_connection'] ?? 0;
+        $now = microtime(true);
+
+        return $this->secondsToMinutes($now - $lastConnection) >= $allowed;
+    }
+
+    public function secondsToMinutes($sec)
+    {
+        return $sec / 60;
+    }
+
+    public function mustNotTimeout()
+    {
+        return $this->app->config('app.allow_timeout') === false;
     }
 
     protected function deletePreviousData()
@@ -132,7 +195,7 @@ class Session
      * @param string $key
      * @param mixed $default
      * @return mixed
-     * @throws Exception If value not found and no default value has been provided
+     * @throws \RuntimeException If value not found and no default value has been provided
      */
     public function get($key = null, $default = null)
     {
@@ -140,10 +203,6 @@ class Session
             $this->data[DEVELOPER_SAVED_DATA] = $this->data[DEVELOPER_SAVED_DATA] ?? [];
             return $this->data[DEVELOPER_SAVED_DATA];
         }
-
-        // if (isset($this->data[DEVELOPER_SAVED_DATA][$key])) {
-        //     return $this->data[DEVELOPER_SAVED_DATA][$key];
-        // }
 
         $explodedKey = explode('.', $key);
 
@@ -155,7 +214,7 @@ class Session
             return $default;
         }
 
-        throw new \Exception('Index "' . $key . '" not found in the session data.');
+        throw new \RuntimeException('Index "' . $key . '" not found in the session data.');
     }
 
     /**
@@ -165,16 +224,17 @@ class Session
      * @param mixed $value
      * @return void
      */
-    public function set($key, $value)
+    public function set(string $key, $value)
     {
         if (!$this->hasMetadata(DEVELOPER_SAVED_DATA)) {
             $this->setMetadata(DEVELOPER_SAVED_DATA, []);
         }
 
-        // $this->data[DEVELOPER_SAVED_DATA][$key] = $value;
         $this->data[DEVELOPER_SAVED_DATA] = Arr::multiKeySet(
             $key, $value, $this->data[DEVELOPER_SAVED_DATA]
         );
+
+        return $this;
     }
 
     /**
@@ -211,22 +271,34 @@ class Session
     /**
      * Check if a variable has been saved by the developer in the session
      *
-     * @param string $key
-     * @return boolean
-     */
-    public function has($key)
-    {
-        return isset($this->data[DEVELOPER_SAVED_DATA][$key]);
-    }
-
-    /**
-     * Check if a framework-level variable is in the session
+     * If no key is passed, checks if the session is not empty
      *
      * @param string $key
      * @return boolean
      */
-    public function hasMetadata($key)
+    public function has(string $key = '')
     {
+        if (!$key) {
+            return !empty($this->data[DEVELOPER_SAVED_DATA]);
+        }
+
+        return isset($this->data[DEVELOPER_SAVED_DATA][$key]);
+    }
+
+    /**
+     * Check if a particular framework-level variable exists in the session
+     *
+     * If no key is passed, checks if the session is not empty
+     *
+     * @param string $key
+     * @return boolean
+     */
+    public function hasMetadata(string $key = '')
+    {
+        if (!$key) {
+            return !empty($this->data);
+        }
+
         return isset($this->data[$key]);
     }
 
@@ -237,9 +309,11 @@ class Session
      * @param mixed $value
      * @return void
      */
-    public function setMetadata($key, $value)
+    public function setMetadata(string $key, $value)
     {
-        $this->data[$key] = $value;
+        $this->data = Arr::multiKeySet($key, $value, $this->data);
+
+        return $this;
     }
 
     /**
@@ -248,16 +322,11 @@ class Session
      * Returns true if the variable exists and has been removed, false otherwise
      *
      * @param string $key
-     * @return boolean
+     * @return void
      */
-    public function removeMetadata($key)
+    public function removeMetadata(string $key)
     {
-        if (isset($this->data[$key])) {
-            unset($this->data[$key]);
-            return true;
-        }
-
-        return false;
+        Arr::multiKeyRemove($key, $this->data);
     }
 
     /**
@@ -266,23 +335,24 @@ class Session
      * @param string $key
      * @param mixed $default
      * @return mixed
-     * @throws Exception If value not found and no default value has been provided
+     * @throws \RuntimeException If value not found and no default value has been provided
      */
-    public function metadata($key = null, $default = null)
+    public function metadata(string $key = '', $default = null)
     {
         if (!$key) {
             return $this->data;
         }
 
-        if (isset($this->data[$key])) {
-            return $this->data[$key];
+        $value = Arr::multiKeyGet($key, $this->data);
+
+        if (null === $value) {
+            if (\func_num_args() > 1) {
+                return $default;
+            }
+            throw new \RuntimeException('Index "' . $key . '" not found in the session.');
         }
 
-        if (\func_num_args() > 1) {
-            return $default;
-        }
-
-        throw new \Exception('Index "' . $key . '" not found in the session.');
+        return $value;
     }
 
     /**
@@ -296,6 +366,6 @@ class Session
      */
     public function reset()
     {
-        $this->data = [];
+        $this->initialise();
     }
 }

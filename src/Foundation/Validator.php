@@ -13,7 +13,7 @@ namespace Prinx\Rejoice\Foundation;
 
 use Prinx\Rejoice\Foundation\Kernel;
 
-require_once __DIR__ . '/../constants.php';
+require_once __DIR__ . '/../../constants.php';
 
 /**
  * Framework's base validator
@@ -37,19 +37,19 @@ class Validator
         $minLength = 1
     ) {
         if (!is_string($param)) {
-            exit('The parameter "' . $paramName . '" must be a string.');
+            $this->app->fail('The parameter "' . $paramName . '" must be a string.');
         }
 
         if (strlen($param) < $minLength) {
-            exit('The parameter "' . $paramName . '" is too short. It must be at least ' . $minLength . ' character(s).');
+            $this->app->fail('The parameter "' . $paramName . '" is too short. It must be at least ' . $minLength . ' character(s).');
         }
 
         if (strlen($param) > $maxLength) {
-            exit('The parameter "' . $paramName . '" is too long. It must be at most ' . $maxLength . ' characters.');
+            $this->app->fail('The parameter "' . $paramName . '" is too long. It must be at most ' . $maxLength . ' characters.');
         }
 
         if (!preg_match($pattern, $param) === 1) {
-            exit('The parameter "' . $paramName . '" contains unexpected character(s).');
+            $this->app->fail('The parameter "' . $paramName . '" contains unexpected character(s).');
         }
 
         return true;
