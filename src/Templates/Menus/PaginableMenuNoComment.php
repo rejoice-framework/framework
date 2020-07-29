@@ -1,5 +1,6 @@
 <?php
 $namespace = $namespace ?? 'App\Menus';
+$namespace = trim($namespace, '\\');
 $name = $name ?? 'PaginableMenu';
 
 // When the name of the menu is the same as one of the imported classes

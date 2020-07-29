@@ -2,6 +2,7 @@
 
 $name = $name ?? 'NormalMenu';
 $namespace = $namespace ?? 'App\Menus';
+$namespace = trim($namespace, '\\');
 
 $validate = $validate ?? true;
 $saveAs = $saveAs ?? true;
@@ -44,7 +45,7 @@ class $name extends $baseMenu
     {
         \$actions = [];
 
-        return \$this->mergeAction(\$actions, \$this->backAction());
+        return \$this->withBack(\$actions);
     }";
 
 if ($validate) {
