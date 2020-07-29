@@ -37,6 +37,11 @@ class FileSession extends Session implements SessionInterface
     public function generateSessionFileName($app)
     {
         $filename = \hash('sha256', base64_encode($this->id));
+
+        if (!is_dir($app->path('session_root_dir'))) {
+            mkdir($app->path('session_root_dir'));
+        }
+
         return $app->path('session_root_dir') . $filename;
     }
 
