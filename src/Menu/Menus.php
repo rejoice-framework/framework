@@ -557,10 +557,15 @@ class Menus implements \ArrayAccess
      */
     public function isLastPage($menuName, $actions = [], $menuEntity = null)
     {
-        return (empty($actions) &&
-            isset($this->menus[$menuName][DEFAULT_NEXT_MENU]) &&
-            $menuEntity &&
-            !method_exists($menuEntity, MENU_ENTITY_DEFAULT_NEXT_MENU));
+        return (
+            empty($actions)
+            && !isset($this->menus[$menuName][DEFAULT_NEXT_MENU])
+            && (!$menuEntity
+                || ($menuEntity
+                    && !method_exists($menuEntity, MENU_ENTITY_DEFAULT_NEXT_MENU)
+                )
+            )
+        );
     }
 
     public function saveMenuSplittedState($menuChunks, $hasBackAction)
