@@ -1,12 +1,12 @@
 {
-  "name": "prinx/rejoice-framework",
+  "name": "rejoice/rejoice-framework",
   "type": "library",
   "description": "Write easily your USSD based applications.",
   "keywords": [
     "ussd",
     "whatsapp"
   ],
-  "homepage": "https://github.com/Prinx/rejoice-framework",
+  "homepage": "https://github.com/rejoice-framework/framework",
   "license": "MIT",
   "authors": [
     {
@@ -19,7 +19,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": ">=5.6.0",
+    "php": ">=7.3",
     "prinx/dotenv": "dev-master",
     "prinx/notify": "dev-master",
     "prinx/phputils": "dev-master",
