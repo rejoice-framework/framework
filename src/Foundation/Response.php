@@ -72,7 +72,7 @@ class Response
         $error = error_get_last();
 
         // Something has been echoed in the code but it is not an error
-        if (null === $error && $previouslyDisplayed) {
+        if ($error && $previouslyDisplayed) {
             $this->addInfoInSimulator("\n" . $previouslyDisplayed . "\n");
         } elseif ($error) {
             $appFailMessage = $this->app->config('menu.application_failed_message');
