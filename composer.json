@@ -1,5 +1,5 @@
 {
-  "name": "rejoice/rejoice-framework",
+  "name": "rejoice/framework",
   "type": "library",
   "description": "Write easily your USSD based applications.",
   "keywords": [
@@ -13,13 +13,13 @@
       "name": "Prince Damien Dorcis-Akpaglo",
       "email": "princedorcis@gmail.com",
       "role": "Maintainer",
-      "homepage": "https://github.com/Prinx"
+      "homepage": "https://github.com/prinx"
     }
   ],
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": ">=7.3",
+    "php": ">=7.4",
     "prinx/dotenv": "dev-master",
     "prinx/notify": "dev-master",
     "prinx/phputils": "dev-master",
