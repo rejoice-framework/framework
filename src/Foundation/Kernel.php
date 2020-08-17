@@ -270,7 +270,6 @@ class Kernel
             $this->validateRequest();
             $this->startSession();
             $this->loadMenus();
-            // throw new \Exception("Error Processing Request", 1);
             $this->handleUserRequest();
 
         } catch (\Throwable $th) {
