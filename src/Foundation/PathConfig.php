@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Foundation;
+namespace Rejoice\Foundation;
 
 /**
  * Common configurations of the framework
@@ -22,71 +22,71 @@ class PathConfig
 
     public function __construct()
     {
-        $projectRootDir = realpath(__DIR__ . '/../../../../../');
-        $frameworkRootDir = realpath(__DIR__ . '/../../');
+        $projectRootDir = realpath(__DIR__.'/../../../../../');
+        $frameworkRootDir = realpath(__DIR__.'/../../');
 
         $this->setAll([
             // App
             'project_root' => $projectRootDir,
 
-            'default_env_file' => $projectRootDir . '/.env',
+            'default_env_file' => $projectRootDir.'/.env',
 
-            'app_root_dir' => $projectRootDir . '/app/',
+            'app_root_dir' => $projectRootDir.'/app/',
 
-            'app_menu_class_dir' => $projectRootDir . '/app/Menus/',
+            'app_menu_class_dir' => $projectRootDir.'/app/Menus/',
 
-            'app_config_dir' => $projectRootDir . '/config/',
+            'app_config_dir' => $projectRootDir.'/config/',
 
-            'app_config_file' => $projectRootDir . '/config/app.php',
+            'app_config_file' => $projectRootDir.'/config/app.php',
 
-            'app_database_config_file' => $projectRootDir . '/config/database.php',
+            'app_database_config_file' => $projectRootDir.'/config/database.php',
 
-            'app_session_config_file' => $projectRootDir . '/config/session.php',
+            'app_session_config_file' => $projectRootDir.'/config/session.php',
 
-            'public_root_dir' => $projectRootDir . '/public/',
+            'public_root_dir' => $projectRootDir.'/public/',
 
-            'resource_root_dir' => $projectRootDir . '/resources/',
+            'resource_root_dir' => $projectRootDir.'/resources/',
 
-            'menu_resource_dir' => $projectRootDir . '/resources/menus/',
+            'menu_resource_dir' => $projectRootDir.'/resources/menus/',
 
-            'storage_root_dir' => $projectRootDir . '/storage/',
+            'storage_root_dir' => $projectRootDir.'/storage/',
 
-            'cache_root_dir' => $projectRootDir . '/storage/cache/',
+            'cache_root_dir' => $projectRootDir.'/storage/cache/',
 
-            'app_default_cache_file' => $projectRootDir . '/storage/cache/rejoice.cache',
+            'app_default_cache_file' => $projectRootDir.'/storage/cache/rejoice.cache',
 
-            'app_default_log_count_file' => $projectRootDir . '/storage/cache/.log-count.cache',
+            'app_default_log_count_file' => $projectRootDir.'/storage/cache/.log-count.cache',
 
-            'log_root_dir' => $projectRootDir . '/storage/logs/',
+            'log_root_dir' => $projectRootDir.'/storage/logs/',
 
-            'app_default_log_file' => $projectRootDir . '/storage/logs/rejoice.log',
+            'app_default_log_file' => $projectRootDir.'/storage/logs/rejoice.log',
 
-            'session_root_dir' => $projectRootDir . '/storage/sessions/',
+            'session_root_dir' => $projectRootDir.'/storage/sessions/',
 
-            'test_root_dir' => $projectRootDir . '/tests/',
+            'test_root_dir' => $projectRootDir.'/tests/',
 
-            'app_command_dir' => $projectRootDir . '/app/Console/Commands/',
+            'app_command_dir' => $projectRootDir.'/app/Console/Commands/',
 
-            'app_command_file' => $projectRootDir . '/app/Console/commands.php',
+            'app_command_file' => $projectRootDir.'/app/Console/commands.php',
 
             // Framework
-            'default_config_dir' => $frameworkRootDir . '/config/',
+            'default_config_dir' => $frameworkRootDir.'/config/',
 
-            'framework_command_dir' => $frameworkRootDir . '/src/Console/Commands/',
+            'framework_command_dir' => $frameworkRootDir.'/src/Console/Commands/',
 
-            'framework_command_file' => $frameworkRootDir . '/src/Console/commands.php',
+            'framework_command_file' => $frameworkRootDir.'/src/Console/commands.php',
 
-            'framework_template_dir' => $frameworkRootDir . '/src/Templates/',
+            'framework_template_dir' => $frameworkRootDir.'/src/Templates/',
         ]);
     }
 
     /**
      * Retrieve a path of a file or a directory of the framework
      *
-     * @param string $name The key by which the path is named
-     * @param string $default A default path if the path is not found
-     * @return string
+     * @param  string            $name    The key by which the path is named
+     * @param  string            $default A default path if the path is not found
      * @throws \RuntimeException If the path is not found and no default was passed.
+     * @return string
      */
     public function get(string $name, string $default = ''): string
     {
@@ -95,7 +95,7 @@ class PathConfig
         } elseif (\func_num_args() > 1) {
             return $default;
         } else {
-            throw new \RuntimeException('Key ' . $name . ' does not exist in the path configuration');
+            throw new \RuntimeException('Key '.$name.' does not exist in the path configuration');
         }
     }
 

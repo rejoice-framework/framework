@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Console;
+namespace Rejoice\Console;
 
-use Prinx\Rejoice\Foundation\PathConfig;
+use Rejoice\Foundation\PathConfig;
 use Symfony\Component\Console\Application as SymfonyConsoleApp;
 
 /**
@@ -21,7 +21,6 @@ use Symfony\Component\Console\Application as SymfonyConsoleApp;
  */
 class Application
 {
-
     public function run()
     {
         $app = new SymfonyConsoleApp('Rejoice Console', 'v1.0.0');
@@ -49,5 +48,4 @@ class Application
 
         return $commands = array_replace($commands, $frameworkCommands);
     }
-
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Prinx\Rejoice\Console\Commands;
+namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
 use Prinx\Str;
@@ -36,20 +36,20 @@ class NewCommandCommand extends FrameworkCommand
     public function createCommandName($name)
     {
         $exploded = explode(':', $name);
-        $name = Str::pascalCase($exploded[0]) . Str::pascalCase(($exploded[1] ?? ''));
+        $name = Str::pascalCase($exploded[0]).Str::pascalCase(($exploded[1] ?? ''));
 
         return $name;
     }
 
     public function createCommandFile($path, $commandName)
     {
-        $file = Os::toPathStyle($path . $commandName . '.php');
+        $file = Os::toPathStyle($path.$commandName.'.php');
 
         if (
             file_exists($file) &&
             !$this->confirm([
                 "Command file $file already exists.",
-                "<fg=yellow>Do you want to overwrite this file?</>",
+                '<fg=yellow>Do you want to overwrite this file?</>',
             ])
         ) {
             return SmileCommand::FAILURE;
@@ -89,11 +89,11 @@ class NewCommandCommand extends FrameworkCommand
 
     public function exampleTemplate($commandName)
     {
-        return require $this->frameworkTemplateDir() . 'Commands/NewCommandExample.php';
+        return require $this->frameworkTemplateDir().'Commands/NewCommandExample.php';
     }
 
     public function normalTemplate($commandName)
     {
-        return require $this->frameworkTemplateDir() . 'Commands/NewCommandSimple.php';
+        return require $this->frameworkTemplateDir().'Commands/NewCommandSimple.php';
     }
 }

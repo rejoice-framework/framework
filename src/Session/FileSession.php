@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Session;
+namespace Rejoice\Session;
 
-use Prinx\Rejoice\Foundation\Kernel;
-use Prinx\Rejoice\Session\Session;
+use Rejoice\Foundation\Kernel;
+use Rejoice\Session\Session;
 
-require_once __DIR__ . '/../../constants.php';
+require_once __DIR__.'/../../constants.php';
 
 /**
  * Handles file session storage
@@ -42,7 +42,7 @@ class FileSession extends Session implements SessionInterface
             mkdir($app->path('session_root_dir'));
         }
 
-        return $app->path('session_root_dir') . $filename;
+        return $app->path('session_root_dir').$filename;
     }
 
     public function delete()

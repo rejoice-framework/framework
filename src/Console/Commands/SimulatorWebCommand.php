@@ -1,5 +1,5 @@
 <?php
-namespace Prinx\Rejoice\Console\Commands;
+namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
 use Symfony\Component\Console\Input\InputOption;
@@ -22,7 +22,7 @@ class SimulatorWebCommand extends FrameworkCommand
 
     public function fire()
     {
-        $simulatorPath = realpath(__DIR__ . '/../../../../ussd-simulator/src/');
+        $simulatorPath = realpath(__DIR__.'/../../../../ussd-simulator/src/');
         if (!is_dir($simulatorPath)) {
             $this->writeln([
                 $this->colorize('Simulator not found.', 'red'),
@@ -35,16 +35,15 @@ class SimulatorWebCommand extends FrameworkCommand
         $ip = '127.0.0.1';
         $port = $this->getOption('port');
 
-        $keyCombination = Os::getCtrlKey() . '+c';
+        $keyCombination = Os::getCtrlKey().'+c';
 
         $this->writeln([
-            $this->colorize('Server started at http://' . $ip . ':' . $port, 'green'),
+            $this->colorize('Server started at http://'.$ip.':'.$port, 'green'),
             "Press {$keyCombination} to stop the server.",
         ]);
 
-        passthru('php -S ' . $ip . ':' . $port . ' -t "' . $simulatorPath . '"', $return);
+        passthru('php -S '.$ip.':'.$port.' -t "'.$simulatorPath.'"', $return);
 
         return SmileCommand::SUCCESS;
     }
-
 }

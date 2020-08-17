@@ -1,9 +1,9 @@
 <?php
-namespace Prinx\Rejoice\Console\Commands;
+namespace Rejoice\Console\Commands;
 
-use Prinx\Rejoice\Console\Table;
-use Prinx\Rejoice\Console\TableDivider;
 use Prinx\Str;
+use Rejoice\Console\Table;
+use Rejoice\Console\TableDivider;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -90,7 +90,7 @@ class SmileCommand extends SymfonyCommand
         array $invalidResponses = ['n', 'no']
     ) {
 
-        if (! is_array($questions)) {
+        if (!is_array($questions)) {
             $questions = [$questions];
         }
 
@@ -117,13 +117,13 @@ class SmileCommand extends SymfonyCommand
             $response = $this->ask($questions[$last]." [$defaultResponse]: ", $defaultResponse);
             $response = strtolower($response);
 
-            if (! ($hasAccepted = in_array($response, $validResponses))) {
+            if (!($hasAccepted = in_array($response, $validResponses))) {
                 $hasDeclined = in_array($response, $invalidResponses);
             }
 
-        } while (! $hasAccepted && ! $hasDeclined);
+        } while (!$hasAccepted && !$hasDeclined);
 
-        return ! ! $hasAccepted;
+        return !!$hasAccepted;
     }
 
     public function createTable()
@@ -322,7 +322,7 @@ class SmileCommand extends SymfonyCommand
 
         foreach ($messages as $value) {
 
-            if (! is_string($value)) {
+            if (!is_string($value)) {
                 throw new \Exception('Only string and iterable containing string are supported by the writeln
                  method');
             }

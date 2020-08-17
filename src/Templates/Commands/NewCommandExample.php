@@ -2,9 +2,9 @@
 $commandName = $commandName ?? 'ExampleCommand';
 
 $template = "<?php
-namespace Prinx\Rejoice\Console;
+namespace Rejoice\Console;
 
-use Prinx\Rejoice\Console\Commands\SmileCommand;
+use Rejoice\Console\Commands\SmileCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 

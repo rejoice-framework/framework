@@ -16,7 +16,7 @@
  */
 
 use Prinx\Config;
-use Prinx\Rejoice\Foundation\PathConfig;
+use Rejoice\Foundation\PathConfig;
 
 $paths = new PathConfig;
 $config = new Config($paths->get('app_config_dir'));
@@ -147,6 +147,6 @@ define('RECEIVE_USER_RESPONSE', [
     MENU_ENTITY_ON_MOVE_TO_NEXT_MENU,
 ]);
 
-define('DEFAULT_NAMESPACE', 'Prinx\Rejoice\\');
+define('DEFAULT_NAMESPACE', 'Rejoice\\');
 
 define('DEV_ENV', ['dev', 'development', 'local', 'staging']);

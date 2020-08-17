@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Foundation;
+namespace Rejoice\Foundation;
 
 /**
  * Create an instance instance of the application

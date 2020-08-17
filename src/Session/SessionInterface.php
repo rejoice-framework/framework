@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Session;
+namespace Rejoice\Session;
 
 /**
  * Provides an interface to respect by any created session driver

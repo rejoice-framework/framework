@@ -8,11 +8,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace Prinx\Rejoice\Menu;
+namespace Rejoice\Menu;
 
-use Prinx\Rejoice\Foundation\Kernel;
+use Rejoice\Foundation\Kernel;
 
-require_once __DIR__ . '/../../constants.php';
+require_once __DIR__.'/../../constants.php';
 
 /**
  * Provides the appropriate menu sought by the request and some menus related functions
@@ -67,8 +67,8 @@ class Menus implements \ArrayAccess
     {
         $this->app = $app;
         $this->session = $app->session();
-        $this->menusPhp = $this->menuPath() . '/menus.php';
-        $this->menusJson = $this->menuPath() . '/menus.json';
+        $this->menusPhp = $this->menuPath().'/menus.php';
+        $this->menusJson = $this->menuPath().'/menus.json';
         $this->hydrateMenus($app);
         $this->maxPageCharacters = $app->config(
             "channel.{$app->channel()}.max_page_characters"
@@ -80,7 +80,7 @@ class Menus implements \ArrayAccess
 
     public function menuPath()
     {
-        return $this->app->path('menu_resource_dir') . '/';
+        return $this->app->path('menu_resource_dir').'/';
     }
 
     public function hydrateMenus($app)
@@ -112,12 +112,12 @@ class Menus implements \ArrayAccess
             ASK_USER_BEFORE_RELOAD_LAST_SESSION => [
                 'message' => $message,
                 'actions' => [
-                    $lastSessionTrigger => [
-                        ITEM_MSG => $lastSessionDisplay,
+                    $lastSessionTrigger    => [
+                        ITEM_MSG    => $lastSessionDisplay,
                         ITEM_ACTION => APP_CONTINUE_LAST_SESSION,
                     ],
                     $restartSessionTrigger => [
-                        ITEM_MSG => $restartSessionDisplay,
+                        ITEM_MSG    => $restartSessionDisplay,
                         ITEM_ACTION => APP_WELCOME,
                     ],
                 ],
@@ -143,9 +143,9 @@ class Menus implements \ArrayAccess
      *
      * Return the modified action bag
      *
-     * @param array $actions
-     * @param string $menuName
-     * @param boolean $replace
+     * @param  array   $actions
+     * @param  string  $menuName
+     * @param  boolean $replace
      * @return array
      */
     public function insertMenuActions($actions, $menuName, $replace = false)
@@ -168,6 +168,7 @@ class Menus implements \ArrayAccess
     public function setMenuActions($actions, $menuName)
     {
         $this->emptyActionsOfMenu($menuName);
+
         return $this->insertMenuActions($actions, $menuName, true);
     }
 
@@ -190,7 +191,7 @@ class Menus implements \ArrayAccess
         } elseif (class_exists($this->app->menuEntityClass('welcome'))) {
             return [];
         } else {
-            throw new \Exception('Unable to found the Menus, neither in "' . $this->menusPhp . '", nor in "' . $this->menusJson . '" nor by looking for a welcome menu class the Menu entities folder (' . $this->app->menuEntityClass('welcome') . ').');
+            throw new \Exception('Unable to found the Menus, neither in "'.$this->menusPhp.'", nor in "'.$this->menusJson.'" nor by looking for a welcome menu class the Menu entities folder ('.$this->app->menuEntityClass('welcome').').');
         }
     }
 
@@ -247,7 +248,7 @@ class Menus implements \ArrayAccess
                 return $this->menus[$menuName][ACTIONS][$userResponse][ITEM_ACTION];
             }
 
-            throw new \Exception('Next menu name for option "' . $userResponse . '" in the menu "' . $menuName . '" must be an array or a string.');
+            throw new \Exception('Next menu name for option "'.$userResponse.'" in the menu "'.$menuName.'" must be an array or a string.');
         }
 
         if (
@@ -271,7 +272,7 @@ class Menus implements \ArrayAccess
                 return $this->menus[$menuName][DEFAULT_NEXT_MENU];
             }
 
-            throw new \Exception('Default next menu name for the menu "' . $menuName . '" must be an array or a string.');
+            throw new \Exception('Default next menu name for the menu "'.$menuName.'" must be an array or a string.');
         }
 
         if ($nextMenu = $this->app->getDefaultNextMenuFromMenuEntity()) {
@@ -324,7 +325,7 @@ class Menus implements \ArrayAccess
     {
         $type = gettype($actionLater);
         if (!in_array($type, ['array', 'string'])) {
-            throw new \Exception('The parameter ' . ITEM_LATER . ' must be of  a the name or an array of the name(s) of the menu(s) you want to redirect to.');
+            throw new \Exception('The parameter '.ITEM_LATER.' must be of  a the name or an array of the name(s) of the menu(s) you want to redirect to.');
         }
 
         $actionLater = is_array($actionLater) ? $actionLater : [$actionLater];
@@ -344,8 +345,8 @@ class Menus implements \ArrayAccess
     {
         // Will return a string like: '00. More'
         return (
-            $this->app->config('menu.splitted_menu_next_trigger') .
-            $this->app->config('menu.trigger_decorator') .
+            $this->app->config('menu.splitted_menu_next_trigger').
+            $this->app->config('menu.trigger_decorator').
             $this->app->config('menu.splitted_menu_display')
         );
     }
@@ -354,8 +355,8 @@ class Menus implements \ArrayAccess
     {
         // A string like: '0. Back'
         return (
-            $this->app->config('menu.back_action_trigger') .
-            $this->app->config('menu.trigger_decorator') .
+            $this->app->config('menu.back_action_trigger').
+            $this->app->config('menu.trigger_decorator').
             $this->app->config('menu.back_action_display')
         );
     }
@@ -363,12 +364,14 @@ class Menus implements \ArrayAccess
     public function getSplitMenuStringNext()
     {
         $index = $this->session->metadata('currentMenuSplitIndex') + 1;
+
         return $this->getSplitMenuStringAt($index);
     }
 
     public function getSplitMenuStringBack()
     {
         $index = $this->session->metadata('currentMenuSplitIndex') - 1;
+
         return $this->getSplitMenuStringAt($index);
     }
 
@@ -480,7 +483,7 @@ class Menus implements \ArrayAccess
                  * menu), we add a back action on the first page.
                  */
                 if ($hasBackAction) {
-                    $splitMenu .= "\n" . $splittedMenuBack;
+                    $splitMenu .= "\n".$splittedMenuBack;
                 }
             } elseif ($menuItemNumber === $last && !$hasBackAction) {
                 /*
@@ -492,15 +495,15 @@ class Menus implements \ArrayAccess
                 $splitMenu = $splittedMenuBack;
             } elseif ($menuItemNumber !== $last) {
                 // If in the middle, add Next Page action and Back action
-                $splitMenu = $splittedMenuNext . "\n" . $splittedMenuBack;
+                $splitMenu = $splittedMenuNext."\n".$splittedMenuBack;
             }
 
             $newLine = $menuItemStr;
-            $newLineWithSplitMenu = $menuItemStr . "\n" . $splitMenu;
+            $newLineWithSplitMenu = $menuItemStr."\n".$splitMenu;
 
             if ($this->willOverflowWith($newLineWithSplitMenu)) {
-                $max = $this->maxPageCharacters() - strlen("\n" . $splittedMenuNext . "\n" . $splittedMenuBack);
-                $this->app->fail('The text <br>```<br>' . $menuItemStr . '<br>```<br><br> is too large to be displayed. Consider breaking it in pieces with the newline character (\n). Each piece must not exceed ' . $max . ' characters.');
+                $max = $this->maxPageCharacters() - strlen("\n".$splittedMenuNext."\n".$splittedMenuBack);
+                $this->app->fail('The text <br>```<br>'.$menuItemStr.'<br>```<br><br> is too large to be displayed. Consider breaking it in pieces with the newline character (\n). Each piece must not exceed '.$max.' characters.');
             }
 
             /*
@@ -508,28 +511,28 @@ class Menus implements \ArrayAccess
              * currentStringWithSplitMenu before
              * currentStringWithoutSplitMenu)
              */
-            $currentStringWithSplitMenu = $currentStringWithoutSplitMenu . "\n" . $newLineWithSplitMenu;
+            $currentStringWithSplitMenu = $currentStringWithoutSplitMenu."\n".$newLineWithSplitMenu;
 
-            $currentStringWithoutSplitMenu .= "\n" . $newLine;
+            $currentStringWithoutSplitMenu .= "\n".$newLine;
 
             $next = $menuItemNumber + 1;
             $nextStringWithSplitMenu = '';
 
             if ($next < $last) {
-                $nextLine = "\n" . $menuStringChunks[$next];
+                $nextLine = "\n".$menuStringChunks[$next];
 
                 if (!isset($menuChunks[0])) {
-                    $splitMenu = "\n" . $splittedMenuNext;
+                    $splitMenu = "\n".$splittedMenuNext;
                 } else {
-                    $splitMenu = "\n" . $splittedMenuNext . "\n" . $splittedMenuBack;
+                    $splitMenu = "\n".$splittedMenuNext."\n".$splittedMenuBack;
                 }
 
-                $nextStringWithSplitMenu = $currentStringWithoutSplitMenu . $nextLine . $splitMenu;
+                $nextStringWithSplitMenu = $currentStringWithoutSplitMenu.$nextLine.$splitMenu;
             } else {
-                $nextLine = "\n" . $menuStringChunks[$last];
-                $splitMenu = $hasBackAction ? '' : "\n" . $splittedMenuBack;
+                $nextLine = "\n".$menuStringChunks[$last];
+                $splitMenu = $hasBackAction ? '' : "\n".$splittedMenuBack;
 
-                $nextStringWithSplitMenu = $currentStringWithoutSplitMenu . $nextLine . $splitMenu;
+                $nextStringWithSplitMenu = $currentStringWithoutSplitMenu.$nextLine.$splitMenu;
             }
 
             if (
@@ -552,7 +555,7 @@ class Menus implements \ArrayAccess
      * (no actions means the developer is no more waiting for any response, so
      * the user can no more input something)
      *
-     * @param array $actions
+     * @param  array     $actions
      * @return boolean
      */
     public function isLastPage($menuName, $actions = [], $menuEntity = null)
@@ -601,10 +604,10 @@ class Menus implements \ArrayAccess
     {
         $sep = $this->app->config('menu.seperator_message_and_actions', "\n\n");
         $triggerDecorator = $this->app->config('trigger_decorator', '. ');
-        $menuString = $menuMsg . $sep;
+        $menuString = $menuMsg.$sep;
 
         foreach ($menuActions as $trigger => $display) {
-            $menuString .= $trigger . $triggerDecorator . $display . "\n";
+            $menuString .= $trigger.$triggerDecorator.$display."\n";
         }
 
         return trim($menuString);
@@ -613,7 +616,7 @@ class Menus implements \ArrayAccess
     public function get($id)
     {
         if (!isset($this->menus[$id])) {
-            throw new \Exception('Menu "' . $id . ' not found inside the menus.');
+            throw new \Exception('Menu "'.$id.' not found inside the menus.');
         }
 
         return $this->menus[$id];
@@ -684,5 +687,4 @@ class Menus implements \ArrayAccess
     {
         unset($this->menus[$offset]);
     }
-
 }

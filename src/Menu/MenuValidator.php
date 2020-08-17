@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Menu;
+namespace Rejoice\Menu;
 
-use Prinx\Rejoice\Foundation\Validator;
+use Rejoice\Foundation\Validator;
 
-require_once __DIR__ . '/../../constants.php';
+require_once __DIR__.'/../../constants.php';
 
 /**
  * Validate a menu flow.
@@ -23,7 +23,6 @@ require_once __DIR__ . '/../../constants.php';
  */
 class MenuValidator extends Validator
 {
-
     public function checkMenu($jsonMenu)
     {
         $allMenus = json_decode($jsonMenu, true, 512, JSON_THROW_ON_ERROR);
@@ -32,7 +31,7 @@ class MenuValidator extends Validator
 
         if (!isset($allMenus[WELCOME_MENU_NAME])) {
             $result['SUCCESS'] = false;
-            $result['response'][WELCOME_MENU_NAME]['errors'] = "There must be a menu named " . WELCOME_MENU_NAME . " that will be the welcome menu of the application";
+            $result['response'][WELCOME_MENU_NAME]['errors'] = 'There must be a menu named '.WELCOME_MENU_NAME.' that will be the welcome menu of the application';
         }
 
         foreach ($allMenus as $menuName => $menu) {
@@ -41,11 +40,11 @@ class MenuValidator extends Validator
             $warnings = [];
 
             if (!preg_match('/[a-z][a-z0-9_]+/i', $menuName) !== 1) {
-                $errors['about_menu_name'] = $menuName . ' is an invalid menu name. Only letters, numbers and underscores are allowed.';
+                $errors['about_menu_name'] = $menuName.' is an invalid menu name. Only letters, numbers and underscores are allowed.';
             }
 
             if (!isset($menu[MSG])) {
-                $infos['about_message'] = "This menu does not have a message. It means will be generating a message from the 'before_" . $menuName . "' function in your application, unless you don't want anything to be displayed above your menu items.";
+                $infos['about_message'] = "This menu does not have a message. It means will be generating a message from the 'before_".$menuName."' function in your application, unless you don't want anything to be displayed above your menu items.";
             } elseif (isset($menu[MSG]) && !is_string($menu[MSG])) {
                 $errors['about_message'] = 'The message of this menu must be a string.';
             }
@@ -59,7 +58,7 @@ class MenuValidator extends Validator
             } else {
                 foreach ($menu[ACTIONS] as $key => $value) {
                     if (!preg_match('/[a-z0-9_]+/i', $key) !== 1) {
-                        $actionsErrors[] = 'The key ' . $key . ' has an invalid format. Only letters, numbers and underscore are allowed.';
+                        $actionsErrors[] = 'The key '.$key.' has an invalid format. Only letters, numbers and underscore are allowed.';
                     }
 
                     $nextMenu = '';
@@ -75,7 +74,7 @@ class MenuValidator extends Validator
                         (!isset($allMenus[$nextMenu]) &&
                             !in_array($nextMenu, RESERVED_MENU_IDs, true))
                     ) {
-                        $actionsErrors[$nextMenu] = 'The menu "' . $nextMenu . '" has been associated as following menu to this menu but it has not yet been implemented.';
+                        $actionsErrors[$nextMenu] = 'The menu "'.$nextMenu.'" has been associated as following menu to this menu but it has not yet been implemented.';
                     }
                 }
             }
@@ -85,7 +84,7 @@ class MenuValidator extends Validator
             }
 
             if (!isset($menu[MSG]) && !isset($menu[ACTIONS])) {
-                $warnings = "This menu does not have any message and any menu. Make sure you are returning a menu message in the 'before_" . $menuName . "' function.";
+                $warnings = "This menu does not have any message and any menu. Make sure you are returning a menu message in the 'before_".$menuName."' function.";
             }
             // END OF VERIFICATION
 

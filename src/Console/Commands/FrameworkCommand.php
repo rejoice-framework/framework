@@ -1,14 +1,14 @@
 <?php
-namespace Prinx\Rejoice\Console\Commands;
+namespace Rejoice\Console\Commands;
 
 use Prinx\Config;
 use Prinx\Os;
-use Prinx\Rejoice\Foundation\PathConfig;
+use Rejoice\Foundation\PathConfig;
 
 class FrameworkCommand extends SmileCommand
 {
     /**
-     * @var \Prinx\Rejoice\Foundation\PathConfig
+     * @var \Rejoice\Foundation\PathConfig
      */
     protected $paths;
 
@@ -87,7 +87,7 @@ class FrameworkCommand extends SmileCommand
 
     public function baseMenuPath()
     {
-        return $this->baseMenuFolder() . Os::slash() . 'Menu.php';
+        return $this->baseMenuFolder().Os::slash().'Menu.php';
     }
 
     public function baseMenuPathRelativeToApp()

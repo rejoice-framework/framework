@@ -20,7 +20,7 @@ $template = "<?php
 namespace {$namespace};
 
 use App\Menus\\$baseMenuNamespaceLast;
-use Prinx\Rejoice\Menu\\$paginatorNamespaceLast;
+use Rejoice\Menu\\$paginatorNamespaceLast;
 
 class $name extends $baseMenu
 {

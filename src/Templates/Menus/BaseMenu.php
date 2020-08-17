@@ -1,7 +1,7 @@
 <?php
 namespace App\Menus;
 
-use Prinx\Rejoice\Menu\BaseMenu;
+use Rejoice\Menu\BaseMenu;
 
 /**
  * A Menu Entity is an object representation of a menu.
@@ -13,5 +13,4 @@ use Prinx\Rejoice\Menu\BaseMenu;
  */
 class Menu extends BaseMenu
 {
-
 }

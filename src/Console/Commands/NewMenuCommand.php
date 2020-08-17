@@ -1,5 +1,5 @@
 <?php
-namespace Prinx\Rejoice\Console\Commands;
+namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
 use Prinx\Str;
@@ -95,7 +95,7 @@ class NewMenuCommand extends FrameworkCommand
             $filename = $newFileData['name'];
 
             if ($this->writeClassInMenuFile($path, $filename)) {
-                $this->info('Menu created at ' . $this->pathFromApp($path));
+                $this->info('Menu created at '.$this->pathFromApp($path));
             } else {
                 $this->error('An error happened.');
             }
@@ -141,14 +141,15 @@ class NewMenuCommand extends FrameworkCommand
 
         if (!$filename) {
             $this->writeln('No menu name.');
+
             return false;
         }
 
         $relativeDir = implode($slash, $relativePathChunks);
         // $dir = $this->baseMenuFolder() . $slash . $relativeDir;
-        $dir = $this->baseMenuFolder() . $relativeDir;
+        $dir = $this->baseMenuFolder().$relativeDir;
 
-        $fullPath = $dir . $slash . $filename . '.php';
+        $fullPath = $dir.$slash.$filename.'.php';
 
         if (!$this->overrideMenuFileIfExists($fullPath)) {
             return false;
@@ -189,16 +190,18 @@ class NewMenuCommand extends FrameworkCommand
             if (!$this->confirm([
                 '',
                 "The base Menu {$this->baseMenuPathRelativeToApp()} does not exist.",
-                $this->colorize("Will you like to generate it? [Y,n] ", 'yellow'),
+                $this->colorize('Will you like to generate it? [Y,n] ', 'yellow'),
             ])) {
                 return false;
             }
 
             if ($this->generateBaseMenu()) {
                 $this->info("Base menu created at {$this->baseMenuPathRelativeToApp()}");
+
                 return true;
             } else {
-                $this->error("Error when generating the base menu file.");
+                $this->error('Error when generating the base menu file.');
+
                 return false;
             }
         }
@@ -212,7 +215,7 @@ class NewMenuCommand extends FrameworkCommand
             return (
                 $this->confirm([
                     "Menu {$this->pathFromApp($file)} already exists.",
-                    $this->colorize("Do you want to overwrite it? [Y,n] ", 'red'),
+                    $this->colorize('Do you want to overwrite it? [Y,n] ', 'red'),
                 ]) &&
                 rename($file, $file) // We force the file to take the new name.Because of Windows that does not consider capitalisation the wanted name could differ from the name that the file had.
             );
@@ -239,9 +242,9 @@ class NewMenuCommand extends FrameworkCommand
         $noComment = $this->getOption('no-comment');
 
         if ($noComment) {
-            $template = require $this->frameworkTemplateDir() . 'Menus/PaginableMenuNoComment.php';
+            $template = require $this->frameworkTemplateDir().'Menus/PaginableMenuNoComment.php';
         } else {
-            $template = require $this->frameworkTemplateDir() . 'Menus/PaginableMenu.php';
+            $template = require $this->frameworkTemplateDir().'Menus/PaginableMenu.php';
         }
 
         return $template;
@@ -262,9 +265,9 @@ class NewMenuCommand extends FrameworkCommand
         $noComment = $this->getOption('no-comment');
 
         if ($noComment) {
-            $template = require $this->frameworkTemplateDir() . 'Menus/MenuNoComment.php';
+            $template = require $this->frameworkTemplateDir().'Menus/MenuNoComment.php';
         } else {
-            $template = require $this->frameworkTemplateDir() . 'Menus/Menu.php';
+            $template = require $this->frameworkTemplateDir().'Menus/Menu.php';
         }
 
         return $template;
@@ -272,7 +275,7 @@ class NewMenuCommand extends FrameworkCommand
 
     public function generateBaseMenu()
     {
-        $template = file_get_contents($this->frameworkTemplateDir() . 'Menus/BaseMenu.php');
+        $template = file_get_contents($this->frameworkTemplateDir().'Menus/BaseMenu.php');
 
         return file_put_contents($this->baseMenuPath(), $template) !== false;
     }

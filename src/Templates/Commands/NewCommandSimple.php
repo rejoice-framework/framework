@@ -2,9 +2,9 @@
 $commandName = $commandName ?? 'SimpleCommand';
 
 $template = "<?php
-namespace Prinx\Rejoice\Console;
+namespace Rejoice\Console;
 
-use Prinx\Rejoice\Console\Commands\SmileCommand;
+use Rejoice\Console\Commands\SmileCommand;
 
 class {$commandName}Command extends SmileCommand
 {

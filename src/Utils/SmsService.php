@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Utils;
+namespace Rejoice\Utils;
 
-use Prinx\Rejoice\Foundation\Kernel;
+use Rejoice\Foundation\Kernel;
 
 /**
  * Handles SMS related actions
@@ -84,7 +84,7 @@ class SmsService
         curl_close($curlHandle);
 
         return [
-            'data' => $result,
+            'data'  => $result,
             'error' => $err,
         ];
     }

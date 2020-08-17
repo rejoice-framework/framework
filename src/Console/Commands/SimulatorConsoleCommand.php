@@ -1,11 +1,11 @@
 <?php
-namespace Prinx\Rejoice\Console\Commands;
+namespace Rejoice\Console\Commands;
 
-use Prinx\Rejoice\Console\Option;
+use function Prinx\Dotenv\env;
 use Prinx\Simulator\Libs\Simulator;
 use Prinx\Str;
 use Prinx\Utils\URL;
-use function Prinx\Dotenv\env;
+use Rejoice\Console\Option;
 
 class SimulatorConsoleCommand extends FrameworkCommand
 {
@@ -104,13 +104,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
     {
         $this->endpoint = $this->getOption('url');
 
-        if (! $this->endpoint || ! URL::isUrl($this->endpoint)) {
+        if (!$this->endpoint || !URL::isUrl($this->endpoint)) {
             $this->writeWithColor('Invalid endpoint "'.$this->endpoint.'"', 'red');
 
             return SmileCommand::FAILURE;
         }
 
-        if (! ($tel = $this->getOption('tel'))) {
+        if (!($tel = $this->getOption('tel'))) {
             $this->writeWithColor('Invalid phone number "'.$tel.'"', 'red');
 
             return SmileCommand::FAILURE;
@@ -180,7 +180,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
         foreach ($messagesPassed as $key => $value) {
 
-            if (! is_string($value)) {
+            if (!is_string($value)) {
                 return $messages;
             }
 
@@ -246,7 +246,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
         $this->dial();
 
-        while (! $this->isLastMenu($this->payload)) {
+        while (!$this->isLastMenu($this->payload)) {
             $simulator->setPayload($this->payload);
             $response = $simulator->callUssd();
             $responseData = json_decode($response->get('data'), true);
@@ -262,7 +262,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
                     $this->handleUssdEnd($responseData);
                 }
 
-            } elseif (! Str::endsWith('/', $this->endpoint)) {
+            } elseif (!Str::endsWith('/', $this->endpoint)) {
                 $simulator->setEndpoint($this->endpoint .= '/');
                 continue;
             } else {
@@ -320,5 +320,4 @@ class SimulatorConsoleCommand extends FrameworkCommand
         }
 
     }
-
 }

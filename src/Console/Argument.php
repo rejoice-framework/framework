@@ -1,5 +1,5 @@
 <?php
-namespace Prinx\Rejoice\Console;
+namespace Rejoice\Console;
 
 use Symfony\Component\Console\Input\InputArgument;
 

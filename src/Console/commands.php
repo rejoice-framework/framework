@@ -1,6 +1,6 @@
 <?php
 
-namespace Prinx\Rejoice\Console\Commands;
+namespace Rejoice\Console\Commands;
 
 return [
     GenerateMenuJsonCommand::class,

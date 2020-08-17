@@ -27,7 +27,7 @@ class $name extends $baseMenu
     /**
      * The message to display at the top of the screen
      *
-     * @param Prinx\Rejoice\Foundation\UserResponse \$userPreviousResponses
+     * @param Rejoice\Foundation\UserResponse \$userPreviousResponses
      * @return string|array
      */
     public function message(\$userPreviousResponses)
@@ -38,7 +38,7 @@ class $name extends $baseMenu
     /**
      * The actions to display at the bottom of the top message
      *
-     * @param Prinx\Rejoice\Foundation\UserResponse \$userPreviousResponses
+     * @param Rejoice\Foundation\UserResponse \$userPreviousResponses
      * @return array
      */
     public function actions(\$userPreviousResponses)
@@ -60,7 +60,7 @@ if ($validate) {
      * or an instance of the UserResponseValidator
      *
      * @param string \$response
-     * @return bool|array|Prinx\Rejoice\Foundation\UserResponseValidator
+     * @return bool|array|Rejoice\Foundation\UserResponseValidator
      */
     public function validate(\$response)
     {
@@ -74,18 +74,18 @@ if ($validate) {
 }
 
 if ($saveAs) {
-    $template .= "
+    $template .= '
 
     /**
      * Modify the response of the user before it is saved to previous responses
      *
-     * @param string \$response
+     * @param string $response
      * @return mixed
      */
-    public function saveAs(\$response)
+    public function saveAs($response)
     {
-        return \$response;
-    }";
+        return $response;
+    }';
 }
 
 if ($after) {
@@ -97,7 +97,7 @@ if ($after) {
      * their response
      *
      * @param string \$response
-     * @param Prinx\Rejoice\Foundation\UserResponse \$userPreviousResponses
+     * @param Rejoice\Foundation\UserResponse \$userPreviousResponses
      * @return void
      */
     public function after(\$response, \$userPreviousResponses)
@@ -114,7 +114,7 @@ if ($onNext) {
      * response, but only if the user is really moving to a menu up in the menu
      * flow. This means, this method will not for menus like __welcome, __same.
      *
-     * @param Prinx\Rejoice\Foundation\UserResponse \$userPreviousResponses
+     * @param Rejoice\Foundation\UserResponse \$userPreviousResponses
      * @return void
      */
     public function onMoveToNextMenu(\$userPreviousResponses)
@@ -129,7 +129,7 @@ if ($onBack) {
     /**
      * Runs whenever the user is moving back
      *
-     * @param Prinx\Rejoice\Foundation\UserResponse \$userPreviousResponses
+     * @param Rejoice\Foundation\UserResponse \$userPreviousResponses
      * @return void
      */
     public function onBack(\$userPreviousResponses)
@@ -138,7 +138,7 @@ if ($onBack) {
     }";
 }
 
-$template .= "
-}";
+$template .= '
+}';
 
 return $template;

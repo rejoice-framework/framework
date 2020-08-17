@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Menu;
+namespace Rejoice\Menu;
 
 /**
  * Implements all the logic for handling USSD Pagination
@@ -35,7 +35,7 @@ trait Paginator
     /**
      * Returns the total number of the data to be displayed
      *
-     * @return  int
+     * @return int
      */
     abstract public function paginationCountAll();
 
@@ -49,8 +49,8 @@ trait Paginator
      * The trigger is what will be displayed to the user as option to select.
      * It's automatically handled by the Paginator
      *
-     * @param array $row
-     * @param string $trigger
+     * @param  array    $row
+     * @param  string   $trigger
      * @return array
      */
     abstract public function itemAction($row, $trigger);
@@ -262,13 +262,14 @@ trait Paginator
     public function lastRetrievedId()
     {
         $ids = $this->paginationGet('last_retrieved_ids');
+
         return $ids ? $ids[count($ids) - 1] : 0;
     }
 
     /**
      * Save the id of last fetched item of the pagination
      *
-     * @param int $lastId
+     * @param  int    $lastId
      * @return void
      */
     public function saveLastRetrievedId($lastId)
@@ -281,8 +282,8 @@ trait Paginator
     /**
      * Saves pagination data for the current menu
      *
-     * @param string $key
-     * @param mixed $value
+     * @param  string $key
+     * @param  mixed  $value
      * @return void
      */
     public function paginationSave($key, $value)
@@ -296,12 +297,13 @@ trait Paginator
     /**
      * Get a pagination data
      *
-     * @param string $key
+     * @param  string  $key
      * @return mixed
      */
     public function paginationGet($key)
     {
         $this->makeSessionSupportPagination();
+
         return $this->sessionGet('pagination')[$this->menuName()][$key];
     }
 
@@ -325,9 +327,9 @@ trait Paginator
 
         $newPaginationData = [
             $this->menuName() => [
-                'last_retrieved_ids' => [0],
-                'previously_retrieved' => null,
-                'total' => null,
+                'last_retrieved_ids'     => [0],
+                'previously_retrieved'   => null,
+                'total'                  => null,
                 'showed_on_current_page' => null,
             ],
         ];
@@ -345,8 +347,8 @@ trait Paginator
      * Determines the proper back action to use, according to where we are in
      * the current pagination
      *
-     * @param string $trigger
-     * @param string $display
+     * @param  string  $trigger
+     * @param  string  $display
      * @return array
      */
     public function backAction($trigger = '', $display = '')

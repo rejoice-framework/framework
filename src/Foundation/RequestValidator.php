@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Prinx\Rejoice\Foundation;
+namespace Rejoice\Foundation;
 
 use function Prinx\Dotenv\env;
 
@@ -20,7 +20,6 @@ use function Prinx\Dotenv\env;
  */
 class RequestValidator extends Validator
 {
-
     public function validate()
     {
         $this->validateRequestParams();
@@ -40,7 +39,7 @@ class RequestValidator extends Validator
 
             if (!$ussdCodeCorrect) {
                 $this->app->response()->addWarningInSimulator(
-                    'INVALID USSD_CODE <strong>' . $this->app->userResponse() .
+                    'INVALID USSD_CODE <strong>'.$this->app->userResponse().
                     '</strong><br/>Use the ussd code defined in the .env file.'
                 );
 
@@ -73,7 +72,7 @@ class RequestValidator extends Validator
 
         foreach (REQUIRED_REQUEST_PARAMS as $value) {
             if (!isset($requestParams[$value])) {
-                $this->app->fail("'" . $value . "' is missing in the request parameters.");
+                $this->app->fail("'".$value."' is missing in the request parameters.");
             }
         }
 
@@ -84,5 +83,4 @@ class RequestValidator extends Validator
             $this->app->fail("Invalid parameter 'channel'.");
         }
     }
-
 }
