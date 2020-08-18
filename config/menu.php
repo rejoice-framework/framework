@@ -2,15 +2,15 @@
 
 return [
 
-    'message_ask_user_before_reload_last_session' => "Do you want to continue from where you left?",
+    'message_ask_user_before_reload_last_session' => 'Do you want to continue from where you left?',
 
-    'last_session_trigger' => "1",
+    'last_session_trigger' => '1',
 
-    'last_session_display' => "Continue last session",
+    'last_session_display' => 'Continue last session',
 
-    'restart_session_trigger' => "2",
+    'restart_session_trigger' => '2',
 
-    'restart_session_display' => "Restart",
+    'restart_session_display' => 'Restart',
 
     /*
      * If allow_timeout is false, this message will be appended to the last

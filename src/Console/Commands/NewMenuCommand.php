@@ -1,4 +1,5 @@
 <?php
+
 namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
@@ -139,7 +140,7 @@ class NewMenuCommand extends FrameworkCommand
 
         $filename = array_pop($relativePathChunks);
 
-        if (!$filename) {
+        if (! $filename) {
             $this->writeln('No menu name.');
 
             return false;
@@ -151,15 +152,15 @@ class NewMenuCommand extends FrameworkCommand
 
         $fullPath = $dir.$slash.$filename.'.php';
 
-        if (!$this->overrideMenuFileIfExists($fullPath)) {
+        if (! $this->overrideMenuFileIfExists($fullPath)) {
             return false;
         }
 
-        if (!$this->createBaseMenuFileIfNotExists()) {
+        if (! $this->createBaseMenuFileIfNotExists()) {
             return false;
         }
 
-        if (!$this->createRequestedDirIfNotExists($dir)) {
+        if (! $this->createRequestedDirIfNotExists($dir)) {
             return false;
         }
 
@@ -186,8 +187,8 @@ class NewMenuCommand extends FrameworkCommand
 
     public function createBaseMenuFileIfNotExists()
     {
-        if (!file_exists($this->baseMenuPath())) {
-            if (!$this->confirm([
+        if (! file_exists($this->baseMenuPath())) {
+            if (! $this->confirm([
                 '',
                 "The base Menu {$this->baseMenuPathRelativeToApp()} does not exist.",
                 $this->colorize('Will you like to generate it? [Y,n] ', 'yellow'),
@@ -212,13 +213,13 @@ class NewMenuCommand extends FrameworkCommand
     public function overrideMenuFileIfExists($file)
     {
         if (file_exists($file)) {
-            return (
+            return
                 $this->confirm([
                     "Menu {$this->pathFromApp($file)} already exists.",
                     $this->colorize('Do you want to overwrite it? [Y,n] ', 'red'),
                 ]) &&
                 rename($file, $file) // We force the file to take the new name.Because of Windows that does not consider capitalisation the wanted name could differ from the name that the file had.
-            );
+;
         }
 
         return true;

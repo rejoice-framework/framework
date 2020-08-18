@@ -12,7 +12,7 @@
 namespace Rejoice\Foundation;
 
 /**
- * Handles the response to send back to the user
+ * Handles the response to send back to the user.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -61,11 +61,10 @@ class Response
 
     public function appHasTimedOut()
     {
-        return (
+        return
             $this->app->isUssdChannel() &&
             $this->app->session()->mustNotTimeout() &&
-            $this->app->session()->hasTimedOut()
-        );
+            $this->app->session()->hasTimedOut();
     }
 
     public function send(
@@ -76,7 +75,7 @@ class Response
         $previouslyDisplayed = trim(ob_get_clean());
         $error = error_get_last();
 
-        if ($previouslyDisplayed && !$error) {
+        if ($previouslyDisplayed && ! $error) {
             $this->addInfoInSimulator("\n".$previouslyDisplayed."\n");
         } elseif ($error) {
             $this->addErrorInSimulator($previouslyDisplayed);
@@ -115,11 +114,11 @@ class Response
         $ussdServiceOpParam = $this->app->config('app.request_param_request_type');
         $sessionIDParam = $this->app->config('app.request_param_session_id');
 
-        $fields = array(
+        $fields = [
             $messageParam       => trim($message),
             $ussdServiceOpParam => $requestType,
             $sessionIDParam     => $this->app->sessionId(),
-        );
+        ];
 
         foreach ($this->simulatorMetadata as $metadata) {
             if ($this->{$metadata.'InSimulator'}) {
@@ -134,7 +133,7 @@ class Response
     {
         $response = json_decode($resJSON, true);
 
-        if (!is_array($response)) {
+        if (! is_array($response)) {
             echo 'ERROR OCCURED AT THE REMOTE USSD SIDE:  '.$resJSON;
 
             return;

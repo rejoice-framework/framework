@@ -37,7 +37,7 @@ class RequestValidator extends Validator
                 env('USSD_CODE', null)
             );
 
-            if (!$ussdCodeCorrect) {
+            if (! $ussdCodeCorrect) {
                 $this->app->response()->addWarningInSimulator(
                     'INVALID USSD_CODE <strong>'.$this->app->userResponse().
                     '</strong><br/>Use the ussd code defined in the .env file.'
@@ -66,19 +66,19 @@ class RequestValidator extends Validator
     public function validateRequestParams()
     {
         $requestParams = $this->app->request()->input();
-        if (!is_array($requestParams)) {
+        if (! is_array($requestParams)) {
             $this->app->fail('Invalid request parameters received.');
         }
 
         foreach (REQUIRED_REQUEST_PARAMS as $value) {
-            if (!isset($requestParams[$value])) {
+            if (! isset($requestParams[$value])) {
                 $this->app->fail("'".$value."' is missing in the request parameters.");
             }
         }
 
         if (
             isset($requestParams['channel']) &&
-            !in_array($requestParams['channel'], ALLOWED_REQUEST_CHANNELS)
+            ! in_array($requestParams['channel'], ALLOWED_REQUEST_CHANNELS)
         ) {
             $this->app->fail("Invalid parameter 'channel'.");
         }

@@ -14,7 +14,7 @@ namespace Rejoice\Foundation;
 use Prinx\Str;
 
 /**
- * Handles the request to the framework
+ * Handles the request to the framework.
  *
  * @todo Replace this request class by \Symfony\Component\HttpFoundation
  * @author Prince Dorcis <princedorcis@gmail.com>
@@ -68,7 +68,7 @@ class Request
     }
 
     /**
-     * Returns a request POST parameter
+     * Returns a request POST parameter.
      *
      * If the parameter was not found and the default value is returned
      *
@@ -84,7 +84,7 @@ class Request
     }
 
     /**
-     * Returns a request GET parameter
+     * Returns a request GET parameter.
      *
      * If the parameter was not found and the default value is returned
      *
@@ -103,11 +103,11 @@ class Request
     {
         $param = $param ?: array_merge($this->input, $this->query);
 
-        if (!$key) {
+        if (! $key) {
             return $param;
         }
 
-        if (!isset($param[$key])) {
+        if (! isset($param[$key])) {
             throw new \Exception('Undefined request input `'.$key.'`');
         }
 
@@ -116,7 +116,7 @@ class Request
 
     /**
      * Changes the value of a request parameter or enforces a new parameter
-     * into the input parameter bag
+     * into the input parameter bag.
      *
      * @param  string $name
      * @param  mixed  $value
@@ -129,7 +129,7 @@ class Request
 
     public function sanitize($var)
     {
-        if (!is_string($var)) {
+        if (! is_string($var)) {
             return $var;
         }
 
