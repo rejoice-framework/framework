@@ -12,7 +12,7 @@
 namespace Rejoice\Session;
 
 /**
- * Provides an interface to respect by any created session driver
+ * Provides an interface to respect by any created session driver.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */

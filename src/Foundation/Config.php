@@ -14,7 +14,7 @@ namespace Rejoice\Foundation;
 use Prinx\Arr;
 
 /**
- * Application's configurations
+ * Application's configurations.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -26,7 +26,7 @@ class Config
     protected $fileSuffix = '.php';
 
     /**
-     * New config
+     * New config.
      *
      * If array provided as configDirs, the config from those paths will be merge
      *
@@ -66,11 +66,11 @@ class Config
     }
 
     /**
-     * Get a configuration variable from the config
+     * Get a configuration variable from the config.
      *
      * @param  string              $key
      * @param  mixed               $default The default to return if the configuration is not found
-     * @param  boolean             $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @param  bool             $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
      * @throws \RuntimeException
      * @return Config|mixed
      */
@@ -87,7 +87,7 @@ class Config
         if (null === $value) {
             $defaultWasPassed = $argCount >= 2;
 
-            if ($defaultWasPassed || (!$defaultWasPassed && $silent)) {
+            if ($defaultWasPassed || (! $defaultWasPassed && $silent)) {
                 return $default;
             }
 

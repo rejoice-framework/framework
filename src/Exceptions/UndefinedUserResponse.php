@@ -11,11 +11,10 @@
 namespace Rejoice\Exceptions;
 
 /**
- * Create an instance instance of the application
+ * Create an instance instance of the application.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-
 class UndefinedUserResponse extends \RuntimeException
 {
 }

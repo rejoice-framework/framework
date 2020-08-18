@@ -17,7 +17,7 @@ use Prinx\Str;
 use Rejoice\Foundation\Kernel;
 
 /**
- * Provides shortcuts to app methods and properties for the user App
+ * Provides shortcuts to app methods and properties for the user App.
  *
  *
  * @ method void before(UserResponse $userPreviousResponses)
@@ -63,24 +63,24 @@ use Rejoice\Foundation\Kernel;
  * Runs when when user moving back in on a paginable menu
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-class BaseMenu/* implements \ArrayAccess */
+class BaseMenu /* implements \ArrayAccess */
 {
     /**
-     * The instance of the application
+     * The instance of the application.
      *
      * @var Kernel
      */
     protected $app;
 
     /**
-     * The name of this menu
+     * The name of this menu.
      *
      * @var string
      */
     protected $name;
 
     /**
-     * The instance of the logger on this menu
+     * The instance of the logger on this menu.
      *
      * @var Log
      */
@@ -102,7 +102,7 @@ class BaseMenu/* implements \ArrayAccess */
     {
         if (
             $this->app->isUssdChannel() &&
-            !$this->app->config('app.allow_timeout') &&
+            ! $this->app->config('app.allow_timeout') &&
             $this->app->config('menu.cancel_message')
         ) {
             $sep = $this->app->config('menu.seperator_menu_string_and_cancel_message');
@@ -175,7 +175,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Returns the phone number of the user
+     * Returns the phone number of the user.
      *
      * @return string
      */
@@ -186,7 +186,7 @@ class BaseMenu/* implements \ArrayAccess */
 
     /**
      * Log a message to the default log system
-     * (storage/logs/{date}/{name_of_this_menu}.log)
+     * (storage/logs/{date}/{name_of_this_menu}.log).
      *
      * @param  string|array              $data
      * @throws \UnexpectedValueException If the level passed is unknown
@@ -194,7 +194,7 @@ class BaseMenu/* implements \ArrayAccess */
      */
     public function log($data, $level = 'info')
     {
-        if (!$this->config('app.log_enabled')) {
+        if (! $this->config('app.log_enabled')) {
             return;
         }
 
@@ -202,13 +202,13 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Returns the default logger of the framework
+     * Returns the default logger of the framework.
      *
      * @return Log
      */
     public function logger()
     {
-        if (!$this->logger) {
+        if (! $this->logger) {
             $dir = $this->app->path('log_root_dir').'menus/'.date('Y-m-d');
             $dir = Os::toPathStyle($dir);
 
@@ -216,9 +216,9 @@ class BaseMenu/* implements \ArrayAccess */
 
             $menuName = Str::pascalCase(array_pop($exploded));
             $menuRelativePath = $exploded ? implode(Os::slash(), $exploded) : '';
-            $dir = !$menuRelativePath ?: $dir.'/'.$menuRelativePath;
+            $dir = ! $menuRelativePath ?: $dir.'/'.$menuRelativePath;
 
-            if (!is_dir($dir)) {
+            if (! is_dir($dir)) {
                 mkdir($dir, 0777, true);
             }
 
@@ -231,7 +231,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * The name of this menu
+     * The name of this menu.
      *
      * @return string
      */
@@ -241,7 +241,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * The name of this menu
+     * The name of this menu.
      *
      * @return string
      */
@@ -251,7 +251,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Merge an action array with an actionBag
+     * Merge an action array with an actionBag.
      *
      * @param  array   $actionBag
      * @param  array   $mergeWith
@@ -263,7 +263,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Add a `go to main menu` action into the actions
+     * Add a `go to main menu` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -279,7 +279,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Return a `go to main menu` action bag
+     * Return a `go to main menu` action bag.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -303,7 +303,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Insert a `go to previous menu` action into the actions
+     * Insert a `go to previous menu` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -319,7 +319,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Return an action bag containing a `go to previous menu` option, as an array
+     * Return an action bag containing a `go to previous menu` option, as an array.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -344,7 +344,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Insert a `paginate back` action into the actions
+     * Insert a `paginate back` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -360,7 +360,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Return a `paginate back` action, as an array
+     * Return a `paginate back` action, as an array.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -385,7 +385,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Insert a `paginate forward` action into the actions
+     * Insert a `paginate forward` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -401,7 +401,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Return a `paginate forward` action
+     * Return a `paginate forward` action.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -425,7 +425,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Insert a `end USSD` action into the actions
+     * Insert a `end USSD` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -441,7 +441,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Return a `end USSD` action
+     * Return a `end USSD` action.
      *
      * If no trigger is passed, it will use the configured trigger
      * (in config/menu.php file)
@@ -465,7 +465,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Return an action bag after adding the back action to it
+     * Return an action bag after adding the back action to it.
      *
      * @param  array   $actionBag
      * @return array
@@ -476,7 +476,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Defines the option the user will select to move back
+     * Defines the option the user will select to move back.
      *
      * @return string
      */
@@ -486,7 +486,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Set the error to be displayed on the user's screen
+     * Set the error to be displayed on the user's screen.
      *
      * The error will overwrite any previously defined error (either by the framework or by the developer)
      *
@@ -502,7 +502,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Add an error message to error stack, to be displayed on the user's screen
+     * Add an error message to error stack, to be displayed on the user's screen.
      *
      * @param  string $error
      * @return void
@@ -516,7 +516,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Send SMS to a number
+     * Send SMS to a number.
      *
      * If no phone number  (`$tel`) has been passed, the SMS will be sent to the current user (`$this->tel()`)
      *
@@ -536,7 +536,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Send SMS and exit the script
+     * Send SMS and exit the script.
      *
      * @param  string $sms
      * @param  string $tel
@@ -558,7 +558,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Delete all the actions of a particular menu page ($menuName)
+     * Delete all the actions of a particular menu page ($menuName).
      *
      * @param  string $menuName
      * @return void
@@ -570,7 +570,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Initialise or re-initialise the menu actions to the $actions passed as argument
+     * Initialise or re-initialise the menu actions to the $actions passed as argument.
      *
      * If no menu name is passed, the current menu name is used.
      *
@@ -644,7 +644,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Return the user previous responses
+     * Return the user previous responses.
      *
      *
      * @param  string               $menuName The name of the menu response to retrieve
@@ -664,7 +664,7 @@ class BaseMenu/* implements \ArrayAccess */
      * be rather completely replaced by the new actionBag.
      *
      * @param  array   $actionBag
-     * @param  boolean $replace
+     * @param  bool $replace
      * @param  string  $menuName
      * @return array   The modified action bag
      */
@@ -676,7 +676,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Empty, for this request, the actionBag of a particular menu
+     * Empty, for this request, the actionBag of a particular menu.
      *
      * @param  string $menuName
      * @return void
@@ -688,7 +688,7 @@ class BaseMenu/* implements \ArrayAccess */
 
     /**
      * Returns the next menu name or null if it has not yet been retieved by
-     * the framework
+     * the framework.
      *
      * The next menu name is retrieved from the menu flow in the menus.php file,
      * the actions or the default next menu parameter and is defined only when
@@ -709,7 +709,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Returns the previous menu name
+     * Returns the previous menu name.
      *
      * @throws \RuntimeException If nothing is in the history
      * @return string
@@ -718,7 +718,7 @@ class BaseMenu/* implements \ArrayAccess */
     {
         $length = count($this->historyBag());
 
-        if (!$length) {
+        if (! $length) {
             throw new \RuntimeException("Can't get a previous menu. 'back_history' is empty.");
         }
 
@@ -726,7 +726,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Allows developer to save a value in the session
+     * Allows developer to save a value in the session.
      *
      * @param  string $name
      * @param  mixed  $value
@@ -759,7 +759,7 @@ class BaseMenu/* implements \ArrayAccess */
      * Allow developer to check if the session contains an index.
      *
      * @param  string    $name
-     * @return boolean
+     * @return bool
      */
     public function sessionHas($name)
     {
@@ -767,7 +767,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Allow the developer to remove a key from the session
+     * Allow the developer to remove a key from the session.
      *
      * @param  string $name
      * @return void
@@ -779,7 +779,7 @@ class BaseMenu/* implements \ArrayAccess */
 
     /**
      * Allow the developer to retrieve a value from the session.
-     * This is identical to `sessionGet`
+     * This is identical to `sessionGet`.
      *
      *
      * @param  string            $key
@@ -793,7 +793,7 @@ class BaseMenu/* implements \ArrayAccess */
     }
 
     /**
-     * Returns the menu history bag
+     * Returns the menu history bag.
      *
      * @return array
      */

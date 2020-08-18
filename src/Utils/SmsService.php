@@ -14,7 +14,7 @@ namespace Rejoice\Utils;
 use Rejoice\Foundation\Kernel;
 
 /**
- * Handles SMS related actions
+ * Handles SMS related actions.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -23,7 +23,7 @@ class SmsService
     protected $app;
 
     /**
-     * SMS payload. Consists of the message to send, the sender name and the recipient number
+     * SMS payload. Consists of the message to send, the sender name and the recipient number.
      *
      * @var array
      */
@@ -36,7 +36,7 @@ class SmsService
 
     public function send($message, $msisdn = '', $senderName = '', $endpoint = '')
     {
-        if (!($message = trim($message))) {
+        if (! ($message = trim($message))) {
             return;
         }
 
@@ -65,7 +65,7 @@ class SmsService
             $warnings['sms_data'] = $this->data;
         }
 
-        if (!empty($warnings)) {
+        if (! empty($warnings)) {
             $this->app->response()->addWarningInSimulator($warnings);
         }
     }

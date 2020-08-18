@@ -31,7 +31,7 @@ class Kernel
     protected $appName = '';
 
     /**
-     * Contains all the defined databases connetions
+     * Contains all the defined databases connetions.
      *
      * @var \PDO[]
      */
@@ -48,35 +48,35 @@ class Kernel
     protected $config;
 
     /**
-     * Instance of the USSD session
+     * Instance of the USSD session.
      *
      * @var \Rejoice\Session\Session
      */
     protected $session;
 
     /**
-     * HTTP request wrapper instance
+     * HTTP request wrapper instance.
      *
      * @var Request
      */
     protected $request;
 
     /**
-     * Class holding the response to send to the user
+     * Class holding the response to send to the user.
      *
      * @var Response
      */
     protected $response;
 
     /**
-     * The request validator instance
+     * The request validator instance.
      *
      * @var RequestValidator
      */
     protected $validator;
 
     /**
-     * Class holding the menus and all the on-the-fly generated menu actions
+     * Class holding the menus and all the on-the-fly generated menu actions.
      *
      * @var Menus
      */
@@ -98,7 +98,7 @@ class Kernel
     protected $nextMenuEntity = null;
 
     /**
-     * Custom request type
+     * Custom request type.
      *
      * The custom request type help define a request type for handling restart
      * from last session and other requests.
@@ -118,7 +118,7 @@ class Kernel
     protected $nextMenuName = '';
 
     /**
-     * True if the current menu is splitted
+     * True if the current menu is splitted.
      *
      * The current menu is automatically splitted when the framework detects
      * that it will overflows. An automatic pagination is then performed.
@@ -127,15 +127,15 @@ class Kernel
      * more sophisticated Paginator trait to handle the pagination if the data
      * is a lot of if the amount of data that will be rendered is not known
      *
-     * @var boolean
+     * @var bool
      */
     protected $currentMenuSplitted = false;
 
     /**
      * If the current menu is splitted, returns the index of the current
-     * displayed chunk of the whole string to display
+     * displayed chunk of the whole string to display.
      *
-     * @var integer
+     * @var int
      */
     protected $currentMenuSplitIndex = 0;
 
@@ -146,22 +146,22 @@ class Kernel
      * This is mainly used to handle the display of the back option
      * The back option must not appear on the first menu chunk
      *
-     * @var boolean
+     * @var bool
      */
     protected $currentMenuSplitStart = false;
 
     /**
-     * True if the current displayed page is the last menu chunk to display
+     * True if the current displayed page is the last menu chunk to display.
      *
      * This is mainly used to handle the display of the show more option.
      * The show more option must not appear on the last menu chunk
      *
-     * @var boolean
+     * @var bool
      */
     protected $currentMenuSplitEnd = false;
 
     /**
-     * True if the current menu has a back option
+     * True if the current menu has a back option.
      *
      * This helps to properly handle the paginate back option when the menu is
      * splitted. If the menu does not contain a back option, a back option is
@@ -170,12 +170,12 @@ class Kernel
      * previous menu only if the previous menu is the first chunk (if
      * currentMenuSplitStart === true)
      *
-     * @var boolean
+     * @var bool
      */
     protected $currentMenuHasBackAction = false;
 
     /**
-     * The current user response validation error
+     * The current user response validation error.
      *
      * @var string
      */
@@ -203,36 +203,36 @@ class Kernel
      * soon as the `before` method  of the menu entity has been called (the
      * menu entity inside which the menthod was called).
      *
-     * @var boolean
+     * @var bool
      */
     protected $responseAlreadySentToUser = false;
 
     /**
-     * True if the application databases have been loaded
+     * True if the application databases have been loaded.
      *
-     * @var boolean
+     * @var bool
      */
     protected $appDbLoaded = false;
 
     /**
      * Set to true if the user has gone back to the previous menu (using the
-     * __back option)
+     * __back option).
      *
-     * @var boolean
+     * @var bool
      */
     protected $hasComeBack = false;
 
     /**
-     * Set to true if the user has resumed from a previous session
+     * Set to true if the user has resumed from a previous session.
      *
-     * @var boolean
+     * @var bool
      */
     protected $hasResumeFromLastSession = false;
 
     protected $menuNamespaceDelimiter = '::';
 
     /**
-     * The response of the user after applying the save_as parameter and/or the saveAs menu entity method
+     * The response of the user after applying the save_as parameter and/or the saveAs menu entity method.
      *
      * @var mixed
      */
@@ -256,7 +256,7 @@ class Kernel
     }
 
     /**
-     * Run the USSD application
+     * Run the USSD application.
      *
      * Exit the application when an error occurs.
      *
@@ -302,7 +302,7 @@ class Kernel
     }
 
     /**
-     * Get a configuration variable from the config
+     * Get a configuration variable from the config.
      *
      * Returns the config object instance if no parameter passed
      *
@@ -532,7 +532,7 @@ class Kernel
     }
 
     /**
-     * Determines if the user is moving to a next menu (he is not comming back or he is not moving the next page of the same menu)
+     * Determines if the user is moving to a next menu (he is not comming back or he is not moving the next page of the same menu).
      *
      *
      * @todo Search a proper way of determining if moving to next menu
@@ -556,11 +556,11 @@ class Kernel
      * developer has to specify the validation rules or validate himself in the
      * `validate` method of the menu entity)
      *
-     * @param  string     $currentMenu
-     * @param  string     $userError
-     * @param  boolean    $responseExistsInMenuActions The response has already been specified by the developer
-     * @param  string     $nextMenu
-     * @return boolean
+     * @param  string  $currentMenu
+     * @param  string  $userError
+     * @param  bool    $responseExistsInMenuActions The response has already been specified by the developer
+     * @param  string  $nextMenu
+     * @return bool
      */
     public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu)
     {
@@ -571,7 +571,7 @@ class Kernel
     }
 
     /**
-     * Load the Menu Entity of a particular menu
+     * Load the Menu Entity of a particular menu.
      *
      * @param  string $menuName
      * @param  string $entityType  ('currentMenuEntity'|'nextMenuEntity')
@@ -588,7 +588,7 @@ class Kernel
     }
 
     /**
-     * Call the proper method to run for the specific next menu
+     * Call the proper method to run for the specific next menu.
      *
      * @param  string $nextMenu
      * @return void
@@ -733,7 +733,6 @@ class Kernel
             $this->currentMenuEntity &&
             method_exists($this->currentMenuEntity, $validateMethod)
         ) {
-
             $validation = call_user_func(
                 [$this->currentMenuEntity, $validateMethod],
                 $response,
@@ -990,7 +989,7 @@ class Kernel
     }
 
     /**
-     * Returns the message to be displayed for a particular menu
+     * Returns the message to be displayed for a particular menu.
      *
      * The message is composed of 1. An error if there is one (eg: invalid
      * input error), 2. the message returned by the menu entity of this
@@ -1344,7 +1343,7 @@ class Kernel
      * be rather completely replaced by the new actionBag.
      *
      * @param  array   $actionBag
-     * @param  boolean $replace
+     * @param  bool    $replace
      * @param  string  $menuName
      * @return array
      */
@@ -1372,7 +1371,7 @@ class Kernel
     }
 
     /**
-     * Empty, for this request, the actionBag of a particular menu
+     * Empty, for this request, the actionBag of a particular menu.
      *
      * @param  string $menuName
      * @return void
@@ -1396,7 +1395,7 @@ class Kernel
 
     /**
      * Returns the next menu name or null if it has not yet been retieved by
-     * the framework
+     * the framework.
      *
      * The next menu name is retrieved from the menu flow in the menus.php file,
      * the actions or the default next menu parameter and is defined only when
@@ -1417,7 +1416,7 @@ class Kernel
     }
 
     /**
-     * Returns the previous menu name
+     * Returns the previous menu name.
      *
      * @throws \RuntimeException If nothing is in the history
      * @return string
@@ -1434,7 +1433,7 @@ class Kernel
     }
 
     /**
-     * Allows developer to save a value in the session
+     * Allows developer to save a value in the session.
      *
      * @param  string $key
      * @param  mixed  $value
@@ -1466,8 +1465,8 @@ class Kernel
     /**
      * Allow developer to check if the session contains an index.
      *
-     * @param  string    $key
-     * @return boolean
+     * @param  string $key
+     * @return bool
      */
     public function sessionHas($key)
     {
@@ -1475,10 +1474,10 @@ class Kernel
     }
 
     /**
-     * Allow the developer to remove a key from the session
+     * Allow the developer to remove a key from the session.
      *
-     * @param  string  $key
-     * @return boolean True if the key exists and has been removed
+     * @param  string $key
+     * @return bool   True if the key exists and has been removed
      */
     public function sessionRemove($key)
     {
@@ -1488,7 +1487,7 @@ class Kernel
     /**
      * Allows the developer to retrieve a value from the session.
      * This is identical to `sessionGet`
-     * Returns the session instance if no parameter passed
+     * Returns the session instance if no parameter passed.
      *
      *
      * @param  string     $key
@@ -1506,7 +1505,7 @@ class Kernel
     }
 
     /**
-     * Returns the menu history bag
+     * Returns the menu history bag.
      *
      * @return array
      */
@@ -1525,7 +1524,7 @@ class Kernel
     }
 
     /**
-     * Add a menu name to the history stack
+     * Add a menu name to the history stack.
      *
      * @param  string $menuName
      * @return void
@@ -1571,7 +1570,7 @@ class Kernel
 
     /**
      * Returns a specific configured database connection.
-     * It returns the default connection if no connection name is provided
+     * It returns the default connection if no connection name is provided.
      *
      *
      * @param  string     $connectionName
@@ -1602,9 +1601,9 @@ class Kernel
     }
 
     /**
-     * Check if the user has gone back to arrived to the current menu
+     * Check if the user has gone back to arrived to the current menu.
      *
-     * @return boolean
+     * @return bool
      */
     public function hasComeBack()
     {
@@ -1702,7 +1701,7 @@ class Kernel
     }
 
     /**
-     * Raw user response
+     * Raw user response.
      *
      * @return string
      */
@@ -1737,7 +1736,7 @@ class Kernel
     }
 
     /**
-     * Retrieve the request input
+     * Retrieve the request input.
      *
      * @param  string  $name
      * @return mixed
@@ -1757,7 +1756,7 @@ class Kernel
     }
 
     /**
-     * Instance of the response to send back to the user
+     * Instance of the response to send back to the user.
      *
      * @return Response
      */
@@ -1800,7 +1799,7 @@ class Kernel
     }
 
     /**
-     * Send SMS to a number
+     * Send SMS to a number.
      *
      * If no msisdn is passed, the current msidn is used.
      * The sender name and endpoint can be configure in the env file or
@@ -1824,7 +1823,7 @@ class Kernel
     }
 
     /**
-     * Return a path to a file or a folder
+     * Return a path to a file or a folder.
      *
      * @param  string               $key
      * @throws \RuntimeException

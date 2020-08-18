@@ -12,12 +12,11 @@
 namespace Rejoice\Session;
 
 use Rejoice\Foundation\Kernel;
-use Rejoice\Session\Session;
 
 require_once __DIR__.'/../../constants.php';
 
 /**
- * Handles file session storage
+ * Handles file session storage.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -38,7 +37,7 @@ class FileSession extends Session implements SessionInterface
     {
         $filename = \hash('sha256', base64_encode($this->id));
 
-        if (!is_dir($app->path('session_root_dir'))) {
+        if (! is_dir($app->path('session_root_dir'))) {
             mkdir($app->path('session_root_dir'));
         }
 
@@ -61,7 +60,7 @@ class FileSession extends Session implements SessionInterface
     {
         $this->data = $this->retrieveData();
 
-        if (!empty($this->data)) {
+        if (! empty($this->data)) {
             // $this->delete();
             $this->data['id'] = $this->app->sessionId();
             $this->save();
@@ -72,7 +71,7 @@ class FileSession extends Session implements SessionInterface
 
     public function retrieveData()
     {
-        if (!file_exists($this->file)) {
+        if (! file_exists($this->file)) {
             return [];
         }
 

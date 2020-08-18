@@ -13,12 +13,11 @@ namespace Rejoice\Session;
 
 use Rejoice\Foundation\Database;
 use Rejoice\Foundation\Kernel;
-use Rejoice\Session\Session;
 
 require_once __DIR__.'/../../constants.php';
 
 /**
- * Handle the USSD Session: save and retrieve the session data from the database
+ * Handle the USSD Session: save and retrieve the session data from the database.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -86,7 +85,7 @@ class DatabaseSession extends Session implements SessionInterface
     {
         $data = $this->retrieveData();
 
-        if (!empty($data)) {
+        if (! empty($data)) {
             $this->updateId();
         }
 

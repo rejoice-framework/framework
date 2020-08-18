@@ -14,7 +14,7 @@ namespace Rejoice\Foundation;
 require_once __DIR__.'/../../constants.php';
 
 /**
- * Framework's base validator
+ * Framework's base validator.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -34,7 +34,7 @@ class Validator
         $maxLength = 126,
         $minLength = 1
     ) {
-        if (!is_string($param)) {
+        if (! is_string($param)) {
             $this->app->fail('The parameter "'.$paramName.'" must be a string.');
         }
 
@@ -46,7 +46,7 @@ class Validator
             $this->app->fail('The parameter "'.$paramName.'" is too long. It must be at most '.$maxLength.' characters.');
         }
 
-        if (!preg_match($pattern, $param) === 1) {
+        if (! preg_match($pattern, $param) === 1) {
             $this->app->fail('The parameter "'.$paramName.'" contains unexpected character(s).');
         }
 
