@@ -56,7 +56,7 @@ class Response
 
         foreach ($this->simulatorMetadata as $metadata) {
             if ($this->{$metadata.'InSimulator'}) {
-                $fields[$metadata] = $this->{$metadata.'InSimulator'}
+                $fields[$metadata] = $this->{$metadata.'InSimulator'};
             }
         }
 
