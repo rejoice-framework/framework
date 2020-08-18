@@ -17,7 +17,7 @@ use Rejoice\Foundation\Kernel;
 require_once __DIR__.'/../../constants.php';
 
 /**
- * Handle the USSD Session: save and retrieve the session data from the database
+ * Handle the USSD Session: save and retrieve the session data from the database.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -41,19 +41,19 @@ class Session
     }
 
     /**
-     * Check if the just retrieved session is a previous session
+     * Check if the just retrieved session is a previous session.
      *
-     * @return boolean
+     * @return bool
      */
     public function isPrevious()
     {
-        return !$this->isNew();
+        return ! $this->isNew();
     }
 
     /**
-     * Check if the session loaded is a new session
+     * Check if the session loaded is a new session.
      *
-     * @return boolean
+     * @return bool
      */
     public function isNew()
     {
@@ -61,7 +61,7 @@ class Session
     }
 
     /**
-     * Starts the session
+     * Starts the session.
      *
      * @return void
      */
@@ -142,7 +142,7 @@ class Session
     }
 
     /**
-     * Delete session data from the storage
+     * Delete session data from the storage.
      *
      * This methodm leaves untouched the current live session data
      *
@@ -153,7 +153,7 @@ class Session
     }
 
     /**
-     * Attempts to retrieve a previous session data from the storage
+     * Attempts to retrieve a previous session data from the storage.
      *
      * @return void
      */
@@ -162,7 +162,7 @@ class Session
     }
 
     /**
-     * Save the session data to the current configured storage
+     * Save the session data to the current configured storage.
      *
      * @return void
      */
@@ -171,7 +171,7 @@ class Session
     }
 
     /**
-     * Reset completely the session data, both in live and in the storage
+     * Reset completely the session data, both in live and in the storage.
      *
      * @return void
      */
@@ -180,7 +180,7 @@ class Session
     }
 
     /**
-     * Returns all the session data
+     * Returns all the session data.
      *
      * @return array
      */
@@ -190,7 +190,7 @@ class Session
     }
 
     /**
-     * Retrieve a value from the part of the session accessible by the developer
+     * Retrieve a value from the part of the session accessible by the developer.
      *
      * @param  string            $key
      * @param  mixed             $default
@@ -199,7 +199,7 @@ class Session
      */
     public function get($key = null, $default = null)
     {
-        if (!$key) {
+        if (! $key) {
             $this->data[DEVELOPER_SAVED_DATA] = $this->data[DEVELOPER_SAVED_DATA] ?? [];
 
             return $this->data[DEVELOPER_SAVED_DATA];
@@ -219,7 +219,7 @@ class Session
     }
 
     /**
-     * Set a value into the part of the session accessible by the developer
+     * Set a value into the part of the session accessible by the developer.
      *
      * @param  string $key
      * @param  mixed  $value
@@ -227,7 +227,7 @@ class Session
      */
     public function set(string $key, $value)
     {
-        if (!$this->hasMetadata(DEVELOPER_SAVED_DATA)) {
+        if (! $this->hasMetadata(DEVELOPER_SAVED_DATA)) {
             $this->setMetadata(DEVELOPER_SAVED_DATA, []);
         }
 
@@ -239,12 +239,12 @@ class Session
     }
 
     /**
-     * Remove a key from the part of the session accessible by the developer
+     * Remove a key from the part of the session accessible by the developer.
      *
      * Returns true if the key exists and has been removed. False otherwise
      *
      * @param  string    $key
-     * @return boolean
+     * @return bool
      */
     public function remove($key)
     {
@@ -270,41 +270,41 @@ class Session
     }
 
     /**
-     * Check if a variable has been saved by the developer in the session
+     * Check if a variable has been saved by the developer in the session.
      *
      * If no key is passed, checks if the session is not empty
      *
      * @param  string    $key
-     * @return boolean
+     * @return bool
      */
     public function has(string $key = '')
     {
-        if (!$key) {
-            return !empty($this->data[DEVELOPER_SAVED_DATA]);
+        if (! $key) {
+            return ! empty($this->data[DEVELOPER_SAVED_DATA]);
         }
 
         return isset($this->data[DEVELOPER_SAVED_DATA][$key]);
     }
 
     /**
-     * Check if a particular framework-level variable exists in the session
+     * Check if a particular framework-level variable exists in the session.
      *
      * If no key is passed, checks if the session is not empty
      *
      * @param  string    $key
-     * @return boolean
+     * @return bool
      */
     public function hasMetadata(string $key = '')
     {
-        if (!$key) {
-            return !empty($this->data);
+        if (! $key) {
+            return ! empty($this->data);
         }
 
         return isset($this->data[$key]);
     }
 
     /**
-     * Set a framework-level variable in the session
+     * Set a framework-level variable in the session.
      *
      * @param  string $key
      * @param  mixed  $value
@@ -318,7 +318,7 @@ class Session
     }
 
     /**
-     * Remove a framework-level variable from the session
+     * Remove a framework-level variable from the session.
      *
      * Returns true if the variable exists and has been removed, false otherwise
      *
@@ -331,7 +331,7 @@ class Session
     }
 
     /**
-     * Retrieve a framework-level variable from the session
+     * Retrieve a framework-level variable from the session.
      *
      * @param  string            $key
      * @param  mixed             $default
@@ -340,7 +340,7 @@ class Session
      */
     public function metadata(string $key = '', $default = null)
     {
-        if (!$key) {
+        if (! $key) {
             return $this->data;
         }
 
@@ -357,7 +357,7 @@ class Session
     }
 
     /**
-     * Reset the session
+     * Reset the session.
      *
      * This does not affect the session in its storage. Only the live session
      * currently in use. To delete the session completely, in live and in the

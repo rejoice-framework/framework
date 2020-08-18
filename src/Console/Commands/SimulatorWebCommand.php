@@ -1,4 +1,5 @@
 <?php
+
 namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
@@ -23,7 +24,7 @@ class SimulatorWebCommand extends FrameworkCommand
     public function fire()
     {
         $simulatorPath = realpath(__DIR__.'/../../../../ussd-simulator/src/');
-        if (!is_dir($simulatorPath)) {
+        if (! is_dir($simulatorPath)) {
             $this->writeln([
                 $this->colorize('Simulator not found.', 'red'),
                 'Use `composer require prinx/ussd-simulator` to install it.',

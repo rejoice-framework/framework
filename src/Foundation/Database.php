@@ -14,7 +14,7 @@ namespace Rejoice\Foundation;
 use Prinx\Utils\DB;
 
 /**
- * Connect to and provide the connections to the databases
+ * Connect to and provide the connections to the databases.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -31,7 +31,7 @@ class Database
 
     public static function loadSessionDB($params)
     {
-        if (!$params) {
+        if (! $params) {
             throw new \Exception('Invalid session configuration');
         }
 

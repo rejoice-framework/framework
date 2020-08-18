@@ -12,7 +12,7 @@
 namespace Rejoice\Foundation;
 
 /**
- * Common configurations of the framework
+ * Common configurations of the framework.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -81,7 +81,7 @@ class PathConfig
     }
 
     /**
-     * Retrieve a path of a file or a directory of the framework
+     * Retrieve a path of a file or a directory of the framework.
      *
      * @param  string            $name    The key by which the path is named
      * @param  string            $default A default path if the path is not found
