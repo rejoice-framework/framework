@@ -308,7 +308,7 @@ class Kernel
      *
      * @param  string               $key
      * @param  mixed                $default The default to return if the configuration is not found
-     * @param  bool              $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @param  boolean              $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
      * @throws \RuntimeException
      * @return Config|mixed
      */
@@ -389,13 +389,13 @@ class Kernel
 
     public function attemptsToCallSubMenuDirectly()
     {
-        return ! $this->isFirstRequest() &&
-            $this->session->isNew();
+        return (!$this->isFirstRequest() &&
+            $this->session->isNew());
     }
 
     public function doesNotAllowDirectSubMenuCall()
     {
-        return ! $this->config('app.allow_direct_sub_menu_call');
+        return !$this->config('app.allow_direct_sub_menu_call');
     }
 
     public function prepareToLaunchFromPreviousSession()
@@ -479,7 +479,7 @@ class Kernel
                 $nextMenu
             );
 
-            $userError = ! $responseValid;
+            $userError = !$responseValid;
         }
 
         if ($userError) {
@@ -492,7 +492,7 @@ class Kernel
             return;
         }
 
-        if (! $this->menus->menuStateExists($nextMenu)) {
+        if (!$this->menus->menuStateExists($nextMenu)) {
             $class = $this->menuEntityClass($nextMenu);
             $this->response->addWarningInSimulator(
                 'Neither the menu "'.$nextMenu.'" nor the class "'.$class.'" was found. '
@@ -537,13 +537,14 @@ class Kernel
      *
      * @todo Search a proper way of determining if moving to next menu
      * @param  string    $nextMenu
-     * @return bool
+     * @return boolean
      */
     public function isMovingToMenu($nextMenu)
     {
-        return $nextMenu === APP_END ||
+        return ($nextMenu === APP_END ||
             $nextMenu === APP_WELCOME ||
-            ! in_array($nextMenu, RESERVED_MENU_IDs);
+            !in_array($nextMenu, RESERVED_MENU_IDs)
+        );
     }
 
     /**
@@ -555,17 +556,18 @@ class Kernel
      * developer has to specify the validation rules or validate himself in the
      * `validate` method of the menu entity)
      *
-     * @param  string     $currentMenu
-     * @param  string     $userError
+     * @param  string  $currentMenu
+     * @param  string  $userError
      * @param  bool    $responseExistsInMenuActions The response has already been specified by the developer
-     * @param  string     $nextMenu
+     * @param  string  $nextMenu
      * @return bool
      */
     public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu)
     {
-        return ! $userError &&
-            ! $responseExistsInMenuActions &&
-            ! in_array($nextMenu, RESERVED_MENU_IDs);
+        return (!$userError &&
+            !$responseExistsInMenuActions &&
+            !in_array($nextMenu, RESERVED_MENU_IDs)
+        );
     }
 
     /**
@@ -579,7 +581,7 @@ class Kernel
     {
         $menuEntityClass = $this->menuEntityClass($menuName);
 
-        if (! $this->$entityType && class_exists($menuEntityClass)) {
+        if (!$this->$entityType && class_exists($menuEntityClass)) {
             $this->$entityType = new $menuEntityClass($menuName);
             $this->$entityType->setApp($this);
         }
@@ -704,7 +706,7 @@ class Kernel
     {
         $validation = UserResponseValidator::validate($response, $rules);
 
-        if (! $validation->validated) {
+        if (!$validation->validated) {
             $this->error .= "\n".$validation->error;
         }
 
@@ -713,7 +715,7 @@ class Kernel
 
     public function validateFromMenuFlow($menuName, $response)
     {
-        if (! isset($this->menus[$menuName][VALIDATE])) {
+        if (!isset($this->menus[$menuName][VALIDATE])) {
             return true;
         }
 
@@ -727,7 +729,7 @@ class Kernel
         $validateMethod = MENU_ENTITY_VALIDATE_RESPONSE;
 
         if (
-            ! in_array($nextMenuName, RESERVED_MENU_IDs, true) &&
+            !in_array($nextMenuName, RESERVED_MENU_IDs, true) &&
             $this->currentMenuEntity &&
             method_exists($this->currentMenuEntity, $validateMethod)
         ) {
@@ -742,14 +744,14 @@ class Kernel
             }
 
             if (is_object($validation)) {
-                if (! property_exists($validation, 'validated')) {
+                if (!property_exists($validation, 'validated')) {
                     throw new \Exception('The object returned from the `'.$validateMethod.'` method does not seem to be a correct validation object. Please return a result of  `'.UserResponseValidator::class.'::validate($response, $rules)` or return an array of validation rules or a boolean.');
                 }
 
                 return $validation->validated;
             }
 
-            if (! is_bool($validation)) {
+            if (!is_bool($validation)) {
                 throw new \Exception('The method `'.$validateMethod.'` inside `'.get_class($this->currentMenuEntity).'` class must return either an array of validation rules or a string of validation rules or a result of  <i>'.UserResponseValidator::class.'::validate($response, $rules)</i> or a boolean. But got '.gettype($validation));
             }
 
@@ -875,13 +877,13 @@ class Kernel
 
         if (isset($this->menus[$menuName][MSG])) {
             if (
-                ! is_string($resultCallBefore) &&
-                ! is_array($resultCallBefore)
+                !is_string($resultCallBefore) &&
+                !is_array($resultCallBefore)
             ) {
                 throw new \RuntimeException("STRING OR ARRAY EXPECTED.\nThe function '".$callBefore."' in class '".get_class($this->nextMenuEntity)."' must return either a string or an associative array. If it returns a string, the string will be appended to the message of the menu. If it return an array, the library will parse the menu message and replace all words that are in the form :indexofthearray: by the value associated in the array. Check the documentation to learn more on how to use the '".$callBefore."' functions.");
             }
         } else {
-            if (! is_string($resultCallBefore)) {
+            if (!is_string($resultCallBefore)) {
                 throw new \RuntimeException("STRING EXPECTED.\nThe function '".$callBefore."' in class '".get_class($this->nextMenuEntity)."' must return a string if the menu itself does not have any message. Check the documentation to learn more on how to use the '".$callBefore."' functions.");
             }
         }
@@ -904,7 +906,7 @@ class Kernel
             );
         }
 
-        if (! is_array($actionHookResult)) {
+        if (!is_array($actionHookResult)) {
             throw new \RuntimeException("ARRAY EXPECTED.\nThe method '".$actionHook."' in class '".get_class($this->nextMenuEntity)."' must return an associative array.");
         }
 
@@ -959,8 +961,8 @@ class Kernel
             }
 
             if (
-                ! $isUssdChannel ||
-                ($isUssdChannel && ! $this->menus->willOverflowWith($message))
+                !$isUssdChannel ||
+                ($isUssdChannel && !$this->menus->willOverflowWith($message))
             ) {
                 $this->runLastState($message);
 
@@ -1073,7 +1075,7 @@ class Kernel
                 $toSave[$actionTrigger] = $value;
 
                 if (
-                    ! $this->currentMenuHasBackAction &&
+                    !$this->currentMenuHasBackAction &&
                     isset($value[ITEM_ACTION]) && APP_BACK === $value[ITEM_ACTION] || APP_PAGINATE_BACK === $value[ITEM_ACTION]) {
                     $this->currentMenuHasBackAction = true;
                 }
@@ -1092,7 +1094,7 @@ class Kernel
 
     protected function runWelcomeState()
     {
-        if (! $this->menus->has(WELCOME_MENU_NAME)) {
+        if (!$this->menus->has(WELCOME_MENU_NAME)) {
             throw new \RuntimeException('No welcome menu defined. There must be at least one menu named `welcome` which will be the first displayed menu.');
         }
 
@@ -1134,7 +1136,7 @@ class Kernel
             if (
                 $this->currentMenuName() &&
                 $this->currentMenuName() !== WELCOME_MENU_NAME && ASK_USER_BEFORE_RELOAD_LAST_SESSION !== $nextMenuName &&
-                ! empty($this->historyBag()) && $this->previousMenuName() === $nextMenuName) {
+                !empty($this->historyBag()) && $this->previousMenuName() === $nextMenuName) {
                 $this->historyBagPop();
             } elseif (
                 $this->currentMenuName() && $this->currentMenuName() !== $nextMenuName &&
@@ -1163,7 +1165,7 @@ class Kernel
 
     public function isProdEnv()
     {
-        return ! $this->isDevEnv();
+        return !$this->isDevEnv();
     }
 
     protected function runLastState($message = '')
@@ -1253,8 +1255,8 @@ class Kernel
         $id = $this->currentMenuName();
 
         if (
-            ! isset($this->userPreviousResponses()[$id]) ||
-            ! is_array($this->userPreviousResponses()[$id])
+            !isset($this->userPreviousResponses()[$id]) ||
+            !is_array($this->userPreviousResponses()[$id])
         ) {
             $this->session->data['user_previous_responses'][$id] = [];
         }
@@ -1264,7 +1266,7 @@ class Kernel
 
     public function userPreviousResponses($menuName = null, $default = null)
     {
-        if (! $this->session->hasMetadata('user_previous_responses')) {
+        if (!$this->session->hasMetadata('user_previous_responses')) {
             $this->session->setMetadata('user_previous_responses', []);
         }
 
@@ -1273,7 +1275,7 @@ class Kernel
         $responses = new UserResponse($previousSavedResponses);
 
         if ($menuName) {
-            if (! $responses->has($menuName) && \func_num_args() > 1) {
+            if (!$responses->has($menuName) && \func_num_args() > 1) {
                 return $default;
             }
 
@@ -1325,7 +1327,7 @@ class Kernel
 
     protected function runInvalidInputState($error = '')
     {
-        if (! $error) {
+        if (!$error) {
             $error = $this->error() ?: $this->config('menu.default_error_message');
         }
 
@@ -1341,7 +1343,7 @@ class Kernel
      * be rather completely replaced by the new actionBag.
      *
      * @param  array   $actionBag
-     * @param  bool $replace
+     * @param  bool    $replace
      * @param  string  $menuName
      * @return array
      */
@@ -1351,7 +1353,7 @@ class Kernel
         $menuName = $menuName ?: $this->nextMenuName();
         $menuName = $menuName ?: $this->currentMenuName();
 
-        if (! $this->session->hasMetadata(CURRENT_MENU_ACTIONS)) {
+        if (!$this->session->hasMetadata(CURRENT_MENU_ACTIONS)) {
             $this->session->setMetadata(CURRENT_MENU_ACTIONS, [ACTIONS => []]);
         }
 
@@ -1423,7 +1425,7 @@ class Kernel
     {
         $length = count($this->historyBag());
 
-        if (! $length) {
+        if (!$length) {
             throw new \RuntimeException("Can't get a previous menu. 'history_bag' is empty.");
         }
 
@@ -1463,7 +1465,7 @@ class Kernel
     /**
      * Allow developer to check if the session contains an index.
      *
-     * @param  string    $key
+     * @param  string $key
      * @return bool
      */
     public function sessionHas($key)
@@ -1474,8 +1476,8 @@ class Kernel
     /**
      * Allow the developer to remove a key from the session.
      *
-     * @param  string  $key
-     * @return bool True if the key exists and has been removed
+     * @param  string $key
+     * @return bool   True if the key exists and has been removed
      */
     public function sessionRemove($key)
     {
@@ -1495,7 +1497,7 @@ class Kernel
      */
     public function session($key = null, $default = null)
     {
-        if (! $key) {
+        if (!$key) {
             return $this->session;
         }
 
@@ -1509,7 +1511,7 @@ class Kernel
      */
     public function historyBag()
     {
-        if (! $this->session->hasMetadata('history_bag')) {
+        if (!$this->session->hasMetadata('history_bag')) {
             $this->historyBagNew();
         }
 
@@ -1558,7 +1560,7 @@ class Kernel
     {
         $params = $this->config('database');
 
-        if (! $params) {
+        if (!$params) {
             throw new \Exception('Invalid application database configuration');
         }
 
@@ -1582,13 +1584,13 @@ class Kernel
         if ($this->config('app.connect_app_db')) {
             $connectionName = $connectionName ?: 'default';
 
-            if (! $this->appDbLoaded) {
+            if (!$this->appDbLoaded) {
                 $this->loadAppDBs();
             }
 
-            if ('default' === $connectionName && ! isset($this->appDBs['default'])) {
+            if ('default' === $connectionName && !isset($this->appDBs['default'])) {
                 throw new \Exception('No default database set! Kindly update your database configurations in "config/database.php". <br/> At least one database has to have the index "default" in the array return in "config/database.php". If not, you will need to specify the name of the database you want to load.');
-            } elseif (! isset($this->appDBs[$connectionName])) {
+            } elseif (!isset($this->appDBs[$connectionName])) {
                 throw new \Exception('No database configuration set with the name "'.$connectionName.'" in "config/database.php"!');
             }
 
@@ -1610,7 +1612,7 @@ class Kernel
 
     public function createAppNamespace()
     {
-        if (! $this->appName) {
+        if (!$this->appName) {
             return '';
         }
 
@@ -1741,7 +1743,7 @@ class Kernel
      */
     public function request($name = null)
     {
-        if (! $name) {
+        if (!$name) {
             return $this->request;
         }
 
@@ -1773,7 +1775,7 @@ class Kernel
             APP_REQUEST_USER_SENT_RESPONSE,
         ];
 
-        if (! in_array($requestType, $possibleTypes)) {
+        if (!in_array($requestType, $possibleTypes)) {
             $message = 'Trying to set a request type but the value provided "'.$requestType.'" is invalid.';
             throw new \Exception($message);
         }
@@ -1811,7 +1813,7 @@ class Kernel
      */
     public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
     {
-        if (! $this->config('app.send_sms_enabled')) {
+        if (!$this->config('app.send_sms_enabled')) {
             return;
         }
 
@@ -1829,7 +1831,7 @@ class Kernel
      */
     public function path($key = null)
     {
-        if (! $key) {
+        if (!$key) {
             return $this->path;
         } elseif ($this->path->has($key)) {
             return $this->path->get($key);
