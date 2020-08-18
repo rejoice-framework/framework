@@ -94,9 +94,9 @@ class PathConfig
             return $this->paths[$name];
         } elseif (\func_num_args() > 1) {
             return $default;
-        } else {
-            throw new \RuntimeException('Key '.$name.' does not exist in the path configuration');
         }
+
+        throw new \RuntimeException('Key '.$name.' does not exist in the path configuration');
     }
 
     public function has(string $pathName): bool

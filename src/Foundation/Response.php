@@ -11,8 +11,6 @@
 
 namespace Rejoice\Foundation;
 
-use Rejoice\Foundation\Kernel;
-
 /**
  * Handles the response to send back to the user
  *
@@ -35,11 +33,80 @@ class Response
         $this->app = $app;
     }
 
+    public function hardEnd($message = '')
+    {
+        $this->end($message);
+    }
+
+    public function softEnd($message = '')
+    {
+        $this->end($message, false);
+    }
+
     public function end($sentMsg = '', $hard = true)
     {
         $this->app->setResponseAlreadySentToUser(true);
-        $message = '' !== $sentMsg ? $sentMsg : $this->app->config('menu.default_end_message');
+        $message = $sentMsg !== '' ? $sentMsg : $this->app->config('menu.default_end_message');
         $this->sendLast($message, $hard);
+    }
+
+    public function sendLast($message, $hard = false)
+    {
+        $requestType = $this->appHasTimedOut() ? APP_REQUEST_ASK_USER_RESPONSE : APP_REQUEST_END;
+
+        $this->send($message, $requestType, $hard);
+
+        $this->app->session()->hardReset();
+    }
+
+    public function appHasTimedOut()
+    {
+        return (
+            $this->app->isUssdChannel() &&
+            $this->app->session()->mustNotTimeout() &&
+            $this->app->session()->hasTimedOut()
+        );
+    }
+
+    public function send(
+        $message,
+        $ussdRequestType = APP_REQUEST_ASK_USER_RESPONSE,
+        $hard = false
+    ) {
+        $previouslyDisplayed = trim(ob_get_clean());
+        $error = error_get_last();
+
+        if ($previouslyDisplayed && !$error) {
+            $this->addInfoInSimulator("\n".$previouslyDisplayed."\n");
+        } elseif ($error) {
+            $this->addErrorInSimulator($previouslyDisplayed);
+
+            $appFailMessage = $this->app->config('menu.application_failed_message');
+
+            if ($message !== $appFailMessage) {
+                $this->addInfoInSimulator("RESPONSE:\n$message");
+            }
+
+            $hard = true;
+            $ussdRequestType = APP_REQUEST_END;
+            $message = $appFailMessage;
+        }
+
+        $response = $this->format($message, $ussdRequestType);
+
+        echo $response;
+
+        header('Content-Encoding: none');
+        header('Content-Length: '.ob_get_length());
+        header('Connection: close');
+
+        ob_end_flush();
+        ob_flush();
+        flush();
+
+        if ($hard) {
+            exit;
+        }
     }
 
     protected function format($message, $requestType)
@@ -63,83 +130,10 @@ class Response
         return json_encode($fields);
     }
 
-    public function send(
-        $message,
-        $ussdRequestType = APP_REQUEST_ASK_USER_RESPONSE,
-        $hard = false
-    ) {
-        $previouslyDisplayed = trim(ob_get_clean());
-        $error = error_get_last();
-
-        // Something has been echoed in the code but it is not an error
-        if ($error && $previouslyDisplayed) {
-            $this->addInfoInSimulator("\n".$previouslyDisplayed."\n");
-        } elseif ($error) {
-            $appFailMessage = $this->app->config('menu.application_failed_message');
-
-            if ($message !== $appFailMessage) {
-                $this->addInfoInSimulator("RESPONSE:\n$message");
-            }
-
-            $this->addErrorInSimulator($previouslyDisplayed);
-
-            $hard = true;
-            $ussdRequestType = APP_REQUEST_END;
-            $message = $appFailMessage;
-        }
-
-        if ($hard) {
-            exit($this->format($message, $ussdRequestType));
-        } else {
-            // The response will be sent to the user but the script will continue
-
-            $response = $this->format($message, $ussdRequestType);
-
-            echo $response;
-
-            header('Content-Encoding: none');
-            header('Content-Length: '.ob_get_length());
-            header('Connection: close');
-
-            ob_end_flush();
-            ob_flush();
-            flush();
-        }
-    }
-
-    public function sendLast($message, $hard = false)
-    {
-        if (
-            $this->app->isUssdChannel() &&
-            $this->app->session()->mustNotTimeout() &&
-            $this->app->session()->hasTimedOut()
-        ) {
-            $this->send($message, APP_REQUEST_ASK_USER_RESPONSE, $hard);
-        } else {
-            $this->send($message, APP_REQUEST_END, $hard);
-        }
-
-        $this->app->session()->hardReset();
-    }
-
-    public function hardEnd($message = '')
-    {
-        $this->end($message);
-    }
-
-    public function softEnd($message = '')
-    {
-        $this->end($message, false);
-    }
-
     public function sendRemote($resJSON)
     {
         $response = json_decode($resJSON, true);
 
-        /*
-         * Important! To notify the developer that the error occured at
-         * the remote ussd side and not at this ussd switch side.
-         */
         if (!is_array($response)) {
             echo 'ERROR OCCURED AT THE REMOTE USSD SIDE:  '.$resJSON;
 

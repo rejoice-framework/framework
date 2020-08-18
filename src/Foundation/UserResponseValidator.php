@@ -55,8 +55,8 @@ class UserResponseValidator
     /**
      * Validate the response against the defined rules
      *
-     * @param  string              $response
-     * @param  string|array        $validationRules
+     * @param  string               $response
+     * @param  string|array         $validationRules
      * @throws \RuntimeException
      * @return \stdClass
      */
@@ -71,9 +71,6 @@ class UserResponseValidator
         } elseif (!is_array($rules)) {
             throw new \RuntimeException('The validation rules must be a string or an array');
         }
-        /* elseif (is_array($rules)) {
-        }*/
-        // var_dump($rules);
 
         foreach ($rules as $key => $value) {
             $ruleAndError = self::extractRuleAndError($key, $value);
@@ -98,9 +95,9 @@ class UserResponseValidator
                     $validation->error = $specific->error;
                     break;
                 }
-            } else {
-                throw new \RuntimeException('Unknown validation rule `'.$explodedRule[0].'`');
             }
+
+            throw new \RuntimeException('Unknown validation rule `'.$explodedRule[0].'`');
         }
 
         self::$errorLookupIndex = '';
@@ -112,8 +109,8 @@ class UserResponseValidator
      * Extract the validation rule and custom error from a line of the
      * validation array
      *
-     * @param  string|int          $key
-     * @param  string|array        $value
+     * @param  string|int           $key
+     * @param  string|array         $value
      * @throws \RuntimeException
      * @return array
      */
@@ -267,7 +264,6 @@ class UserResponseValidator
     public static function isAlphabetic($str)
     {
         self::$errorLookupIndex = 'alphabetic';
-        // return self::isAlpha($str);
 
         return self::validate($str, 'alpha');
     }
@@ -290,7 +286,6 @@ class UserResponseValidator
     public static function isAlphaNumeric($str)
     {
         self::$errorLookupIndex = 'alphanumeric';
-        // return self::isAlphaNumeric($str);
 
         return self::validate($str, 'alphanum');
     }
@@ -375,12 +370,12 @@ class UserResponseValidator
         $v->validated = true;
 
         $matched = preg_match($pattern, $str);
-        if (0 === $matched) {
+        if ($matched === 0) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['regex'] ??
                 'The response does not match the pattern.';
-        } elseif (false === $matched) {
+        } elseif ($matched === false) {
             throw new \Exception('Error in the validation regex: '.$pattern);
         }
 

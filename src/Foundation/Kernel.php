@@ -270,10 +270,8 @@ class Kernel
             $this->startSession();
             $this->loadMenus();
             $this->handleUserRequest();
-
         } catch (\Throwable $th) {
             $message = $this->formatExceptionMessage($th);
-            $this->logger->critical($message);
             $this->fail($message);
         }
     }
@@ -308,9 +306,9 @@ class Kernel
      *
      * Returns the config object instance if no parameter passed
      *
-     * @param  string              $key
-     * @param  mixed               $default The default to return if the configuration is not found
-     * @param  boolean             $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @param  string               $key
+     * @param  mixed                $default The default to return if the configuration is not found
+     * @param  boolean              $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
      * @throws \RuntimeException
      * @return Config|mixed
      */
@@ -334,36 +332,11 @@ class Kernel
         $this->menus = new Menus($this);
     }
 
-    public function isFirstRequest()
-    {
-        return $this->ussdRequestType() === APP_REQUEST_INIT;
-    }
-
-    public function forceRestart()
-    {
-        $this->setCustomUssdRequestType(APP_REQUEST_INIT);
-    }
-
-    public function attemptsToCallSubMenuDirectly()
-    {
-        return (!$this->isFirstRequest() &&
-            $this->session->isNew());
-    }
-
-    public function doesNotAllowDirectSubMenuCall()
-    {
-        return !$this->config('app.allow_direct_sub_menu_call');
-    }
-
     protected function handleUserRequest()
     {
         if ($this->isFirstRequest() && $this->session->isPrevious()) {
-            // var_dump($this->session->data());
             $this->prepareToLaunchFromPreviousSession();
-        } elseif (
-            $this->attemptsToCallSubMenuDirectly() &&
-            $this->doesNotAllowDirectSubMenuCall()
-        ) {
+        } elseif ($this->attemptsToCallSubMenuDirectly() && $this->doesNotAllowDirectSubMenuCall()) {
             $this->forceRestart();
         }
 
@@ -395,7 +368,6 @@ class Kernel
                 break;
 
             case APP_REQUEST_CANCELLED:
-                // $this->session->delete();
                 $this->response->hardEnd('REQUEST CANCELLED');
                 break;
 
@@ -403,6 +375,27 @@ class Kernel
                 $this->response->hardEnd('UNKNOWN USSD SERVICE OPERATOR');
                 break;
         }
+    }
+
+    public function isFirstRequest()
+    {
+        return $this->ussdRequestType() === APP_REQUEST_INIT;
+    }
+
+    public function forceRestart()
+    {
+        $this->setCustomUssdRequestType(APP_REQUEST_INIT);
+    }
+
+    public function attemptsToCallSubMenuDirectly()
+    {
+        return (!$this->isFirstRequest() &&
+            $this->session->isNew());
+    }
+
+    public function doesNotAllowDirectSubMenuCall()
+    {
+        return !$this->config('app.allow_direct_sub_menu_call');
     }
 
     public function prepareToLaunchFromPreviousSession()
@@ -430,12 +423,12 @@ class Kernel
         $this->runState($this->currentMenuName());
     }
 
-    public function currentMenuName(): string
+    public function currentMenuName()
     {
         return $this->session->metadata('current_menu_name', 'welcome');
     }
 
-    protected function saveCurrentMenuName($name): void
+    protected function saveCurrentMenuName($name)
     {
         $this->session->setMetadata('current_menu_name', $name);
     }
@@ -451,7 +444,7 @@ class Kernel
 
         // Do not use empty() to check the user response. The expected response
         // can for e.g. be 0 (zero), which empty() sees like empty.
-        if ('' === $response) {
+        if ($response === '') {
             $this->runInvalidInputState($this->config('menu.empty_response_error'));
 
             return;
@@ -543,13 +536,15 @@ class Kernel
      *
      *
      * @todo Search a proper way of determining if moving to next menu
-     * @param  string     $nextMenu
+     * @param  string    $nextMenu
      * @return boolean
      */
     public function isMovingToMenu($nextMenu)
     {
-        return (APP_END === $nextMenu || APP_WELCOME === $nextMenu ||
-            !in_array($nextMenu, RESERVED_MENU_IDs));
+        return ($nextMenu === APP_END ||
+            $nextMenu === APP_WELCOME ||
+            !in_array($nextMenu, RESERVED_MENU_IDs)
+        );
     }
 
     /**
@@ -567,13 +562,12 @@ class Kernel
      * @param  string     $nextMenu
      * @return boolean
      */
-    public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu, $currentMenu)
+    public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu)
     {
-        return (
-            /*(isset($this->menus[$currentMenu][DEFAULT_NEXT_MENU]) /* ||
-            isset($this->menus[$currentMenu][ITEM_LATER])) &&*/!$userError &&
+        return (!$userError &&
             !$responseExistsInMenuActions &&
-            !in_array($nextMenu, RESERVED_MENU_IDs));
+            !in_array($nextMenu, RESERVED_MENU_IDs)
+        );
     }
 
     /**
@@ -611,7 +605,8 @@ class Kernel
                 break;
 
             case APP_END:
-                $this->response->hardEnd();
+                // $this->response->hardEnd();
+                $this->runLastState();
                 break;
 
             case APP_WELCOME:
@@ -682,10 +677,6 @@ class Kernel
         if (isset($this->menus[$name][ACTIONS][$userResponse][SAVE_RESPONSE_AS])) {
             $toSave = $this->menus[$name][ACTIONS][$userResponse][SAVE_RESPONSE_AS];
         } elseif (
-            // !(
-            //     $userResponseExistsInMenuActions &&
-            //     in_array($nextMenuName, RESERVED_MENU_IDs, true)
-            // ) &&
             $this->currentMenuEntity &&
             method_exists($this->currentMenuEntity, $saveResponseMethod)
         ) {
@@ -749,7 +740,6 @@ class Kernel
                 $this->userPreviousResponses()
             );
 
-            // The validation is suppose to be validation rules
             if (is_array($validation) || is_string($validation)) {
                 return $this->validateResponseFromRules($response, $validation);
             }
@@ -772,11 +762,8 @@ class Kernel
         return true;
     }
 
-    protected function validateUserResponse(
-        $response,
-        $menuName,
-        $nextMenuName
-    ) {
+    protected function validateUserResponse($response, $menuName, $nextMenuName)
+    {
         $validated = $this->validateFromMenuFlow($menuName, $response);
 
         return $validated ? $this->validateFromMenuEntity($nextMenuName, $response) : $validated;
@@ -786,10 +773,7 @@ class Kernel
     {
         $defaultNextMethod = MENU_ENTITY_DEFAULT_NEXT_MENU;
 
-        if (
-            $this->currentMenuEntity &&
-            method_exists($this->currentMenuEntity, $defaultNextMethod)
-        ) {
+        if ($this->currentMenuEntity && method_exists($this->currentMenuEntity, $defaultNextMethod)) {
             return call_user_func([$this->currentMenuEntity, $defaultNextMethod]);
         }
 
@@ -834,11 +818,9 @@ class Kernel
 
         $response = HTTP::post($this->request->input(), $endpoint);
 
-        if ($response['SUCCESS']) {
-            $this->response->sendRemote($response['data']);
-        } else {
-            $this->response->sendRemote($response['error']);
-        }
+        $data = $response['SUCCESS'] ? $response['data'] : $response['error'];
+
+        $this->response->sendRemote($data);
     }
 
     public function switchedUssdEndpoint()
@@ -968,8 +950,6 @@ class Kernel
         if ($this->menus->isLastPage($nextMenuName, $actions, $this->nextMenuEntity)) {
             $isUssdChannel = $this->isUssdChannel();
 
-            // We save message for SMS before we add any "Cancel" message,
-            // which is only let the user cancel the ussd prompt
             $this->sms = $message;
 
             if (
@@ -983,8 +963,7 @@ class Kernel
 
             if (
                 !$isUssdChannel ||
-                ($isUssdChannel &&
-                    !$this->menus->willOverflowWith($message))
+                ($isUssdChannel && !$this->menus->willOverflowWith($message))
             ) {
                 $this->runLastState($message);
 
@@ -1222,13 +1201,14 @@ class Kernel
 
     public function fail($error)
     {
-        // Get the session data before sending the response. As soon as the response is sent, the session is cleared.
+        /*
+         * Get the session data before sending the response.
+         * As soon as the response is sent, the session is cleared.
+         */
         $sessionData = $this->session->data();
 
         $this->response->addErrorInSimulator($error);
-        $this->response->softEnd(
-            $this->config('menu.application_failed_message')
-        );
+        $this->response->softEnd($this->config('menu.application_failed_message'));
 
         $log = "Error:\n".$error."\n\nUser session:\n".json_encode($sessionData, JSON_PRETTY_PRINT);
 
@@ -1291,8 +1271,7 @@ class Kernel
             $this->session->setMetadata('user_previous_responses', []);
         }
 
-        $previousSavedResponses = $this->session
-            ->metadata('user_previous_responses');
+        $previousSavedResponses = $this->session->metadata('user_previous_responses');
 
         $responses = new UserResponse($previousSavedResponses);
 
@@ -1847,7 +1826,7 @@ class Kernel
     /**
      * Return a path to a file or a folder
      *
-     * @param  string              $key
+     * @param  string               $key
      * @throws \RuntimeException
      * @return string
      */

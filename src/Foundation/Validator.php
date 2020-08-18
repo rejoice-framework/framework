@@ -11,8 +11,6 @@
 
 namespace Rejoice\Foundation;
 
-use Rejoice\Foundation\Kernel;
-
 require_once __DIR__.'/../../constants.php';
 
 /**
