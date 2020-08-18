@@ -10,7 +10,7 @@
  */
 
 /**
- * Defines Framework Constants
+ * Defines Framework Constants.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */

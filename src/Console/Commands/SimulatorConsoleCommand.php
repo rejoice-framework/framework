@@ -1,4 +1,5 @@
 <?php
+
 namespace Rejoice\Console\Commands;
 
 use function Prinx\Dotenv\env;
@@ -91,8 +92,6 @@ class SimulatorConsoleCommand extends FrameworkCommand
             $this->sessionIdParameter    => time(),
             'channel'                    => $this->getOption('channel'),
         ];
-
-        return;
     }
 
     public function end()
@@ -104,13 +103,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
     {
         $this->endpoint = $this->getOption('url');
 
-        if (!$this->endpoint || !URL::isUrl($this->endpoint)) {
+        if (! $this->endpoint || ! URL::isUrl($this->endpoint)) {
             $this->writeWithColor('Invalid endpoint "'.$this->endpoint.'"', 'red');
 
             return SmileCommand::FAILURE;
         }
 
-        if (!($tel = $this->getOption('tel'))) {
+        if (! ($tel = $this->getOption('tel'))) {
             $this->writeWithColor('Invalid phone number "'.$tel.'"', 'red');
 
             return SmileCommand::FAILURE;
@@ -160,14 +159,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
     }
 
     /**
-     * Converts HTML text to string
+     * Converts HTML text to string.
      *
      * @param  string|string[]   $messages A single string or an array of string
      * @return string|string[]
      */
     public function htmlToText($messages)
     {
-
         if (is_string($messages)) {
             $stringPassed = true;
             $messagesPassed = [$messages];
@@ -179,8 +177,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
         $converted = [];
 
         foreach ($messagesPassed as $key => $value) {
-
-            if (!is_string($value)) {
+            if (! is_string($value)) {
                 return $messages;
             }
 
@@ -222,9 +219,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
     public function showMetadataIfExists($data)
     {
-
         foreach ($this->simulatorMetadata as $metaName => $colorType) {
-
             if (isset($data[$metaName])) {
                 $displayName = 'info' === $metaName ? 'debug' : $metaName;
                 $displayName = strtoupper($displayName);
@@ -234,9 +229,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
                 $this->writeln($message);
                 $this->writeMetaName($colorType, ['', 'END '.$displayName.' ON THIS MENU']);
             }
-
         }
-
     }
 
     public function simulate()
@@ -246,7 +239,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
         $this->dial();
 
-        while (!$this->isLastMenu($this->payload)) {
+        while (! $this->isLastMenu($this->payload)) {
             $simulator->setPayload($this->payload);
             $response = $simulator->callUssd();
             $responseData = json_decode($response->get('data'), true);
@@ -254,15 +247,14 @@ class SimulatorConsoleCommand extends FrameworkCommand
             if ($response->isSuccess() && is_array($responseData)) {
                 $this->drawSeparationLine(['middle' => ' MENU ']);
 
-// $this->showMetadataIfExists($responseData);
+                // $this->showMetadataIfExists($responseData);
 
                 if ($this->ussdWantsUserResponse($responseData)) {
                     $this->getUserResponseAndSend($responseData);
                 } else {
                     $this->handleUssdEnd($responseData);
                 }
-
-            } elseif (!Str::endsWith('/', $this->endpoint)) {
+            } elseif (! Str::endsWith('/', $this->endpoint)) {
                 $simulator->setEndpoint($this->endpoint .= '/');
                 continue;
             } else {
@@ -270,7 +262,6 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
                 return SmileCommand::FAILURE;
             }
-
         }
 
         return SmileCommand::SUCCESS;
@@ -294,14 +285,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
             if (isset($data[$key])) {
                 return false;
             }
-
         }
 
         return true;
     }
 
     /**
-     * Write to console with the specified color
+     * Write to console with the specified color.
      *
      * @param  string          $colorType Can be info|error|question or any color name (Eg: green)
      * @param  string|string[] $name      The string to write with colors
@@ -318,6 +308,5 @@ class SimulatorConsoleCommand extends FrameworkCommand
         } else {
             $this->writeln($name);
         }
-
     }
 }

@@ -12,7 +12,7 @@
 namespace Rejoice\Menu;
 
 /**
- * Implements all the logic for handling USSD Pagination
+ * Implements all the logic for handling USSD Pagination.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -26,14 +26,14 @@ trait Paginator
      */
 
     /**
-     * Fetches the items from the database
+     * Fetches the items from the database.
      *
      * @return array
      */
     abstract public function paginationFetch();
 
     /**
-     * Returns the total number of the data to be displayed
+     * Returns the total number of the data to be displayed.
      *
      * @return int
      */
@@ -64,7 +64,7 @@ trait Paginator
     {
         if (
             $this->hasResumeFromLastSessionOnThisMenu() ||
-            !empty($this->error())
+            ! empty($this->error())
         ) {
             $this->moveFetchCursorBackOnce();
         }
@@ -101,7 +101,7 @@ trait Paginator
                 $actions = $this->mergeAction($actions, $action);
             }
 
-            if (!$this->isPaginationLastPage()) {
+            if (! $this->isPaginationLastPage()) {
                 $forwardAction = parent::paginateForwardAction($this->forwardTrigger());
                 $actions = $this->mergeAction($actions, $forwardAction);
             }
@@ -117,7 +117,7 @@ trait Paginator
 
     public function paginationTotal()
     {
-        if (!($total = $this->paginationGet('total'))) {
+        if (! ($total = $this->paginationGet('total'))) {
             $total = $this->paginationCountAll();
             $this->paginationSave('total', $total);
         }
@@ -126,20 +126,20 @@ trait Paginator
     }
 
     /**
-     * Check if the current screen is the first screen of the pagination
+     * Check if the current screen is the first screen of the pagination.
      *
-     * @return boolean
+     * @return bool
      */
     public function isPaginationFirstPage()
     {
-        return ($this->paginationGet('previously_retrieved') <=
-            $this->maxItemsPerPage());
+        return $this->paginationGet('previously_retrieved') <=
+            $this->maxItemsPerPage();
     }
 
     /**
-     * Check if the current screen is the last screen of the pagination
+     * Check if the current screen is the last screen of the pagination.
      *
-     * @return boolean
+     * @return bool
      */
     public function isPaginationLastPage()
     {
@@ -148,7 +148,7 @@ trait Paginator
     }
 
     /**
-     * Will run when the user is paginating forward
+     * Will run when the user is paginating forward.
      *
      * @return void
      */
@@ -158,7 +158,7 @@ trait Paginator
     }
 
     /**
-     * Will run when the user is paginating back
+     * Will run when the user is paginating back.
      *
      * @return void
      */
@@ -191,7 +191,7 @@ trait Paginator
     /**
      * Will run when the user is moving to a next menu (not a next page of the
      * pagination but rather a completely different next_menu - The next menu
-     * to where leads the pagination items)
+     * to where leads the pagination items).
      *
      * @return void
      */
@@ -212,7 +212,7 @@ trait Paginator
     }
 
     /**
-     * Will run when the user is returning back
+     * Will run when the user is returning back.
      *
      * @return void
      */
@@ -235,7 +235,7 @@ trait Paginator
     }
 
     /**
-     * The actual number of items showed on the current screen
+     * The actual number of items showed on the current screen.
      *
      * This cannot be greater than the `maxItemsPerPage`
      * This is actually handled automatically by the Paginator. It is just the
@@ -246,7 +246,7 @@ trait Paginator
      */
     public function currentItemsCount()
     {
-        if (!isset($this->currentItemsCount)) {
+        if (! isset($this->currentItemsCount)) {
             $this->currentItemsCount = count($this->currentRetrievedItems());
         }
 
@@ -255,7 +255,7 @@ trait Paginator
 
     /**
      * Get the id of the last fetched item - the next query to
-     * the database, will begin at that index
+     * the database, will begin at that index.
      *
      * @return int
      */
@@ -267,7 +267,7 @@ trait Paginator
     }
 
     /**
-     * Save the id of last fetched item of the pagination
+     * Save the id of last fetched item of the pagination.
      *
      * @param  int    $lastId
      * @return void
@@ -280,7 +280,7 @@ trait Paginator
     }
 
     /**
-     * Saves pagination data for the current menu
+     * Saves pagination data for the current menu.
      *
      * @param  string $key
      * @param  mixed  $value
@@ -295,7 +295,7 @@ trait Paginator
     }
 
     /**
-     * Get a pagination data
+     * Get a pagination data.
      *
      * @param  string  $key
      * @return mixed
@@ -308,7 +308,7 @@ trait Paginator
     }
 
     /**
-     * Prepare the session to handle pagination data for the current menu
+     * Prepare the session to handle pagination data for the current menu.
      *
      * @return void
      */
@@ -334,9 +334,9 @@ trait Paginator
             ],
         ];
 
-        if (!$sessionAlreadySupportsPagination) {
+        if (! $sessionAlreadySupportsPagination) {
             $this->sessionSave('pagination', $newPaginationData);
-        } elseif (!$sessionAlreadySupportsPaginationOnCurrentMenu) {
+        } elseif (! $sessionAlreadySupportsPaginationOnCurrentMenu) {
             $pagination = $this->sessionGet('pagination');
             $pagination = array_replace($pagination, $newPaginationData);
             $this->sessionSave('pagination', $pagination);
@@ -345,7 +345,7 @@ trait Paginator
 
     /**
      * Determines the proper back action to use, according to where we are in
-     * the current pagination
+     * the current pagination.
      *
      * @param  string  $trigger
      * @param  string  $display
@@ -362,7 +362,7 @@ trait Paginator
 
     /**
      * The maximum number of items that can be showed on the pagination screen;
-     * It's configured as protected property of the menu entity
+     * It's configured as protected property of the menu entity.
      *
      * @return int
      */
@@ -372,9 +372,9 @@ trait Paginator
     }
 
     /**
-     * Defines if the user can move back for this particular string
+     * Defines if the user can move back for this particular string.
      *
-     * @return boolean
+     * @return bool
      */
     public function usesBack()
     {
@@ -382,7 +382,7 @@ trait Paginator
     }
 
     /**
-     * Defines the option the user will select to move forward
+     * Defines the option the user will select to move forward.
      *
      * @return string
      */
