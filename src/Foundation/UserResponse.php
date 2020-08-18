@@ -12,7 +12,7 @@
 namespace Rejoice\Foundation;
 
 /**
- * Implements methods to easily access all the user's responses
+ * Implements methods to easily access all the user's responses.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
@@ -25,7 +25,7 @@ class UserResponse implements \ArrayAccess
 
     public function get($menuName, $silent = false, $index = -1)
     {
-        if (!isset($this->responses[$menuName])) {
+        if (! isset($this->responses[$menuName])) {
             if ($silent) {
                 return null;
             }
@@ -36,7 +36,7 @@ class UserResponse implements \ArrayAccess
         $len = count($this->responses[$menuName]);
         $index = $index === -1 ? $len - 1 : $index;
 
-        if (!isset($this->responses[$menuName][$index])) {
+        if (! isset($this->responses[$menuName][$index])) {
             if ($silent) {
                 return null;
             }
@@ -49,7 +49,7 @@ class UserResponse implements \ArrayAccess
 
     public function getAll($menuName)
     {
-        if (!isset($this->responses[$menuName])) {
+        if (! isset($this->responses[$menuName])) {
             throw new \Exception('No user response for the menu '.$menuName);
         }
 
@@ -64,7 +64,7 @@ class UserResponse implements \ArrayAccess
     public function has($menuName, $index = -1)
     {
         if (
-            !isset($this->responses[$menuName]) ||
+            ! isset($this->responses[$menuName]) ||
             count($this->responses[$menuName]) <= 0
         ) {
             return false;
@@ -89,7 +89,7 @@ class UserResponse implements \ArrayAccess
 
     public function offsetSet($menuName, $value)
     {
-        if (!is_array($value)) {
+        if (! is_array($value)) {
             throw new \Exception('User response must be contain an array');
         }
 

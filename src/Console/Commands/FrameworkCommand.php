@@ -1,4 +1,5 @@
 <?php
+
 namespace Rejoice\Console\Commands;
 
 use Prinx\Config;
@@ -19,11 +20,11 @@ class FrameworkCommand extends SmileCommand
 
     public function config($key = null, $default = null, $silent = false)
     {
-        if (!isset($this->config)) {
+        if (! isset($this->config)) {
             $this->config = new Config($this->path('app_config_dir'));
         }
 
-        if (!isset($key)) {
+        if (! isset($key)) {
             return $this->config;
         } else {
             return $this->config->get(...(func_get_args()));
@@ -32,7 +33,7 @@ class FrameworkCommand extends SmileCommand
 
     public function projectRootDir()
     {
-        if (!isset($this->projectRootDir)) {
+        if (! isset($this->projectRootDir)) {
             $this->projectRootDir = Os::toPathStyle(
                 $this->path('project_root')
             );
@@ -43,7 +44,7 @@ class FrameworkCommand extends SmileCommand
 
     public function appCommandsDir()
     {
-        if (!isset($this->appCommandsDir)) {
+        if (! isset($this->appCommandsDir)) {
             $this->appCommandsDir = Os::toPathStyle(
                 $this->path('app_command_dir')
             );
@@ -54,7 +55,7 @@ class FrameworkCommand extends SmileCommand
 
     public function appCommandsRepo()
     {
-        if (!isset($this->appCommandsRepo)) {
+        if (! isset($this->appCommandsRepo)) {
             $this->appCommandsRepo = Os::toPathStyle(
                 $this->path('app_command_file')
             );
@@ -65,7 +66,7 @@ class FrameworkCommand extends SmileCommand
 
     public function frameworkTemplateDir()
     {
-        if (!isset($this->frameworkTemplateDir)) {
+        if (! isset($this->frameworkTemplateDir)) {
             $this->frameworkTemplateDir = Os::toPathStyle(
                 $this->path('framework_template_dir')
             );
@@ -76,7 +77,7 @@ class FrameworkCommand extends SmileCommand
 
     public function baseMenuFolder()
     {
-        if (!isset($this->baseMenuFolder)) {
+        if (! isset($this->baseMenuFolder)) {
             $this->baseMenuFolder = Os::toPathStyle(
                 $this->path('app_menu_class_dir')
             );
@@ -103,7 +104,7 @@ class FrameworkCommand extends SmileCommand
 
     public function path($name)
     {
-        if (!$this->paths) {
+        if (! $this->paths) {
             $this->paths = new PathConfig;
         }
 

@@ -1,4 +1,5 @@
 <?php
+
 $commandName = $commandName ?? 'ExampleCommand';
 
 $template = "<?php

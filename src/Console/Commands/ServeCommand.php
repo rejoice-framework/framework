@@ -1,4 +1,5 @@
 <?php
+
 namespace Rejoice\Console\Commands;
 
 use Symfony\Component\Console\Input\InputInterface;
@@ -7,7 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * This command is not used
- * To be reviewed
+ * To be reviewed.
  */
 class ServeCommand extends FrameworkCommand
 {
@@ -28,7 +29,7 @@ class ServeCommand extends FrameworkCommand
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $simulatorPath = realpath(__DIR__.'/../../../../../');
-        if (!is_dir($simulatorPath)) {
+        if (! is_dir($simulatorPath)) {
             $output->writeln([
                 '<fg=red>index.php not found.</>',
             ]);

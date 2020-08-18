@@ -51,42 +51,42 @@ if ($validate) {
 }
 
 if ($saveAs) {
-    $template .= "
+    $template .= '
 
-    public function saveAs(\$response)
+    public function saveAs($response)
     {
-        return \$response;
-    }";
+        return $response;
+    }';
 }
 
 if ($after) {
-    $template .= "
+    $template .= '
 
-    public function after(\$response, \$userPreviousResponses)
+    public function after($response, $userPreviousResponses)
     {
         //
-    }";
+    }';
 }
 
 if ($onNext) {
-    $template .= "
+    $template .= '
 
-    public function onMoveToNextMenu(\$userPreviousResponses)
+    public function onMoveToNextMenu($userPreviousResponses)
     {
         //
-    }";
+    }';
 }
 
 if ($onBack) {
-    $template .= "
+    $template .= '
 
-    public function onBack(\$userPreviousResponses)
+    public function onBack($userPreviousResponses)
     {
         //
-    }";
+    }';
 }
 
-$template .= "
-}";
+$template .= '
+}';
 
 return $template;
