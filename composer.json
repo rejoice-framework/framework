@@ -19,7 +19,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": ">=7.4",
+    "php": ">=7.3",
     "prinx/dotenv": "dev-master",
     "prinx/notify": "dev-master",
     "prinx/phputils": "dev-master",
