@@ -75,7 +75,7 @@ class Response
         $previouslyDisplayed = trim(ob_get_clean());
         $error = error_get_last();
 
-        if ($previouslyDisplayed && ! $error) {
+        if ($previouslyDisplayed && !$error) {
             $this->addInfoInSimulator("\n".$previouslyDisplayed."\n");
         } elseif ($error) {
             $this->addErrorInSimulator($previouslyDisplayed);
@@ -133,7 +133,7 @@ class Response
     {
         $response = json_decode($resJSON, true);
 
-        if (! is_array($response)) {
+        if (!is_array($response)) {
             echo 'ERROR OCCURED AT THE REMOTE USSD SIDE:  '.$resJSON;
 
             return;

@@ -103,13 +103,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
     {
         $this->endpoint = $this->getOption('url');
 
-        if (! $this->endpoint || ! URL::isUrl($this->endpoint)) {
+        if (!$this->endpoint || !URL::isUrl($this->endpoint)) {
             $this->writeWithColor('Invalid endpoint "'.$this->endpoint.'"', 'red');
 
             return SmileCommand::FAILURE;
         }
 
-        if (! ($tel = $this->getOption('tel'))) {
+        if (!($tel = $this->getOption('tel'))) {
             $this->writeWithColor('Invalid phone number "'.$tel.'"', 'red');
 
             return SmileCommand::FAILURE;
@@ -161,7 +161,8 @@ class SimulatorConsoleCommand extends FrameworkCommand
     /**
      * Converts HTML text to string.
      *
-     * @param  string|string[]   $messages A single string or an array of string
+     * @param string|string[] $messages A single string or an array of string
+     *
      * @return string|string[]
      */
     public function htmlToText($messages)
@@ -177,7 +178,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
         $converted = [];
 
         foreach ($messagesPassed as $key => $value) {
-            if (! is_string($value)) {
+            if (!is_string($value)) {
                 return $messages;
             }
 
@@ -234,12 +235,12 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
     public function simulate()
     {
-        $simulator = new Simulator;
+        $simulator = new Simulator();
         $simulator->setEndpoint($this->endpoint);
 
         $this->dial();
 
-        while (! $this->isLastMenu($this->payload)) {
+        while (!$this->isLastMenu($this->payload)) {
             $simulator->setPayload($this->payload);
             $response = $simulator->callUssd();
             $responseData = json_decode($response->get('data'), true);
@@ -254,7 +255,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
                 } else {
                     $this->handleUssdEnd($responseData);
                 }
-            } elseif (! Str::endsWith('/', $this->endpoint)) {
+            } elseif (!Str::endsWith('/', $this->endpoint)) {
                 $simulator->setEndpoint($this->endpoint .= '/');
                 continue;
             } else {
@@ -293,8 +294,9 @@ class SimulatorConsoleCommand extends FrameworkCommand
     /**
      * Write to console with the specified color.
      *
-     * @param  string          $colorType Can be info|error|question or any color name (Eg: green)
-     * @param  string|string[] $name      The string to write with colors
+     * @param string          $colorType Can be info|error|question or any color name (Eg: green)
+     * @param string|string[] $name      The string to write with colors
+     *
      * @return void
      */
     public function writeMetaName($colorType, $name)

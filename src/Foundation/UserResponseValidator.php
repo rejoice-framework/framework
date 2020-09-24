@@ -55,20 +55,22 @@ class UserResponseValidator
     /**
      * Validate the response against the defined rules.
      *
-     * @param  string               $response
-     * @param  string|array         $validationRules
+     * @param string       $response
+     * @param string|array $validationRules
+     *
      * @throws \RuntimeException
+     *
      * @return \stdClass
      */
     public static function validate($response, $validationRules)
     {
-        $validation = new \stdClass;
+        $validation = new \stdClass();
         $validation->validated = true;
 
         $rules = $validationRules;
         if (is_string($rules)) {
             $rules = explode('|', $rules);
-        } elseif (! is_array($rules)) {
+        } elseif (!is_array($rules)) {
             throw new \RuntimeException('The validation rules must be a string or an array');
         }
 
@@ -90,7 +92,7 @@ class UserResponseValidator
 
                 $specific = call_user_func([self::class, $method], $response, ...$arguments);
 
-                if (! $specific->validated) {
+                if (!$specific->validated) {
                     $validation->validated = false;
                     $validation->error = $specific->error;
                     break;
@@ -109,9 +111,11 @@ class UserResponseValidator
      * Extract the validation rule and custom error from a line of the
      * validation array.
      *
-     * @param  string|int           $key
-     * @param  string|array         $value
+     * @param string|int   $key
+     * @param string|array $value
+     *
      * @throws \RuntimeException
+     *
      * @return array
      */
     public static function extractRuleAndError($key, $value)
@@ -122,7 +126,7 @@ class UserResponseValidator
         if (is_string($key)) {
             $rule = $key;
 
-            if (! is_string($value)) {
+            if (!is_string($value)) {
                 throw new \RuntimeException("The custom validation error for the rule '".$rule."' must be a string");
             }
 
@@ -137,7 +141,7 @@ class UserResponseValidator
             $customError = $value['error'] ?? $value[$errorIndex] ?? '';
         }
 
-        if (! $rule) {
+        if (!$rule) {
             throw new \RuntimeException('Empty validation rule unsupported. Kindly add a rule or remove the empty validation');
         }
 
@@ -150,15 +154,16 @@ class UserResponseValidator
     /**
      * Check if a value is string.
      *
-     * @param  mixed     $str
+     * @param mixed $str
+     *
      * @return bool
      */
     public static function isString($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! is_string($str)) {
+        if (!is_string($str)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['string'] ??
@@ -170,10 +175,10 @@ class UserResponseValidator
 
     public static function isMin($num, $min)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! (floatval($num) >= floatval($min))) {
+        if (!(floatval($num) >= floatval($min))) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['min'] ??
@@ -185,10 +190,10 @@ class UserResponseValidator
 
     public static function isMax($num, $max)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! (floatval($num) <= floatval($max))) {
+        if (!(floatval($num) <= floatval($max))) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['max'] ??
@@ -200,10 +205,10 @@ class UserResponseValidator
 
     public static function isMinLength($str, $minLen)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isMinLength($str, intval($minLen))) {
+        if (!Str::isMinLength($str, intval($minLen))) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['minlength'] ??
@@ -215,10 +220,10 @@ class UserResponseValidator
 
     public static function isMaxLength($str, $maxLen)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isMaxLength($str, intval($maxLen))) {
+        if (!Str::isMaxLength($str, intval($maxLen))) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['maxlength'] ??
@@ -248,10 +253,10 @@ class UserResponseValidator
 
     public static function isAlpha($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isAlphabetic($str)) {
+        if (!Str::isAlphabetic($str)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['alpha'] ??
@@ -270,10 +275,10 @@ class UserResponseValidator
 
     public static function isAlphaNum($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isAlphanumeric($str)) {
+        if (!Str::isAlphanumeric($str)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['alphanum'] ??
@@ -292,10 +297,10 @@ class UserResponseValidator
 
     public static function isNumeric($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isNumeric($str)) {
+        if (!Str::isNumeric($str)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['numeric'] ??
@@ -307,10 +312,10 @@ class UserResponseValidator
 
     public static function isInteger($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isNumeric($str)) {
+        if (!Str::isNumeric($str)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['integer'] ??
@@ -329,10 +334,10 @@ class UserResponseValidator
 
     public static function isFloat($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isFloatNumeric($str)) {
+        if (!Str::isFloatNumeric($str)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['float'] ??
@@ -351,10 +356,10 @@ class UserResponseValidator
 
     public static function isTel($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Str::isTelNumber($str)) {
+        if (!Str::isTelNumber($str)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['tel'] ??
@@ -366,7 +371,7 @@ class UserResponseValidator
 
     public static function isRegex($str, $pattern)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         $matched = preg_match($pattern, $str);
@@ -384,10 +389,10 @@ class UserResponseValidator
 
     public static function isDate($date, $format = 'j/n/Y')
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
-        if (! Date::isDate($date, $format)) {
+        if (!Date::isDate($date, $format)) {
             $v->validated = false;
             $v->error = self::$customErrors[self::$errorLookupIndex] ??
             self::$customErrors['date'] ??

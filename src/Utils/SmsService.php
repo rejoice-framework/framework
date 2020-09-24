@@ -36,7 +36,7 @@ class SmsService
 
     public function send($message, $msisdn = '', $senderName = '', $endpoint = '')
     {
-        if (! ($message = trim($message))) {
+        if (!($message = trim($message))) {
             return;
         }
 
@@ -65,7 +65,7 @@ class SmsService
             $warnings['sms_data'] = $this->data;
         }
 
-        if (! empty($warnings)) {
+        if (!empty($warnings)) {
             $this->app->response()->addWarningInSimulator($warnings);
         }
     }

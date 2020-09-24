@@ -48,7 +48,7 @@ class NewCommandCommand extends FrameworkCommand
 
         if (
             file_exists($file) &&
-            ! $this->confirm([
+            !$this->confirm([
                 "Command file $file already exists.",
                 '<fg=yellow>Do you want to overwrite this file?</>',
             ])

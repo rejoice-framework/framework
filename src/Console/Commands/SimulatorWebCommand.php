@@ -24,7 +24,7 @@ class SimulatorWebCommand extends FrameworkCommand
     public function fire()
     {
         $simulatorPath = realpath(__DIR__.'/../../../../simulator/src/');
-        if (! is_dir($simulatorPath)) {
+        if (!is_dir($simulatorPath)) {
             $this->writeln([
                 $this->colorize('Simulator not found.', 'red'),
                 'Use `composer require rejoice/simulator` to install it.',

@@ -83,9 +83,11 @@ class PathConfig
     /**
      * Retrieve a path of a file or a directory of the framework.
      *
-     * @param  string            $name    The key by which the path is named
-     * @param  string            $default A default path if the path is not found
+     * @param string $name    The key by which the path is named
+     * @param string $default A default path if the path is not found
+     *
      * @throws \RuntimeException If the path is not found and no default was passed.
+     *
      * @return string
      */
     public function get(string $name, string $default = ''): string

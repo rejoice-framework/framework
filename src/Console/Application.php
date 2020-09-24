@@ -35,13 +35,13 @@ class Application
         $commands = $this->retrieveCommands();
 
         foreach ($commands as $command) {
-            $app->add(new $command);
+            $app->add(new $command());
         }
     }
 
     public function retrieveCommands()
     {
-        $paths = new PathConfig;
+        $paths = new PathConfig();
 
         $commands = require $paths->get('app_command_file');
         $frameworkCommands = require $paths->get('framework_command_file');

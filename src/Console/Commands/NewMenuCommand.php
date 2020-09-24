@@ -140,7 +140,7 @@ class NewMenuCommand extends FrameworkCommand
 
         $filename = array_pop($relativePathChunks);
 
-        if (! $filename) {
+        if (!$filename) {
             $this->writeln('No menu name.');
 
             return false;
@@ -152,15 +152,15 @@ class NewMenuCommand extends FrameworkCommand
 
         $fullPath = $dir.$slash.$filename.'.php';
 
-        if (! $this->overrideMenuFileIfExists($fullPath)) {
+        if (!$this->overrideMenuFileIfExists($fullPath)) {
             return false;
         }
 
-        if (! $this->createBaseMenuFileIfNotExists()) {
+        if (!$this->createBaseMenuFileIfNotExists()) {
             return false;
         }
 
-        if (! $this->createRequestedDirIfNotExists($dir)) {
+        if (!$this->createRequestedDirIfNotExists($dir)) {
             return false;
         }
 
@@ -187,8 +187,8 @@ class NewMenuCommand extends FrameworkCommand
 
     public function createBaseMenuFileIfNotExists()
     {
-        if (! file_exists($this->baseMenuPath())) {
-            if (! $this->confirm([
+        if (!file_exists($this->baseMenuPath())) {
+            if (!$this->confirm([
                 '',
                 "The base Menu {$this->baseMenuPathRelativeToApp()} does not exist.",
                 $this->colorize('Will you like to generate it? [Y,n] ', 'yellow'),

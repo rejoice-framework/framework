@@ -45,8 +45,9 @@ class SmileCommand extends SymfonyCommand
     /**
      * Ask user for a response.
      *
-     * @param  string $question The question to ask
-     * @param  mixed  $default  The default value of the response
+     * @param string $question The question to ask
+     * @param mixed  $default  The default value of the response
+     *
      * @return void
      */
     public function ask($question, $default = null)
@@ -61,9 +62,10 @@ class SmileCommand extends SymfonyCommand
     /**
      * Return the string passed after appliying the color tags to it.
      *
-     * @param  string   $message The string to colorize
-     * @param  string   $fg      The foreground color
-     * @param  string   $bg      The background color
+     * @param string $message The string to colorize
+     * @param string $fg      The foreground color
+     * @param string $bg      The background color
+     *
      * @return string
      */
     public function colorize($message, $fg = '', $bg = '')
@@ -77,10 +79,11 @@ class SmileCommand extends SymfonyCommand
     /**
      * Ask user for confirmation.
      *
-     * @param  string|string[] $question            The question to ask
-     * @param  mixed           $defaultResponse
-     * @param  array           $validResponses
-     * @param  array           $invalidResponses
+     * @param string|string[] $question         The question to ask
+     * @param mixed           $defaultResponse
+     * @param array           $validResponses
+     * @param array           $invalidResponses
+     *
      * @return bool
      */
     public function confirm(
@@ -89,7 +92,7 @@ class SmileCommand extends SymfonyCommand
         array $validResponses = ['y', 'yes'],
         array $invalidResponses = ['n', 'no']
     ) {
-        if (! is_array($questions)) {
+        if (!is_array($questions)) {
             $questions = [$questions];
         }
 
@@ -114,10 +117,10 @@ class SmileCommand extends SymfonyCommand
             $response = $this->ask($questions[$last]." [$defaultResponse]: ", $defaultResponse);
             $response = strtolower($response);
 
-            if (! ($hasAccepted = in_array($response, $validResponses))) {
+            if (!($hasAccepted = in_array($response, $validResponses))) {
                 $hasDeclined = in_array($response, $invalidResponses);
             }
-        } while (! $hasAccepted && ! $hasDeclined);
+        } while (!$hasAccepted && !$hasDeclined);
 
         return (bool) $hasAccepted;
     }
@@ -130,7 +133,8 @@ class SmileCommand extends SymfonyCommand
     /**
      * Draw a line with hyphen.
      *
-     * @param  array  $options
+     * @param array $options
+     *
      * @return void
      */
     public function drawSeparationLine($options = [
@@ -160,7 +164,8 @@ class SmileCommand extends SymfonyCommand
     /**
      * Write in console with foreground white on background red.
      *
-     * @param  string|array $messages
+     * @param string|array $messages
+     *
      * @return void
      */
     public function error($messages)
@@ -173,8 +178,9 @@ class SmileCommand extends SymfonyCommand
      * This method is implicitely called by the `fire` method
      * When the command is run.
      *
-     * @param  InputInterface  $input
-     * @param  OutputInterface $output
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
      * @return int
      */
     public function execute(InputInterface $input, OutputInterface $output)
@@ -201,9 +207,11 @@ class SmileCommand extends SymfonyCommand
     /**
      * Returns the argument value for a given argument name.
      *
-     * @param  string                   $name
+     * @param string $name
+     *
      * @throws InvalidArgumentException — When argument given doesn't exist
-     * @return string|string[]|null     — The argument value
+     *
+     * @return string|string[]|null — The argument value
      */
     public function getArgument($name)
     {
@@ -223,8 +231,10 @@ class SmileCommand extends SymfonyCommand
     /**
      * Returns the option value for a given option name.
      *
-     * @param  string                    $name
-     * @throws InvalidArgumentException  — When option given doesn't ex
+     * @param string $name
+     *
+     * @throws InvalidArgumentException — When option given doesn't ex
+     *
      * @return string|string[]|bool|null — The option value
      */
     public function getOption($name)
@@ -245,7 +255,8 @@ class SmileCommand extends SymfonyCommand
     /**
      * Write in console with foreground green on background black.
      *
-     * @param  string|array $messages
+     * @param string|array $messages
+     *
      * @return void
      */
     public function info($messages)
@@ -256,7 +267,8 @@ class SmileCommand extends SymfonyCommand
     /**
      * Write in console with foreground black on background cyan.
      *
-     * @param  string|array $messages
+     * @param string|array $messages
+     *
      * @return void
      */
     public function question($messages)
@@ -267,7 +279,8 @@ class SmileCommand extends SymfonyCommand
     /**
      * Write in console with foreground green on background black.
      *
-     * @param  string|array $messages
+     * @param string|array $messages
+     *
      * @return void
      */
     public function success($messages)
@@ -277,13 +290,14 @@ class SmileCommand extends SymfonyCommand
 
     public function tableLine()
     {
-        return new TableDivider;
+        return new TableDivider();
     }
 
     /**
      * Write in console with foreground red on background magenta.
      *
-     * @param  string|array $messages
+     * @param string|array $messages
+     *
      * @return void
      */
     public function warning($messages)
@@ -306,9 +320,10 @@ class SmileCommand extends SymfonyCommand
     /**
      * Write in console with color.
      *
-     * @param  string|array $messages The message(s) to write with color
-     * @param  string       $fg       The foreground color
-     * @param  string       $bg       The background color
+     * @param string|array $messages The message(s) to write with color
+     * @param string       $fg       The foreground color
+     * @param string       $bg       The background color
+     *
      * @return void
      */
     public function writeWithColor($messages, $fg = '', $bg = '')
@@ -318,7 +333,7 @@ class SmileCommand extends SymfonyCommand
         }
 
         foreach ($messages as $value) {
-            if (! is_string($value)) {
+            if (!is_string($value)) {
                 throw new \Exception('Only string and iterable containing string are supported by the writeln
                  method');
             }
@@ -330,8 +345,9 @@ class SmileCommand extends SymfonyCommand
     /**
      * Write a new line to the output.
      *
-     * @param  string|iterable $messages The message to write. Can be a string or an iterable of strings
-     * @param  int             $options  A bitmask of options (one of the OUTPUT or VERBOSITY constants), is considered the same as self::OUTPUT_NORMAL | self::VERBOSITY_NORMAL
+     * @param string|iterable $messages The message to write. Can be a string or an iterable of strings
+     * @param int             $options  A bitmask of options (one of the OUTPUT or VERBOSITY constants), is considered the same as self::OUTPUT_NORMAL | self::VERBOSITY_NORMAL
+     *
      * @return mixed
      */
     public function writeln($messages, int $options = 0)

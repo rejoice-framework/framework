@@ -31,7 +31,7 @@ class GenerateMenuJsonCommand extends FrameworkCommand
         $menusPath = Os::toPathStyle($menusDir.'/menus.php');
         $jsonPath = Os::toPathStyle($menusDir.'/menus.json');
 
-        if (! file_exists($menusPath)) {
+        if (!file_exists($menusPath)) {
             $this->writeln('Menus to generate not found at '.$menusPath);
 
             return SmileCommand::FAILURE;

@@ -47,7 +47,7 @@ class Session
      */
     public function isPrevious()
     {
-        return ! $this->isNew();
+        return !$this->isNew();
     }
 
     /**
@@ -192,14 +192,16 @@ class Session
     /**
      * Retrieve a value from the part of the session accessible by the developer.
      *
-     * @param  string            $key
-     * @param  mixed             $default
+     * @param string $key
+     * @param mixed  $default
+     *
      * @throws \RuntimeException If value not found and no default value has been provided
+     *
      * @return mixed
      */
     public function get($key = null, $default = null)
     {
-        if (! $key) {
+        if (!$key) {
             $this->data[DEVELOPER_SAVED_DATA] = $this->data[DEVELOPER_SAVED_DATA] ?? [];
 
             return $this->data[DEVELOPER_SAVED_DATA];
@@ -221,18 +223,21 @@ class Session
     /**
      * Set a value into the part of the session accessible by the developer.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function set(string $key, $value)
     {
-        if (! $this->hasMetadata(DEVELOPER_SAVED_DATA)) {
+        if (!$this->hasMetadata(DEVELOPER_SAVED_DATA)) {
             $this->setMetadata(DEVELOPER_SAVED_DATA, []);
         }
 
         $this->data[DEVELOPER_SAVED_DATA] = Arr::multiKeySet(
-            $key, $value, $this->data[DEVELOPER_SAVED_DATA]
+            $key,
+            $value,
+            $this->data[DEVELOPER_SAVED_DATA]
         );
 
         return $this;
@@ -243,7 +248,8 @@ class Session
      *
      * Returns true if the key exists and has been removed. False otherwise
      *
-     * @param  string    $key
+     * @param string $key
+     *
      * @return bool
      */
     public function remove($key)
@@ -274,13 +280,14 @@ class Session
      *
      * If no key is passed, checks if the session is not empty
      *
-     * @param  string    $key
+     * @param string $key
+     *
      * @return bool
      */
     public function has(string $key = '')
     {
-        if (! $key) {
-            return ! empty($this->data[DEVELOPER_SAVED_DATA]);
+        if (!$key) {
+            return !empty($this->data[DEVELOPER_SAVED_DATA]);
         }
 
         return isset($this->data[DEVELOPER_SAVED_DATA][$key]);
@@ -291,13 +298,14 @@ class Session
      *
      * If no key is passed, checks if the session is not empty
      *
-     * @param  string    $key
+     * @param string $key
+     *
      * @return bool
      */
     public function hasMetadata(string $key = '')
     {
-        if (! $key) {
-            return ! empty($this->data);
+        if (!$key) {
+            return !empty($this->data);
         }
 
         return isset($this->data[$key]);
@@ -306,8 +314,9 @@ class Session
     /**
      * Set a framework-level variable in the session.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function setMetadata(string $key, $value)
@@ -322,7 +331,8 @@ class Session
      *
      * Returns true if the variable exists and has been removed, false otherwise
      *
-     * @param  string $key
+     * @param string $key
+     *
      * @return void
      */
     public function removeMetadata(string $key)
@@ -333,14 +343,16 @@ class Session
     /**
      * Retrieve a framework-level variable from the session.
      *
-     * @param  string            $key
-     * @param  mixed             $default
+     * @param string $key
+     * @param mixed  $default
+     *
      * @throws \RuntimeException If value not found and no default value has been provided
+     *
      * @return mixed
      */
     public function metadata(string $key = '', $default = null)
     {
-        if (! $key) {
+        if (!$key) {
             return $this->data;
         }
 
@@ -350,6 +362,7 @@ class Session
             if (\func_num_args() > 1) {
                 return $default;
             }
+
             throw new \RuntimeException('Index "'.$key.'" not found in the session.');
         }
 
