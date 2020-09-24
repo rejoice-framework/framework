@@ -4,24 +4,24 @@ namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
 use Prinx\Str;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Rejoice\Console\Argument;
+use Rejoice\Console\Option;
 
 class NewCommandCommand extends FrameworkCommand
 {
     public function configure()
     {
-        $this->setName('app:new-command')
+        $this->setName('command:new')
             ->setDescription('Create a new console command class')
             ->addArgument(
                 'name',
-                InputArgument::REQUIRED,
+                Argument::REQUIRED,
                 'The name of the command'
             )
             ->addOption(
                 'example',
                 'e',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create a full example command'
             );
     }
@@ -48,7 +48,7 @@ class NewCommandCommand extends FrameworkCommand
 
         if (
             file_exists($file) &&
-            ! $this->confirm([
+            !$this->confirm([
                 "Command file $file already exists.",
                 '<fg=yellow>Do you want to overwrite this file?</>',
             ])

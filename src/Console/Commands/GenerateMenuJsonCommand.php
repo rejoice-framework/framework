@@ -3,7 +3,7 @@
 namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
-use Symfony\Component\Console\Input\InputOption;
+use Rejoice\Console\Option;
 
 class GenerateMenuJsonCommand extends FrameworkCommand
 {
@@ -15,7 +15,7 @@ class GenerateMenuJsonCommand extends FrameworkCommand
             ->addOption(
                 'path',
                 null,
-                InputOption::VALUE_OPTIONAL,
+                Option::OPTIONAL,
                 'If the menus to generate from reside in a particular namespace (folder) in the resources/menus/, specify the path, taking as root folder the resources/menus/ folder.',
                 ''
             );
@@ -31,7 +31,7 @@ class GenerateMenuJsonCommand extends FrameworkCommand
         $menusPath = Os::toPathStyle($menusDir.'/menus.php');
         $jsonPath = Os::toPathStyle($menusDir.'/menus.json');
 
-        if (! file_exists($menusPath)) {
+        if (!file_exists($menusPath)) {
             $this->writeln('Menus to generate not found at '.$menusPath);
 
             return SmileCommand::FAILURE;

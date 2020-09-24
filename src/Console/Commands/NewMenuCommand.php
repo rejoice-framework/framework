@@ -4,8 +4,8 @@ namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
 use Prinx\Str;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Rejoice\Console\Argument;
+use Rejoice\Console\Option;
 
 class NewMenuCommand extends FrameworkCommand
 {
@@ -16,69 +16,69 @@ class NewMenuCommand extends FrameworkCommand
             ->setHelp('Create a new menu')
             ->addArgument(
                 'name',
-                InputArgument::REQUIRED,
+                Argument::REQUIRED,
                 'The name or the namespace of the new menu.'
             )
             ->addOption(
                 'paginable',
                 'p',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create a paginable menu.',
                 null
             )
             ->addOption(
                 'no-comment',
                 'x',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create a paginable menu.',
                 null
             )
             ->addOption(
                 'all',
                 'a',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create menu with all the menu entity methods',
                 null
             )
             ->addOption(
                 'basic',
                 'b',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create menu with the basic menu entity methods (message, actions, validate and saveAs)',
                 null
             )
             ->addOption(
                 'validate',
                 '',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create menu with the validate menu entity method',
                 null
             )
             ->addOption(
                 'save-as',
                 '',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create a paginable menu.',
                 null
             )
             ->addOption(
                 'after',
                 '',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create a paginable menu with the after method',
                 null
             )
             ->addOption(
                 'on-next',
                 '',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create a paginable menu with the onMoveToNextMenu method',
                 null
             )
             ->addOption(
                 'on-back',
                 '',
-                InputOption::VALUE_NONE,
+                Option::NONE,
                 'Create a paginable menu with the onMoveToNextMenu method',
                 null
             )
@@ -88,23 +88,71 @@ class NewMenuCommand extends FrameworkCommand
     public function fire()
     {
         $fileRelativePath = $this->getArgument('name');
-
         $newFileData = $this->newFileFromArgument($fileRelativePath);
 
-        if ($newFileData) {
-            $path = $newFileData['path'];
-            $filename = $newFileData['name'];
+        if (!$newFileData) {
+            $this->writeln('Menu creation discarded.');
 
-            if ($this->writeClassInMenuFile($path, $filename)) {
-                $this->info('Menu created at '.$this->pathFromApp($path));
-            } else {
-                $this->error('An error happened.');
-            }
-        } else {
-            $this->writeln('Menu creation discarded');
+            return SmileCommand::SUCCESS;
         }
 
-        return SmileCommand::SUCCESS;
+        $path = $newFileData['path'];
+        $filename = $newFileData['name'];
+
+        if ($this->writeClassInMenuFile($path, $filename)) {
+            $this->info('Menu created at '.$this->pathFromApp($path));
+
+            return SmileCommand::SUCCESS;
+        }
+
+        $this->error('An error happened.');
+
+        return SmileCommand::FAILURE;
+    }
+
+    public function newFileFromArgument($fileRelativePath)
+    {
+        $name = Os::toPathStyle($fileRelativePath);
+
+        $slash = Os::slash();
+        $name = Str::startsWith(".$slash", $name) ? ltrim($name, ".$slash") : $name;
+        $name = Str::startsWith($slash, $name) ? ltrim($name, $slash) : $name;
+
+        $relativePathChunks = explode($slash, $name);
+        $relativePathChunks = array_map(function ($element) {
+            return Str::pascalCase($element);
+        }, $relativePathChunks);
+
+        $filename = array_pop($relativePathChunks);
+
+        if (!$filename) {
+            $this->writeln('No menu name.');
+
+            return false;
+        }
+
+        $relativeDir = implode($slash, $relativePathChunks);
+        $dir = $this->baseMenuFolder().$relativeDir;
+        $dir = !Str::endsWith($slash, $dir) ? $dir.$slash : $dir;
+
+        $fullPath = $dir.$filename.'.php';
+
+        if (!$this->overrideMenuFileIfExists($fullPath)) {
+            return false;
+        }
+
+        if (!$this->createBaseMenuFileIfNotExists()) {
+            return false;
+        }
+
+        if (!$this->createRequestedDirIfNotExists($dir)) {
+            return false;
+        }
+
+        return [
+            'path' => $fullPath,
+            'name' => $filename,
+        ];
     }
 
     public function writeClassInMenuFile($path, $newFileName)
@@ -125,51 +173,6 @@ class NewMenuCommand extends FrameworkCommand
         return $namespace;
     }
 
-    public function newFileFromArgument($fileRelativePath)
-    {
-        $name = Os::toPathStyle($fileRelativePath);
-
-        $slash = Os::slash();
-        $name = Str::startsWith(".$slash", $name) ? ltrim($name, ".$slash") : $name;
-        $name = Str::startsWith($slash, $name) ? ltrim($name, $slash) : $name;
-
-        $relativePathChunks = explode($slash, $name);
-        $relativePathChunks = array_map(function ($element) {
-            return Str::pascalCase($element);
-        }, $relativePathChunks);
-
-        $filename = array_pop($relativePathChunks);
-
-        if (! $filename) {
-            $this->writeln('No menu name.');
-
-            return false;
-        }
-
-        $relativeDir = implode($slash, $relativePathChunks);
-        // $dir = $this->baseMenuFolder() . $slash . $relativeDir;
-        $dir = $this->baseMenuFolder().$relativeDir;
-
-        $fullPath = $dir.$slash.$filename.'.php';
-
-        if (! $this->overrideMenuFileIfExists($fullPath)) {
-            return false;
-        }
-
-        if (! $this->createBaseMenuFileIfNotExists()) {
-            return false;
-        }
-
-        if (! $this->createRequestedDirIfNotExists($dir)) {
-            return false;
-        }
-
-        return [
-            'path' => $fullPath,
-            'name' => $filename,
-        ];
-    }
-
     public function createRequestedDirIfNotExists($dir)
     {
         if (is_dir($dir)) {
@@ -187,8 +190,8 @@ class NewMenuCommand extends FrameworkCommand
 
     public function createBaseMenuFileIfNotExists()
     {
-        if (! file_exists($this->baseMenuPath())) {
-            if (! $this->confirm([
+        if (!file_exists($this->baseMenuPath())) {
+            if (!$this->confirm([
                 '',
                 "The base Menu {$this->baseMenuPathRelativeToApp()} does not exist.",
                 $this->colorize('Will you like to generate it? [Y,n] ', 'yellow'),
@@ -214,12 +217,12 @@ class NewMenuCommand extends FrameworkCommand
     {
         if (file_exists($file)) {
             return
-                $this->confirm([
-                    "Menu {$this->pathFromApp($file)} already exists.",
-                    $this->colorize('Do you want to overwrite it? [Y,n] ', 'red'),
-                ]) &&
-                rename($file, $file) // We force the file to take the new name.Because of Windows that does not consider capitalisation the wanted name could differ from the name that the file had.
-;
+            $this->confirm([
+                "Menu {$this->pathFromApp($file)} already exists.",
+                $this->colorize('Do you want to overwrite it? [Y,n] ', 'red'),
+            ]) &&
+            rename($file, $file) // We force the file to take the new name. Because of Windows that does not consider capitalisation the wanted name could differ from the name that the file had.
+            ;
         }
 
         return true;
@@ -231,9 +234,9 @@ class NewMenuCommand extends FrameworkCommand
 
         if ($paginable) {
             return $this->paginableMenuTemplate($name, $namespace);
-        } else {
-            return $this->standardMenuTemplate($name, $namespace);
         }
+
+        return $this->standardMenuTemplate($name, $namespace);
     }
 
     // The variables here seems not to be used but will actually have effect

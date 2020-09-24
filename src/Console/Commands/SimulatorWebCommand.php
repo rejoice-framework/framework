@@ -3,7 +3,7 @@
 namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
-use Symfony\Component\Console\Input\InputOption;
+use Rejoice\Console\Option;
 
 class SimulatorWebCommand extends FrameworkCommand
 {
@@ -15,7 +15,7 @@ class SimulatorWebCommand extends FrameworkCommand
             ->addOption(
                 'port',
                 'p',
-                InputOption::VALUE_OPTIONAL,
+                Option::OPTIONAL,
                 'Specify the port on which to run the simulator',
                 '8001'
             );
@@ -24,7 +24,7 @@ class SimulatorWebCommand extends FrameworkCommand
     public function fire()
     {
         $simulatorPath = realpath(__DIR__.'/../../../../simulator/src/');
-        if (! is_dir($simulatorPath)) {
+        if (!is_dir($simulatorPath)) {
             $this->writeln([
                 $this->colorize('Simulator not found.', 'red'),
                 'Use `composer require rejoice/simulator` to install it.',

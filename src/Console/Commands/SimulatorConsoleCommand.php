@@ -76,7 +76,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
             ->addOption(
                 'channel',
                 null,
-                Option::VALUE_OPTIONAL,
+                Option::OPTIONAL,
                 'Makes the request behave like it was from the particular channel (from a normal phone, or from whatsapp or from the console). The allowed channels are: USSD, WHATSAPP, CONSOLE',
                 env('USSD_CONSOLE_BEHAVIOR', 'USSD')
             );
@@ -103,13 +103,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
     {
         $this->endpoint = $this->getOption('url');
 
-        if (! $this->endpoint || ! URL::isUrl($this->endpoint)) {
+        if (!$this->endpoint || !URL::isUrl($this->endpoint)) {
             $this->writeWithColor('Invalid endpoint "'.$this->endpoint.'"', 'red');
 
             return SmileCommand::FAILURE;
         }
 
-        if (! ($tel = $this->getOption('tel'))) {
+        if (!($tel = $this->getOption('tel'))) {
             $this->writeWithColor('Invalid phone number "'.$tel.'"', 'red');
 
             return SmileCommand::FAILURE;
@@ -166,18 +166,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
      */
     public function htmlToText($messages)
     {
-        if (is_string($messages)) {
-            $stringPassed = true;
-            $messagesPassed = [$messages];
-        } else {
-            $stringPassed = false;
-            $messagesPassed = $messages;
-        }
+        $stringPassed = is_string($messages);
+        $messagesPassed = $stringPassed ? [$messages] : $messages;
 
         $converted = [];
 
         foreach ($messagesPassed as $key => $value) {
-            if (! is_string($value)) {
+            if (!is_string($value)) {
                 return $messages;
             }
 
@@ -239,7 +234,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
         $this->dial();
 
-        while (! $this->isLastMenu($this->payload)) {
+        while (!$this->isLastMenu($this->payload)) {
             $simulator->setPayload($this->payload);
             $response = $simulator->callUssd();
             $responseData = json_decode($response->get('data'), true);
@@ -254,7 +249,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
                 } else {
                     $this->handleUssdEnd($responseData);
                 }
-            } elseif (! Str::endsWith('/', $this->endpoint)) {
+            } elseif (!Str::endsWith('/', $this->endpoint)) {
                 $simulator->setEndpoint($this->endpoint .= '/');
                 continue;
             } else {
@@ -300,9 +295,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
     public function writeMetaName($colorType, $name)
     {
         if (method_exists($this, $colorType)) {
-            $this->{$colorType}
-
-            ($name);
+            ($this->{$colorType}($name));
         } elseif (isset($this->colors[$colorType])) {
             $this->writeWithColor($name, $colorType);
         } else {
