@@ -203,11 +203,11 @@ class NewMenuCommand extends FrameworkCommand
                 $this->info("Base menu created at {$this->baseMenuPathRelativeToApp()}");
 
                 return true;
-            } else {
-                $this->error('Error when generating the base menu file.');
-
-                return false;
             }
+            
+            $this->error('Error when generating the base menu file.');
+
+            return false;
         }
 
         return true;
