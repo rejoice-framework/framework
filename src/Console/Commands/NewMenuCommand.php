@@ -204,7 +204,7 @@ class NewMenuCommand extends FrameworkCommand
 
                 return true;
             }
-            
+
             $this->error('Error when generating the base menu file.');
 
             return false;
@@ -222,7 +222,7 @@ class NewMenuCommand extends FrameworkCommand
                 $this->colorize('Do you want to overwrite it? [Y,n] ', 'red'),
             ]) &&
             rename($file, $file) // We force the file to take the new name. Because of Windows that does not consider capitalisation the wanted name could differ from the name that the file had.
-            ;
+;
         }
 
         return true;
