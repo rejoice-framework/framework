@@ -95,8 +95,9 @@ class UserResponseValidator
                 if (!$specific->validated) {
                     $validation->validated = false;
                     $validation->error = $specific->error;
-                    break;
                 }
+
+                break;
             }
 
             throw new \RuntimeException('Unknown validation rule `'.$explodedRule[0].'`');
