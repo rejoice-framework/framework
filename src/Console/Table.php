@@ -13,7 +13,7 @@ class Table extends ConsoleTable
 
     public static function drawLine()
     {
-        return new TableDivider;
+        return new TableDivider();
     }
 
     public function head(array $headers)

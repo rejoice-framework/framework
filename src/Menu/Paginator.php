@@ -49,8 +49,9 @@ trait Paginator
      * The trigger is what will be displayed to the user as option to select.
      * It's automatically handled by the Paginator
      *
-     * @param  array    $row
-     * @param  string   $trigger
+     * @param array  $row
+     * @param string $trigger
+     *
      * @return array
      */
     abstract public function itemAction($row, $trigger);
@@ -64,7 +65,7 @@ trait Paginator
     {
         if (
             $this->hasResumeFromLastSessionOnThisMenu() ||
-            ! empty($this->error())
+            !empty($this->error())
         ) {
             $this->moveFetchCursorBackOnce();
         }
@@ -101,7 +102,7 @@ trait Paginator
                 $actions = $this->mergeAction($actions, $action);
             }
 
-            if (! $this->isPaginationLastPage()) {
+            if (!$this->isPaginationLastPage()) {
                 $forwardAction = parent::paginateForwardAction($this->forwardTrigger());
                 $actions = $this->mergeAction($actions, $forwardAction);
             }
@@ -117,7 +118,7 @@ trait Paginator
 
     public function paginationTotal()
     {
-        if (! ($total = $this->paginationGet('total'))) {
+        if (!($total = $this->paginationGet('total'))) {
             $total = $this->paginationCountAll();
             $this->paginationSave('total', $total);
         }
@@ -246,7 +247,7 @@ trait Paginator
      */
     public function currentItemsCount()
     {
-        if (! isset($this->currentItemsCount)) {
+        if (!isset($this->currentItemsCount)) {
             $this->currentItemsCount = count($this->currentRetrievedItems());
         }
 
@@ -269,7 +270,8 @@ trait Paginator
     /**
      * Save the id of last fetched item of the pagination.
      *
-     * @param  int    $lastId
+     * @param int $lastId
+     *
      * @return void
      */
     public function saveLastRetrievedId($lastId)
@@ -282,8 +284,9 @@ trait Paginator
     /**
      * Saves pagination data for the current menu.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function paginationSave($key, $value)
@@ -297,7 +300,8 @@ trait Paginator
     /**
      * Get a pagination data.
      *
-     * @param  string  $key
+     * @param string $key
+     *
      * @return mixed
      */
     public function paginationGet($key)
@@ -334,9 +338,9 @@ trait Paginator
             ],
         ];
 
-        if (! $sessionAlreadySupportsPagination) {
+        if (!$sessionAlreadySupportsPagination) {
             $this->sessionSave('pagination', $newPaginationData);
-        } elseif (! $sessionAlreadySupportsPaginationOnCurrentMenu) {
+        } elseif (!$sessionAlreadySupportsPaginationOnCurrentMenu) {
             $pagination = $this->sessionGet('pagination');
             $pagination = array_replace($pagination, $newPaginationData);
             $this->sessionSave('pagination', $pagination);
@@ -347,8 +351,9 @@ trait Paginator
      * Determines the proper back action to use, according to where we are in
      * the current pagination.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function backAction($trigger = '', $display = '')

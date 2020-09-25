@@ -29,7 +29,7 @@ class ServeCommand extends FrameworkCommand
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $simulatorPath = realpath(__DIR__.'/../../../../../');
-        if (! is_dir($simulatorPath)) {
+        if (!is_dir($simulatorPath)) {
             $output->writeln([
                 '<fg=red>index.php not found.</>',
             ]);

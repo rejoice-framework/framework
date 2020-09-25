@@ -144,14 +144,15 @@ class Menus implements \ArrayAccess
      *
      * Return the modified action bag
      *
-     * @param  array   $actions
-     * @param  string  $menuName
-     * @param  bool $replace
+     * @param array  $actions
+     * @param string $menuName
+     * @param bool   $replace
+     *
      * @return array
      */
     public function insertMenuActions($actions, $menuName, $replace = false)
     {
-        if (! isset($this->menus[$menuName][ACTIONS])) {
+        if (!isset($this->menus[$menuName][ACTIONS])) {
             $this->menus[$menuName][ACTIONS] = [];
         }
 
@@ -233,7 +234,7 @@ class Menus implements \ArrayAccess
         $menuName,
         $userResponseExistsInMenuActions
     ) {
-        if (! empty($forcedFlow = $this->session->metadata(FORCED_MENU_FLOW, []))) {
+        if (!empty($forcedFlow = $this->session->metadata(FORCED_MENU_FLOW, []))) {
             $nextMenu = array_shift($forcedFlow);
             $this->session->setMetadata(FORCED_MENU_FLOW, $forcedFlow);
 
@@ -254,13 +255,13 @@ class Menus implements \ArrayAccess
 
         if (
             $this->session->metadata('currentMenuSplitted', null) &&
-            ! $this->session->metadata('currentMenuSplitEnd', null) && $this->app->config('menu.splitted_menu_next_trigger') === $userResponse) {
+            !$this->session->metadata('currentMenuSplitEnd', null) && $this->app->config('menu.splitted_menu_next_trigger') === $userResponse) {
             return APP_SPLITTED_MENU_NEXT;
         }
 
         if (
             $this->session->metadata('currentMenuSplitted', null) &&
-            ! $this->session->metadata('currentMenuSplitStart', null) && $this->app->config('menu.back_action_trigger') === $userResponse) {
+            !$this->session->metadata('currentMenuSplitStart', null) && $this->app->config('menu.back_action_trigger') === $userResponse) {
             return APP_BACK;
         }
 
@@ -325,7 +326,7 @@ class Menus implements \ArrayAccess
     public function saveForcedFlow($actionLater)
     {
         $type = gettype($actionLater);
-        if (! in_array($type, ['array', 'string'])) {
+        if (!in_array($type, ['array', 'string'])) {
             throw new \Exception('The parameter '.ITEM_LATER.' must be of  a the name or an array of the name(s) of the menu(s) you want to redirect to.');
         }
 
@@ -378,7 +379,7 @@ class Menus implements \ArrayAccess
     {
         if ($index < 0) {
             throw new \Exception('Error: Splitted menu does not have page back page. This might not normally happen! Review the code.');
-        } elseif (! isset($this->session->data['currentMenuChunks'][$index])) {
+        } elseif (!isset($this->session->data['currentMenuChunks'][$index])) {
             throw new \Exception('Splitted menu does not have any next page.');
         }
 
@@ -471,7 +472,7 @@ class Menus implements \ArrayAccess
             $splitMenu = '';
 
             // Add Goto next page action
-            if ($menuItemNumber === $first || ! isset($menuChunks[0])) {
+            if ($menuItemNumber === $first || !isset($menuChunks[0])) {
                 $splitMenu = $splittedMenuNext;
 
                 /*
@@ -482,7 +483,7 @@ class Menus implements \ArrayAccess
                 if ($hasBackAction) {
                     $splitMenu .= "\n".$splittedMenuBack;
                 }
-            } elseif ($menuItemNumber === $last && ! $hasBackAction) {
+            } elseif ($menuItemNumber === $last && !$hasBackAction) {
                 /*
                  * We add a back action at the end only if the developer has
                  * not already added a back action. We `assume` (and advice) the
@@ -518,7 +519,7 @@ class Menus implements \ArrayAccess
             if ($next < $last) {
                 $nextLine = "\n".$menuStringChunks[$next];
 
-                if (! isset($menuChunks[0])) {
+                if (!isset($menuChunks[0])) {
                     $splitMenu = "\n".$splittedMenuNext;
                 } else {
                     $splitMenu = "\n".$splittedMenuNext."\n".$splittedMenuBack;
@@ -552,17 +553,20 @@ class Menus implements \ArrayAccess
      * (no actions means the developer is no more waiting for any response, so
      * the user can no more input something)
      *
-     * @param  array     $actions
+     * @param array $actions
+     *
      * @return bool
      */
     public function isLastPage($menuName, $actions = [], $menuEntity = null)
     {
         return
             empty($actions)
-            && ! isset($this->menus[$menuName][DEFAULT_NEXT_MENU])
-            && (! $menuEntity
-                || ($menuEntity
-                    && ! method_exists($menuEntity, MENU_ENTITY_DEFAULT_NEXT_MENU)
+            && !isset($this->menus[$menuName][DEFAULT_NEXT_MENU])
+            && (
+                !$menuEntity
+                || (
+                    $menuEntity
+                    && !method_exists($menuEntity, MENU_ENTITY_DEFAULT_NEXT_MENU)
                 )
             );
     }
@@ -611,7 +615,7 @@ class Menus implements \ArrayAccess
 
     public function get($id)
     {
-        if (! isset($this->menus[$id])) {
+        if (!isset($this->menus[$id])) {
             throw new \Exception('Menu "'.$id.' not found inside the menus.');
         }
 
