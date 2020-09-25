@@ -1222,7 +1222,13 @@ class Kernel
         $log = "Error:\n".$error."\n\nUser session:\n".json_encode($sessionData, JSON_PRETTY_PRINT);
 
         $this->logger->emergency($log);
-        $this->sendSms("ERROR\n".substr($error, 0, 140));
+
+        if ($tel = $this->config('app.admin.tel', '')) {
+            $sender = $this->config('app.sms_sender_name', '');
+            $sender = $sender ?: 'REJOICE';
+            $this->sendSms("ERROR\n".substr($error, 0, 140), $tel, $sender);
+        }
+
         exit;
     }
 
