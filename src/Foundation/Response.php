@@ -62,9 +62,9 @@ class Response
     public function appHasTimedOut()
     {
         return
-            $this->app->isUssdChannel() &&
-            $this->app->session()->mustNotTimeout() &&
-            $this->app->session()->hasTimedOut();
+        $this->app->isUssdChannel() &&
+        $this->app->session()->mustNotTimeout() &&
+        $this->app->session()->hasTimedOut();
     }
 
     public function send(
@@ -78,12 +78,13 @@ class Response
         if ($previouslyDisplayed && !$error) {
             $this->addInfoInSimulator("\n".$previouslyDisplayed."\n");
         } elseif ($error) {
+            $this->addErrorInSimulator($this->formatError($error));
             $this->addErrorInSimulator($previouslyDisplayed);
 
             $appFailMessage = $this->app->config('menu.application_failed_message');
 
             if ($message !== $appFailMessage) {
-                $this->addInfoInSimulator("RESPONSE:\n$message");
+                $this->addInfoInSimulator("RESPONSE:\n\n$message");
             }
 
             $hard = true;
@@ -106,6 +107,15 @@ class Response
         if ($hard) {
             exit;
         }
+    }
+
+    public function formatError(array $error)
+    {
+        $errorStr = $error['message'];
+        $errorStr .= "\nIn ".$error['file'].' at line '.$error['line'];
+        $errorStr .= "\nError type ".$error['type'];
+
+        return $errorStr;
     }
 
     protected function format($message, $requestType)
