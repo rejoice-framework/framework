@@ -247,8 +247,8 @@ class Kernel
             $this->path('app_default_cache_file')
         );
         $this->config = new Config([
-            $this->path('app_config_dir'),
             $this->path('default_config_dir'),
+            $this->path('app_config_dir'),
         ]);
         $this->request = new Request($this);
         $this->response = new Response($this);
