@@ -1,0 +1,6 @@
+    public function actions($previousResponses)
+    {
+        $actions = [];
+
+        return $this->withBack($actions);
+    }

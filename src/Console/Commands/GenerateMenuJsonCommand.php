@@ -5,6 +5,11 @@ namespace Rejoice\Console\Commands;
 use Prinx\Os;
 use Rejoice\Console\Option;
 
+/**
+ * Dump the menu resource to JSON.
+ *
+ * @author Prince Dorcis <princedorcis@gmail.com>
+ */
 class GenerateMenuJsonCommand extends FrameworkCommand
 {
     public function configure()

@@ -1,0 +1,10 @@
+    public function itemAction($row, $trigger)
+    {
+        return [
+            $trigger => [
+                'display'   => $row['name'],
+                'next_menu' => 'menu_name',
+                'save_as'   => $row['id'],
+            ],
+        ];
+    }

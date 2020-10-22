@@ -1,0 +1,6 @@
+    /**
+     * Modify the response of the user before it is saved to previous responses.
+     *
+     * @param string $response
+     * @return mixed
+     */

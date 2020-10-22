@@ -48,24 +48,19 @@ class RequestValidator extends Validator
         }
     }
 
-    public function validateShortcode(
-        $sent_ussdCode,
-        $defined_ussdCode
-    ) {
-        if (null === $defined_ussdCode) {
+    public function validateShortcode($sentUssdCode, $definedUssdCode)
+    {
+        if (is_null($definedUssdCode)) {
             $this->app->fail('No "USSD_CODE" value found in the `.env` file. Kindly specify the USSD_CODE variable in the `.env` file.');
         }
 
-        if ($sent_ussdCode !== $defined_ussdCode) {
-            return false;
-        }
-
-        return true;
+        return $sentUssdCode === $definedUssdCode;
     }
 
     public function validateRequestParams()
     {
         $requestParams = $this->app->request()->input();
+        
         if (!is_array($requestParams)) {
             $this->app->fail('Invalid request parameters received.');
         }

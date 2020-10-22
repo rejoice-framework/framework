@@ -1,0 +1,15 @@
+<?php
+
+namespace :namespace:;
+
+use :baseMenuFullName:;
+use :paginatorFullName:;
+
+class :name: extends :baseMenu:
+{
+    use :paginator:;
+
+    protected $perPage = 4;
+
+:methods:
+}

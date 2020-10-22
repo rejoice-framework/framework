@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Rejoice\Console\Commands\FrameworkCommand as Smile;
+
+class :commandClass: extends Smile
+{
+    public function configure()
+    {
+        $this->setName(':commandName:')
+            ->setDescription('Describe me.')
+            ->setHelp('How to use me.');
+    }
+
+    public function fire()
+    {
+        //
+
+        return Smile::SUCCESS;
+    }
+}

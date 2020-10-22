@@ -1,0 +1,4 @@
+    public function paginate()
+    {
+        // return Model::where([]);
+    }

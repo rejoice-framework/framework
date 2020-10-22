@@ -1,0 +1,6 @@
+    /**
+     * Validate the response of the user.
+     *
+     * @param string $response
+     * @return bool|string|array|Rejoice\Foundation\UserResponseValidator
+     */

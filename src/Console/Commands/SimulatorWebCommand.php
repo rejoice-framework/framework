@@ -4,6 +4,7 @@ namespace Rejoice\Console\Commands;
 
 use Prinx\Os;
 use Rejoice\Console\Option;
+use Rejoice\Simulator\Libs\Simulator;
 
 class SimulatorWebCommand extends FrameworkCommand
 {
@@ -13,29 +14,34 @@ class SimulatorWebCommand extends FrameworkCommand
             ->setDescription('Run the USSD simulator web interface')
             ->setHelp('This command allow you to test your USSD application')
             ->addOption(
-                'port',
-                'p',
+                'host',
+                null,
                 Option::OPTIONAL,
-                'Specify the port on which to run the simulator',
-                '8001'
+                'The ip address on which to run the simulator',
+                '127.0.0.1'
+            )
+            ->addOption(
+                'port',
+                null,
+                Option::OPTIONAL,
+                'The port on which to run the simulator',
+                '8000'
             );
     }
 
     public function fire()
     {
-        $simulatorPath = realpath(__DIR__.'/../../../../simulator/src/');
-        if (!is_dir($simulatorPath)) {
+        if (!class_exists('Rejoice\Simulator\Libs\Simulator')) {
             $this->writeln([
-                $this->colorize('Simulator not found.', 'red'),
-                'Use `composer require rejoice/simulator` to install it.',
+                $this->colorize('Simulator not installed.', 'red'),
+                'Run `composer require rejoice/simulator` to install it.',
             ]);
 
             return SmileCommand::FAILURE;
         }
 
-        $ip = '127.0.0.1';
+        $ip = $this->getOption('host');
         $port = $this->getOption('port');
-
         $keyCombination = Os::getCtrlKey().'+c';
 
         $this->writeln([
@@ -43,7 +49,7 @@ class SimulatorWebCommand extends FrameworkCommand
             "Press {$keyCombination} to stop the server.",
         ]);
 
-        passthru('php -S '.$ip.':'.$port.' -t "'.$simulatorPath.'"', $return);
+        Simulator::serve($ip, $port);
 
         return SmileCommand::SUCCESS;
     }

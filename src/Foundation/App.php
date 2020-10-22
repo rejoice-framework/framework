@@ -1,4 +1,5 @@
 <?php
+
 /*
  * This file is part of the Rejoice package.
  *
@@ -17,9 +18,14 @@ namespace Rejoice\Foundation;
  */
 class App
 {
-    public static function run($appName = '')
+    public static function start($appName = '')
     {
         $app = new Kernel($appName);
         $app->run();
+    }
+
+    public static function mock()
+    {
+        return new Kernel;
     }
 }

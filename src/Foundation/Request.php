@@ -17,7 +17,6 @@ use Prinx\Str;
  * Handles the request to the framework.
  *
  * @todo Replace this request class by \Symfony\Component\HttpFoundation
- *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
 class Request
@@ -31,7 +30,7 @@ class Request
     public function __construct(Kernel $app)
     {
         $this->app = $app;
-        $this->hydrateInput($_POST);
+        $this->hydrateInput($app->forcedInput() ? $app->forcedInput() : $_POST);
         $this->hydrateQuery($_GET);
     }
 
@@ -75,9 +74,8 @@ class Request
      *
      * If no parameter has been passed, the array of POST parameters is returned
      *
-     * @param string $key
-     * @param mixed  $default
-     *
+     * @param  string  $key
+     * @param  mixed   $default
      * @return mixed
      */
     public function input($key = null, $default = null)
@@ -92,9 +90,8 @@ class Request
      *
      * If no parameter has been passed, the array of GET parameters is returned
      *
-     * @param string $key
-     * @param mixed  $default
-     *
+     * @param  string  $key
+     * @param  mixed   $default
      * @return mixed
      */
     public function query($key = null, $default = null)
@@ -106,11 +103,11 @@ class Request
     {
         $param = $param ?: array_merge($this->input, $this->query);
 
-        if (!$key) {
+        if (! $key) {
             return $param;
         }
 
-        if (!isset($param[$key])) {
+        if (! isset($param[$key])) {
             throw new \Exception('Undefined request input `'.$key.'`');
         }
 
@@ -121,9 +118,8 @@ class Request
      * Changes the value of a request parameter or enforces a new parameter
      * into the input parameter bag.
      *
-     * @param string $name
-     * @param mixed  $value
-     *
+     * @param  string $name
+     * @param  mixed  $value
      * @return void
      */
     public function forceInput($name, $value)
@@ -133,7 +129,7 @@ class Request
 
     public function sanitize($var)
     {
-        if (!is_string($var)) {
+        if (! is_string($var)) {
             return $var;
         }
 

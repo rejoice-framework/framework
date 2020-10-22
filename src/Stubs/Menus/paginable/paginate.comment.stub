@@ -1,0 +1,8 @@
+    /**
+     * Items to paginate.
+     *
+     * Do not use '->get()' or '->first()' on the query.
+     * Rejoice will perform it at the appropriate time.
+     *
+     * @return Rejoice\Database\QueryBuilder
+     */

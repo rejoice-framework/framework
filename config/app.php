@@ -102,4 +102,29 @@ return [
      */
     'allow_direct_sub_menu_call' => false,
 
+    /*
+     * Delimits variables in stubs files
+     */
+    'stub_variable_delimiter' => ':',
+
+    /*
+     * Customize according to the paramters provided by the telecos of the
+     * country
+     */
+    'request_param_user_phone_number' => env('USER_PHONE_PARAM_NAME', 'msisdn'),
+    'request_param_user_network'      => env('USER_NETWORK_PARAM_NAME', 'network'),
+    'request_param_session_id'        => env('SESSION_ID_PARAM_NAME', 'sessionID'),
+    'request_param_request_type'      => env('REQUEST_TYPE_PARAM_NAME', 'ussdServiceOp'),
+    'request_param_user_response'     => env('USER_RESPONSE_PARAM_NAME', 'ussdString'),
+    'request_param_menu_string'       => env('MENU_STRING_PARAM_NAME', 'message'),
+
+    /*
+     * Request type codes
+     */
+    'request_init'               => env('REQUEST_INIT_CODE', '1'),
+    'request_end'                => env('REQUEST_END_CODE', '17'),
+    'request_failed'             => env('REQUEST_FAILED_CODE', '3'),
+    'request_cancelled'          => env('REQUEST_CANCELLED_CODE', '30'),
+    'request_ask_user_response'  => env('REQUEST_ASK_USER_RESPONSE_CODE', '2'),
+    'request_user_sent_response' => env('REQUEST_USER_SENT_RESPONSE_CODE', '18'),
 ];

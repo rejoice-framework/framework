@@ -1,0 +1,7 @@
+    /**
+     * Will be called for each item.
+     *
+     * @param array|Rejoice\Support\Collection $row
+     * @param string $trigger
+     * @return array
+     */

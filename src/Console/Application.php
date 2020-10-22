@@ -11,8 +11,10 @@
 
 namespace Rejoice\Console;
 
-use Rejoice\Foundation\PathConfig;
-use Symfony\Component\Console\Application as SymfonyConsoleApp;
+use Rejoice\Console\Commands\FrameworkCommand;
+use Rejoice\Foundation\App as Rejoice;
+use Rejoice\Foundation\Path;
+use Symfony\Component\Console\Application as Console;
 
 /**
  * Create an instance instance of the application.
@@ -21,9 +23,13 @@ use Symfony\Component\Console\Application as SymfonyConsoleApp;
  */
 class Application
 {
+    protected static $rejoice;
+
     public function run()
     {
-        $app = new SymfonyConsoleApp('Rejoice Console', 'v1.0.0');
+        $this->startRejoice();
+
+        $app = new Console('Rejoice Console', 'v1.0.0');
 
         $this->loadCommandsInto($app);
 
@@ -35,17 +41,40 @@ class Application
         $commands = $this->retrieveCommands();
 
         foreach ($commands as $command) {
-            $app->add(new $command());
+            $newCommand = new $command;
+
+            if ($newCommand instanceof FrameworkCommand) {
+                $newCommand->setRejoice($this->getRejoice());
+            }
+
+            $app->add($newCommand);
         }
+    }
+
+    /**
+     * Get the instance of the app for the console session.
+     *
+     * @return \Rejoice\Foundation\Kernel
+     */
+    public function getRejoice()
+    {
+        return static::$rejoice;
+    }
+
+    public function startRejoice()
+    {
+        static::$rejoice = Rejoice::mock();
+
+        return $this;
     }
 
     public function retrieveCommands()
     {
-        $paths = new PathConfig();
+        $paths = new Path;
 
         $commands = require $paths->get('app_command_file');
         $frameworkCommands = require $paths->get('framework_command_file');
 
-        return $commands = array_replace($commands, $frameworkCommands);
+        return array_merge($commands, $frameworkCommands);
     }
 }

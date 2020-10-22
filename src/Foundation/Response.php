@@ -73,6 +73,7 @@ class Response
         $hard = false
     ) {
         $previouslyDisplayed = trim(ob_get_clean());
+        ob_start();
         $error = error_get_last();
 
         if ($previouslyDisplayed && !$error) {

@@ -85,7 +85,7 @@ class DatabaseSession extends Session implements SessionInterface
     {
         $data = $this->retrieveData();
 
-        if (!empty($data)) {
+        if (! empty($data)) {
             $this->updateId();
         }
 

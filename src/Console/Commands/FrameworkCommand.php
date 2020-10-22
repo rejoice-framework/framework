@@ -2,14 +2,27 @@
 
 namespace Rejoice\Console\Commands;
 
-use Prinx\Config;
-use Prinx\Os;
-use Rejoice\Foundation\PathConfig;
+use Rejoice\Foundation\Kernel as Rejoice;
 
+/**
+ * Base class for all Rejoice command.
+ * Provides some helpers method to interact more easyly with the application.
+ *
+ * @author Prince Dorcis <princedorcis@gmail.com>
+ */
 class FrameworkCommand extends SmileCommand
 {
     /**
-     * @var \Rejoice\Foundation\PathConfig
+     * Instance of Rejoice.
+     *
+     * @var \Rejoice\Foundation\Kernel
+     */
+    protected $rejoice;
+
+    protected $stubVariableDelimiter = ':';
+
+    /**
+     * @var \Rejoice\Foundation\Path
      */
     protected $paths;
 
@@ -18,96 +31,68 @@ class FrameworkCommand extends SmileCommand
      */
     protected $config;
 
+    public function getRejoice()
+    {
+        return $this->rejoice;
+    }
+
+    public function setRejoice(Rejoice $rejoice)
+    {
+        $this->rejoice = $rejoice;
+
+        return $this;
+    }
+
+    /**
+     * Get a configuration variable from the config.
+     *
+     * Returns the config object instance if no parameter passed.
+     *
+     *
+     *
+     * @param  string               $key
+     * @param  mixed                $default The default to return if the configuration is not found
+     * @param  bool                 $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @throws \RuntimeException
+     * @return Config|mixed
+     */
     public function config($key = null, $default = null, $silent = false)
     {
-        if (!isset($this->config)) {
-            $this->config = new Config($this->path('app_config_dir'));
+        return $this->getRejoice()->config(...(func_get_args()));
+    }
+
+    /**
+     * Return a path to a file or a folder.
+     *
+     *
+     *
+     * @param  string|null                       $name
+     * @throws \RuntimeException
+     * @return string|\Rejoice\Foundation\Path
+     */
+    public function path($name = null)
+    {
+        return $this->getRejoice()->path($name);
+    }
+
+    public function generateTemplateFromStub(string $stubPath, array $parameters)
+    {
+        $template = file_get_contents($stubPath);
+
+        foreach ($parameters as $name => $value) {
+            $delimiter = $this->stubVariableDelimiter();
+            $numberOfsides = 2;
+            $length = strlen($name) + $numberOfsides * strlen($delimiter);
+            $variableReference = str_pad($name, $length, $delimiter, STR_PAD_BOTH);
+
+            $template = str_replace($variableReference, $value, $template);
         }
 
-        if (!isset($key)) {
-            return $this->config;
-        } else {
-            return $this->config->get(...(func_get_args()));
-        }
+        return $template;
     }
 
-    public function projectRootDir()
+    public function stubVariableDelimiter()
     {
-        if (!isset($this->projectRootDir)) {
-            $this->projectRootDir = Os::toPathStyle(
-                $this->path('project_root')
-            );
-        }
-
-        return $this->projectRootDir;
-    }
-
-    public function appCommandsDir()
-    {
-        if (!isset($this->appCommandsDir)) {
-            $this->appCommandsDir = Os::toPathStyle(
-                $this->path('app_command_dir')
-            );
-        }
-
-        return $this->appCommandsDir;
-    }
-
-    public function appCommandsRepo()
-    {
-        if (!isset($this->appCommandsRepo)) {
-            $this->appCommandsRepo = Os::toPathStyle(
-                $this->path('app_command_file')
-            );
-        }
-
-        return $this->appCommandsRepo;
-    }
-
-    public function frameworkTemplateDir()
-    {
-        if (!isset($this->frameworkTemplateDir)) {
-            $this->frameworkTemplateDir = Os::toPathStyle(
-                $this->path('framework_template_dir')
-            );
-        }
-
-        return $this->frameworkTemplateDir;
-    }
-
-    public function baseMenuFolder()
-    {
-        if (!isset($this->baseMenuFolder)) {
-            $this->baseMenuFolder = Os::toPathStyle(
-                $this->path('app_menu_class_dir')
-            );
-        }
-
-        return $this->baseMenuFolder;
-    }
-
-    public function baseMenuPath()
-    {
-        return $this->baseMenuFolder().Os::slash().'Menu.php';
-    }
-
-    public function baseMenuPathRelativeToApp()
-    {
-        return $this->pathFromApp($this->baseMenuPath());
-    }
-
-    public function pathFromApp($path)
-    {
-        // +1 to remove the slash before the app folder name too
-        return substr($path, strlen($this->projectRootDir()) + 1);
-    }
-
-    public function path($name)
-    {
-        if (!$this->paths) {
-            $this->paths = new PathConfig();
-        }
-
-        return $this->paths->get($name);
+        return $this->config('app.stub_variable_delimiter', $this->stubVariableDelimiter);
     }
 }

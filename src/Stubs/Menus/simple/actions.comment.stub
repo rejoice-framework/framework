@@ -1,0 +1,6 @@
+    /**
+     * The actions to display at the bottom of the top message.
+     *
+     * @param Rejoice\Foundation\UserResponse $previousResponses
+     * @return array
+     */

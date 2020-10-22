@@ -1,0 +1,4 @@
+    public function after($response, $previousResponses)
+    {
+        //
+    }

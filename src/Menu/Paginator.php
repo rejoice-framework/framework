@@ -12,19 +12,12 @@
 namespace Rejoice\Menu;
 
 /**
- * Implements all the logic for handling USSD Pagination.
+ * Implements all the logic for handling Menu Pagination.
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
 trait Paginator
 {
-    /*
-     * Wonder if this class has to be a trait.
-     * Tried an abstract class but it also resulted in some change and
-     * complication of design at the user side.
-     * Maybe the whole design has to be revisited.
-     */
-
     /**
      * Fetches the items from the database.
      *
@@ -44,29 +37,25 @@ trait Paginator
      *
      * This method will automatically be called for each rows of the array
      * returned by `paginationFetch`. And its return value will be added to the
-     * actions
+     * actions.
      *
      * The trigger is what will be displayed to the user as option to select.
-     * It's automatically handled by the Paginator
+     * It's automatically handled by the Paginator.
      *
-     * @param array  $row
-     * @param string $trigger
-     *
+     * @param  array    $row
+     * @param  string   $trigger
      * @return array
      */
     abstract public function itemAction($row, $trigger);
 
     public function before()
     {
-        $this->paginate();
+        $this->handlePagination();
     }
 
-    public function paginate()
+    public function handlePagination()
     {
-        if (
-            $this->hasResumeFromLastSessionOnThisMenu() ||
-            !empty($this->error())
-        ) {
+        if ($this->hasResumeFromLastSessionOnThisMenu() || !empty($this->error())) {
             $this->moveFetchCursorBackOnce();
         }
 
@@ -116,6 +105,11 @@ trait Paginator
         return $actions;
     }
 
+    public function itemsExist()
+    {
+        return $this->paginationTotal();
+    }
+
     public function paginationTotal()
     {
         if (!($total = $this->paginationGet('total'))) {
@@ -133,8 +127,7 @@ trait Paginator
      */
     public function isPaginationFirstPage()
     {
-        return $this->paginationGet('previously_retrieved') <=
-            $this->maxItemsPerPage();
+        return $this->paginationGet('previously_retrieved') <= $this->perPage();
     }
 
     /**
@@ -173,17 +166,15 @@ trait Paginator
     {
         $ids = $this->paginationGet('last_retrieved_ids');
 
-        /*
-         * Yes, pop twice.
-         * Pop the two last retrieved ID
-         */
+        // Yes, pop twice. Pop the two last retrieved ID
         array_pop($ids);
         array_pop($ids);
+
         $ids = empty($ids) ? [0] : $ids;
         $this->paginationSave('last_retrieved_ids', $ids);
 
         $previoulyRetrieved = $this->paginationGet('previously_retrieved');
-        $previoulyRetrieved -= ($this->maxItemsPerPage() +
+        $previoulyRetrieved -= ($this->perPage() +
             $this->paginationGet('showed_on_current_page'));
         $previoulyRetrieved = $previoulyRetrieved > 0 ? $previoulyRetrieved : 0;
         $this->paginationSave('previously_retrieved', $previoulyRetrieved);
@@ -225,7 +216,7 @@ trait Paginator
     public function bindPaginationParams($req)
     {
         $offset = $this->lastRetrievedId();
-        $limit = $this->maxItemsPerPage();
+        $limit = $this->perPage();
         $req->bindParam('offset', $offset, \PDO::PARAM_INT);
         $req->bindParam('limit', $limit, \PDO::PARAM_INT);
     }
@@ -238,7 +229,7 @@ trait Paginator
     /**
      * The actual number of items showed on the current screen.
      *
-     * This cannot be greater than the `maxItemsPerPage`
+     * This cannot be greater than the `perPage`
      * This is actually handled automatically by the Paginator. It is just the
      * count of the number of items that have been retrieved on the particular
      * page of the pagination
@@ -264,14 +255,13 @@ trait Paginator
     {
         $ids = $this->paginationGet('last_retrieved_ids');
 
-        return $ids ? $ids[count($ids) - 1] : 0;
+        return $ids[count($ids) - 1] ?? 0;
     }
 
     /**
      * Save the id of last fetched item of the pagination.
      *
-     * @param int $lastId
-     *
+     * @param  int    $lastId
      * @return void
      */
     public function saveLastRetrievedId($lastId)
@@ -284,12 +274,25 @@ trait Paginator
     /**
      * Saves pagination data for the current menu.
      *
-     * @param string $key
-     * @param mixed  $value
+     * Alias of paginationSet($key, $value) method.
      *
+     * @param  string $key
+     * @param  mixed  $value
      * @return void
      */
     public function paginationSave($key, $value)
+    {
+        $this->paginationSet($key, $value);
+    }
+
+    /**
+     * Saves pagination data for the current menu.
+     *
+     * @param  string $key
+     * @param  mixed  $value
+     * @return void
+     */
+    public function paginationSet($key, $value)
     {
         $this->makeSessionSupportPagination();
         $pagination = $this->sessionGet('pagination');
@@ -298,17 +301,19 @@ trait Paginator
     }
 
     /**
-     * Get a pagination data.
+     * Get a pagination session data.
      *
-     * @param string $key
-     *
+     * @param  string  $key
+     * @param  string  $menu
      * @return mixed
      */
-    public function paginationGet($key)
+    public function paginationGet(string $key, $menu = null)
     {
         $this->makeSessionSupportPagination();
 
-        return $this->sessionGet('pagination')[$this->menuName()][$key];
+        $menu = $menu ?: $this->menuName();
+
+        return $this->sessionGet("pagination.{$menu}.{$key}");
     }
 
     /**
@@ -323,9 +328,7 @@ trait Paginator
             $this->sessionGet('pagination')[$this->menuName()]
         );
 
-        if (
-            $sessionAlreadySupportsPagination && $sessionAlreadySupportsPaginationOnCurrentMenu
-        ) {
+        if ($sessionAlreadySupportsPagination && $sessionAlreadySupportsPaginationOnCurrentMenu) {
             return;
         }
 
@@ -351,9 +354,8 @@ trait Paginator
      * Determines the proper back action to use, according to where we are in
      * the current pagination.
      *
-     * @param string $trigger
-     * @param string $display
-     *
+     * @param  string  $trigger
+     * @param  string  $display
      * @return array
      */
     public function backAction($trigger = '', $display = '')
@@ -366,18 +368,18 @@ trait Paginator
     }
 
     /**
-     * The maximum number of items that can be showed on the pagination screen;
-     * It's configured as protected property of the menu entity.
+     * The maximum number of items that can be showed on the pagination screen.
      *
      * @return int
      */
-    public function maxItemsPerPage()
+    public function perPage()
     {
-        return $this->maxItemsPerPage ?? $this->app->config('menu.pagination_default_to_show_per_page');
+        return $this->perPage ??
+        $this->app->config('menu.pagination_default_to_show_per_page', 4);
     }
 
     /**
-     * Defines if the user can move back for this particular string.
+     * Defines if the user can move back for this particular screen.
      *
      * @return bool
      */
