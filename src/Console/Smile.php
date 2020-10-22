@@ -11,8 +11,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Smile extends Command
 {
-    use QuestionTrait, StyleSheetTrait, TableTrait;
-    
+    use QuestionTrait;
+    use StyleSheetTrait;
+    use TableTrait;
+
     protected $colors = [
         'black',
         'red',
@@ -44,8 +46,9 @@ class Smile extends Command
      * This method is implicitely called by the `fire` method
      * When the command is run.
      *
-     * @param  InputInterface  $input
-     * @param  OutputInterface $output
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
      * @return int
      */
     public function execute(InputInterface $input, OutputInterface $output)
@@ -72,9 +75,11 @@ class Smile extends Command
     /**
      * Returns the argument value for a given argument name.
      *
-     * @param  string                   $name
+     * @param string $name
+     *
      * @throws InvalidArgumentException — When argument given doesn't exist
-     * @return string|string[]|null     — The argument value
+     *
+     * @return string|string[]|null — The argument value
      */
     public function getArgument($name)
     {
@@ -94,8 +99,10 @@ class Smile extends Command
     /**
      * Returns the option value for a given option name.
      *
-     * @param  string                    $name
-     * @throws InvalidArgumentException  — When option given doesn't ex
+     * @param string $name
+     *
+     * @throws InvalidArgumentException — When option given doesn't ex
+     *
      * @return string|string[]|bool|null — The option value
      */
     public function getOption($name)
@@ -116,7 +123,8 @@ class Smile extends Command
     /**
      * Draw a line with hyphen.
      *
-     * @param  array  $options
+     * @param array $options
+     *
      * @return void
      */
     public function drawSeparationLine($options = [
@@ -125,7 +133,8 @@ class Smile extends Command
         'fg'             => 'grey',
         'bg'             => 'black',
         'middle'         => '',
-    ]) {
+    ])
+    {
         $defaultOptions = [
             'padding-top'    => true,
             'padding-bottom' => true,
@@ -160,8 +169,9 @@ class Smile extends Command
     /**
      * Write a new line to the output.
      *
-     * @param  string|iterable $messages The message to write. Can be a string or an iterable of strings
-     * @param  int             $options  A bitmask of options (one of the OUTPUT or VERBOSITY constants), is considered the same as self::OUTPUT_NORMAL | self::VERBOSITY_NORMAL
+     * @param string|iterable $messages The message to write. Can be a string or an iterable of strings
+     * @param int             $options  A bitmask of options (one of the OUTPUT or VERBOSITY constants), is considered the same as self::OUTPUT_NORMAL | self::VERBOSITY_NORMAL
+     *
      * @return mixed
      */
     public function writeln($messages, int $options = 0)

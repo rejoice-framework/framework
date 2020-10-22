@@ -196,7 +196,8 @@ class SimulatorConsoleCommand extends FrameworkCommand
     /**
      * Converts HTML text to string.
      *
-     * @param  string|string[]   $messages A single string or an array of string
+     * @param string|string[] $messages A single string or an array of string
+     *
      * @return string|string[]
      */
     public function htmlToText($messages)
@@ -293,8 +294,9 @@ class SimulatorConsoleCommand extends FrameworkCommand
     /**
      * Write to console with the specified color.
      *
-     * @param  string          $colorType Can be info|error|question or any color name (Eg: green)
-     * @param  string|string[] $name      The string to write with colors
+     * @param string          $colorType Can be info|error|question or any color name (Eg: green)
+     * @param string|string[] $name      The string to write with colors
+     *
      * @return void
      */
     public function writeMetaName($colorType, $name)

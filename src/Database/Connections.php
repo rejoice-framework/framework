@@ -15,7 +15,7 @@ class Connections
 
         if ($defaultConnection = $connections[$app->config('database.default', '')] ?? []) {
             $capsule->addConnection($defaultConnection);
-        };
+        }
 
         foreach ($connections as $name => $config) {
             $capsule->addConnection($config, $name);

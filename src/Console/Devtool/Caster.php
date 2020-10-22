@@ -9,7 +9,8 @@ class Caster
     /**
      * Get an array representing the properties of a collection.
      *
-     * @param  \Illuminate\Support\Collection  $collection
+     * @param \Illuminate\Support\Collection $collection
+     *
      * @return array
      * @source \Laravel\Tinker\TinkerCaster::castCollection
      */
@@ -23,14 +24,16 @@ class Caster
     /**
      * Get an array representing the properties of a model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param \Illuminate\Database\Eloquent\Model $model
+     *
      * @return array
      * @source \Laravel\Tinker\TinkerCaster::castModel
      */
     public static function castModel($model)
     {
         $attributes = array_merge(
-            $model->getAttributes(), $model->getRelations()
+            $model->getAttributes(),
+            $model->getRelations()
         );
 
         $visible = array_flip(

@@ -6,7 +6,7 @@ use Symfony\Component\Console\Question\Question;
 
 /**
  * Console questions related methods.
- * 
+ *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
 trait QuestionTrait
@@ -14,8 +14,9 @@ trait QuestionTrait
     /**
      * Ask user for a response.
      *
-     * @param  string $question The question to ask
-     * @param  mixed  $default  The default value of the response
+     * @param string $question The question to ask
+     * @param mixed  $default  The default value of the response
+     *
      * @return void
      */
     public function ask($question, $default = null)
@@ -30,10 +31,11 @@ trait QuestionTrait
     /**
      * Ask user for confirmation.
      *
-     * @param  string|string[] $question            The question to ask
-     * @param  mixed           $defaultResponse
-     * @param  array           $validResponses
-     * @param  array           $invalidResponses
+     * @param string|string[] $question         The question to ask
+     * @param mixed           $defaultResponse
+     * @param array           $validResponses
+     * @param array           $invalidResponses
+     *
      * @return bool
      */
     public function confirm(

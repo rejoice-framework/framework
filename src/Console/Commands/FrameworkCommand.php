@@ -50,10 +50,12 @@ class FrameworkCommand extends SmileCommand
      *
      *
      *
-     * @param  string               $key
-     * @param  mixed                $default The default to return if the configuration is not found
-     * @param  bool                 $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @param string $key
+     * @param mixed  $default The default to return if the configuration is not found
+     * @param bool   $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     *
      * @throws \RuntimeException
+     *
      * @return Config|mixed
      */
     public function config($key = null, $default = null, $silent = false)
@@ -66,8 +68,10 @@ class FrameworkCommand extends SmileCommand
      *
      *
      *
-     * @param  string|null                       $name
+     * @param string|null $name
+     *
      * @throws \RuntimeException
+     *
      * @return string|\Rejoice\Foundation\Path
      */
     public function path($name = null)

@@ -11,8 +11,8 @@
 
 namespace Rejoice\Foundation;
 
-use function Symfony\Component\String\u as str;
 use Prinx\Os;
+use function Symfony\Component\String\u as str;
 
 /**
  * Common configurations of the framework.
@@ -55,7 +55,8 @@ class Path
     /**
      * Rejoice package path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toFramework($append = '')
@@ -70,7 +71,8 @@ class Path
     /**
      * Project root path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toProject($append = '')
@@ -85,7 +87,8 @@ class Path
     /**
      * 'app' folder path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toApp($append = '')
@@ -96,7 +99,8 @@ class Path
     /**
      * 'config' folder path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toConfig($append = '')
@@ -107,7 +111,8 @@ class Path
     /**
      * 'public' folder path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toPublic($append = '')
@@ -118,7 +123,8 @@ class Path
     /**
      * 'resources' folder path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toResources($append = '')
@@ -129,7 +135,8 @@ class Path
     /**
      * 'storage' folder path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toStorage($append = '')
@@ -140,7 +147,8 @@ class Path
     /**
      * 'tests' folder path.
      *
-     * @param  string   $append
+     * @param string $append
+     *
      * @return string
      */
     public static function toTests($append = '')
@@ -178,9 +186,11 @@ class Path
     /**
      * Retrieve a path of a file or a directory of the application.
      *
-     * @param  string            $name    The key by which the path is named
-     * @param  string            $default A default path if the path is not found
+     * @param string $name    The key by which the path is named
+     * @param string $default A default path if the path is not found
+     *
      * @throws \RuntimeException If the path is not found and no default was passed.
+     *
      * @return string
      */
     public function get(string $name, string $default = '')

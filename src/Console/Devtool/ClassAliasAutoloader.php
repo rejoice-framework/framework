@@ -7,7 +7,7 @@ use Psy\Shell;
 
 /**
  * Rejoice Devtool Class Alias Autoloader.
- * 
+ *
  * Based on Laravel\Tinker\ClassAliasAutoloader.
  */
 class ClassAliasAutoloader
@@ -60,11 +60,12 @@ class ClassAliasAutoloader
     /**
      * Create a new alias loader instance.
      *
-     * @param  \Psy\Shell $shell
-     * @param  string     $classMapPath
-     * @param  string     $vendorPath
-     * @param  array      $includedAliases
-     * @param  array      $excludedAliases
+     * @param \Psy\Shell $shell
+     * @param string     $classMapPath
+     * @param string     $vendorPath
+     * @param array      $includedAliases
+     * @param array      $excludedAliases
+     *
      * @return void
      */
     public function __construct(Shell $shell, $classMapPath, $vendorPath, array $includedAliases = [], array $excludedAliases = [])
@@ -92,7 +93,8 @@ class ClassAliasAutoloader
     /**
      * Find the closest class by name.
      *
-     * @param  string $class
+     * @param string $class
+     *
      * @return void
      */
     public function aliasClass($class)
@@ -137,13 +139,13 @@ class ClassAliasAutoloader
      *  1. It must be under a namespace different from the root namespace
      *  2. It must not be a class from a dependency package (no class from vendor)
      *  3. It must not be intentionally excluded by the developer
-     * 
+     *
      * @param string $class
      * @param string $path
      */
     public function isAliasable($class, $path)
     {
-        // Classes under no namespace does not need to be aliased 
+        // Classes under no namespace does not need to be aliased
         if (!Str::contains($class, '\\')) {
             return false;
         }

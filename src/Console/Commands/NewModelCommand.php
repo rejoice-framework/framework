@@ -1,9 +1,10 @@
 <?php
+
 namespace Rejoice\Console\Commands;
 
-use function Symfony\Component\String\u as str;
 use Prinx\Os;
 use Rejoice\Console\Argument;
+use function Symfony\Component\String\u as str;
 
 class NewModelCommand extends FrameworkCommand
 {

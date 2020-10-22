@@ -60,7 +60,7 @@ class RequestValidator extends Validator
     public function validateRequestParams()
     {
         $requestParams = $this->app->request()->input();
-        
+
         if (!is_array($requestParams)) {
             $this->app->fail('Invalid request parameters received.');
         }

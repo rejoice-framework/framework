@@ -31,7 +31,7 @@ class Database
 
     public static function loadSessionDB($params)
     {
-        if (! $params) {
+        if (!$params) {
             throw new \Exception('Invalid session configuration');
         }
 

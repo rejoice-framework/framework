@@ -7,7 +7,7 @@ use Rejoice\Console\TableDivider;
 
 /**
  * Console Table rendering related methods.
- * 
+ *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
 trait TableTrait

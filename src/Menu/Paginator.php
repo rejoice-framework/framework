@@ -42,8 +42,9 @@ trait Paginator
      * The trigger is what will be displayed to the user as option to select.
      * It's automatically handled by the Paginator.
      *
-     * @param  array    $row
-     * @param  string   $trigger
+     * @param array  $row
+     * @param string $trigger
+     *
      * @return array
      */
     abstract public function itemAction($row, $trigger);
@@ -261,7 +262,8 @@ trait Paginator
     /**
      * Save the id of last fetched item of the pagination.
      *
-     * @param  int    $lastId
+     * @param int $lastId
+     *
      * @return void
      */
     public function saveLastRetrievedId($lastId)
@@ -276,8 +278,9 @@ trait Paginator
      *
      * Alias of paginationSet($key, $value) method.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function paginationSave($key, $value)
@@ -288,8 +291,9 @@ trait Paginator
     /**
      * Saves pagination data for the current menu.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function paginationSet($key, $value)
@@ -303,8 +307,9 @@ trait Paginator
     /**
      * Get a pagination session data.
      *
-     * @param  string  $key
-     * @param  string  $menu
+     * @param string $key
+     * @param string $menu
+     *
      * @return mixed
      */
     public function paginationGet(string $key, $menu = null)
@@ -354,8 +359,9 @@ trait Paginator
      * Determines the proper back action to use, according to where we are in
      * the current pagination.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function backAction($trigger = '', $display = '')

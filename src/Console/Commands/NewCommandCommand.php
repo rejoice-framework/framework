@@ -2,10 +2,10 @@
 
 namespace Rejoice\Console\Commands;
 
-use function Symfony\Component\String\u as str;
 use Prinx\Os;
 use Rejoice\Console\Argument;
 use Rejoice\Console\Option;
+use function Symfony\Component\String\u as str;
 
 /**
  * Command to create a new command.

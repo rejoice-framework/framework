@@ -2,7 +2,7 @@
 
 return [
     'alias' => [
-        'DB' => 'Rejoice\Database\DB',
+        'DB'   => 'Rejoice\Database\DB',
         'Path' => 'Rejoice\Foundation\Path',
     ],
 
