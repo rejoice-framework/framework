@@ -16,9 +16,9 @@
  */
 
 use Prinx\Config;
-use Rejoice\Foundation\PathConfig;
+use Rejoice\Foundation\Path;
 
-$paths = new PathConfig();
+$paths = new Path;
 $config = new Config($paths->get('app_config_dir'));
 
 define('APP_REQUEST_INIT', $config->get('app.request_init'));
