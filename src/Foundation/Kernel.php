@@ -312,8 +312,6 @@ class Kernel
      *
      * Returns the config object instance if no parameter passed
      *
-     *
-     *
      * @param string $key
      * @param mixed  $default The default to return if the configuration is not found
      * @param bool   $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
@@ -565,7 +563,6 @@ class Kernel
      * developer has to specify the validation rules or validate himself in the
      * `validate` method of the menu entity)
      *
-     *
      * @param string $currentMenu
      * @param string $userError
      * @param bool   $responseExistsInMenuActions The response has already been specified by the developer
@@ -582,7 +579,6 @@ class Kernel
 
     /**
      * Load the Menu Entity of a particular menu.
-     *
      *
      * @param string $menuName
      * @param string $entityType ('currentMenuEntity'|'nextMenuEntity')
@@ -601,7 +597,6 @@ class Kernel
 
     /**
      * Call the proper method to run for the specific next menu.
-     *
      *
      * @param string $nextMenu
      *
@@ -654,7 +649,6 @@ class Kernel
      *
      * From here any subsequent request will be forward to the remote ussd
      *
-     *
      * @param string $nextMenu
      *
      * @return void
@@ -680,7 +674,6 @@ class Kernel
      *
      * If both `save_as` and `saveAs` method are available, the
      * `save_as` parameter has the precedence
-     *
      *
      * @param string $userResponse
      *
@@ -1422,6 +1415,7 @@ class Kernel
      * same as the `menuName` in all the methods that run before the user sends
      * a response or before the response is validated: (before, message,
      * actions, validate, saveAs)
+     *
      *
      * @return string
      */
