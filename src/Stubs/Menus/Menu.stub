@@ -1,0 +1,10 @@
+<?php
+
+namespace :namespace:;
+
+use :baseMenuFullName:;
+
+class :name: extends :baseMenu:
+{
+:methods:
+}

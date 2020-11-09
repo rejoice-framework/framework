@@ -6,8 +6,10 @@ return [
     GenerateMenuJsonCommand::class,
     SimulatorConsoleCommand::class,
     SimulatorWebCommand::class,
-    NewMenuCommand::class,
     NewCommandCommand::class,
-
+    NewModelCommand::class,
+    NewMenuCommand::class,
+    DevtoolCommand::class,
+    ServeCommand::class,
     //
 ];

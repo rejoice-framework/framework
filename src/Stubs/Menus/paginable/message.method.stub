@@ -1,0 +1,8 @@
+    public function message()
+    {
+        if (!$this->itemsExist()) {
+            return 'No item found';
+        }
+
+        return 'Select an option';
+    }

@@ -31,7 +31,7 @@ class Request
     public function __construct(Kernel $app)
     {
         $this->app = $app;
-        $this->hydrateInput($_POST);
+        $this->hydrateInput($app->forcedInput() ? $app->forcedInput() : $_POST);
         $this->hydrateQuery($_GET);
     }
 

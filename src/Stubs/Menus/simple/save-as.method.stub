@@ -1,0 +1,4 @@
+    public function saveAs($response)
+    {
+        return $response;
+    }

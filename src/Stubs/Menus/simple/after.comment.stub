@@ -1,0 +1,10 @@
+    /**
+     * Runs after the response has been validated.
+     *
+     * You can do here everything you want to do after the user has sent
+     * their response.
+     *
+     * @param string $response
+     * @param Rejoice\Foundation\UserResponse $previousResponses
+     * @return void
+     */

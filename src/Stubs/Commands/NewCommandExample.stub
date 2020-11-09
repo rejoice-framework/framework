@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Rejoice\Console\Argument;
+use Rejoice\Console\Commands\FrameworkCommand as Smile;
+use Rejoice\Console\Option;
+
+class :commandClass: extends Smile
+{
+    public function configure()
+    {
+        $this->setName(':commandName:')
+            ->setDescription("Get someone's name")
+            ->addArgument(
+                'name',
+                Argument::REQUIRED,
+                'The name of the person'
+            )
+            ->addOption(
+                'greet',
+                'g',
+                Option::NONE,
+                'If passed, we will greet the person after receiving the name',
+                null
+            );
+    }
+
+    public function fire()
+    {
+        $name = $this->getArgument('name');
+
+        $this->writeln('Cool, your name is '.$name);
+
+        if ($this->getOption('greet')) {
+            $this->writeln('Hello '.$name);
+        }
+
+        return Smile::SUCCESS;
+    }
+}

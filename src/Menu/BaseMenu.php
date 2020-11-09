@@ -20,46 +20,46 @@ use Rejoice\Foundation\Kernel;
  * Provides shortcuts to app methods and properties for the user App.
  *
  *
- * @ method void before(UserResponse $userPreviousResponses)
+ * @ method void before(UserResponse $previousResponses)
  * Allows you to run a custom script before the menu is displayed to the user.
  * This method runs before every other method of the current menu entity
  *
- * @ method string|array message(UserResponse $userPreviousResponses)
+ * @ method string|array message(UserResponse $previousResponses)
  * Returns the message to display at top of the current menu screen. If it
  * returns an array, the indexes of the array will be assumed to be
  * placeholders inside the menu message defined in the menus.php file for this
  * particular menu.
  *
- * @ method array actions(UserResponse $userPreviousResponses)
+ * @ method array actions(UserResponse $previousResponses)
  * Returns the actions of the current menu
  *
- * @ method UserResponseValidator|array|string|boolean validate(string $response, UserResponse $userPreviousResponses)
+ * @ method UserResponseValidator|array|string|boolean validate(string $response, UserResponse $previousResponses)
  * Validate the user's response. If it returns false, an invalid input error
  * will be sent to the user. You can customize the error by calling the
  * `addError` or `setError` method of the menu entity (Eg: $this->setError("The
  * age must be greater than 5"))
  *
- * @ method mixed saveAs(string $response, UserResponse $userPreviousResponses)
+ * @ method mixed saveAs(string $response, UserResponse $previousResponses)
  * Allows to modify the user's response before saving it in the session.
  *
- * @ method void after(string $response, UserResponse $userPreviousResponses)
+ * @ method void after(string $response, UserResponse $previousResponses)
  * Allows you to run a custom script after the menu response has
  * been processed and the response of the user has passed the validation
  *
- * @ method mixed onMoveToNextMenu(string $response, UserResponse $userPreviousResponses)
+ * @ method mixed onMoveToNextMenu(string $response, UserResponse $previousResponses)
  * Allows you to run a custom script after the menu response has
  * been processed and the user is moving the next screen. The back screen
  * (previous screen), the welcome screen, same screen, paginate screens (back
  * or forward) are not considered as next screen. Hence, this method will not
  * run for them. Instead use the after `method` if you want to consider them.
  *
- * @ method mixed onBack(UserResponse $userPreviousResponses)
+ * @ method mixed onBack(UserResponse $previousResponses)
  * Run when user goes back by using the __back magic menu
  *
- * @ method mixed onPaginateForward(UserResponse $userPreviousResponses)
+ * @ method mixed onPaginateForward(UserResponse $previousResponses)
  * Runs when when user moving forward in on a paginable menu
  *
- * @ method mixed onPaginateBack(UserResponse $userPreviousResponses)
+ * @ method mixed onPaginateBack(UserResponse $previousResponses)
  * Runs when when user moving back in on a paginable menu
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
@@ -96,11 +96,12 @@ class BaseMenu /* implements \ArrayAccess */
      * Sends the final response screen to the user but allows you to continue
      * the script.
      *
-     * @param string $msg
+     *
+     * @param string $message
      *
      * @return void
      */
-    public function softEnd($msg)
+    public function softEnd($message)
     {
         if (
             $this->app->isUssdChannel() &&
@@ -108,77 +109,82 @@ class BaseMenu /* implements \ArrayAccess */
             $this->app->config('menu.cancel_message')
         ) {
             $sep = $this->app->config('menu.seperator_menu_string_and_cancel_message');
-            $temp = $msg.$sep.$this->app->config('menu.cancel_message');
+            $temp = $message.$sep.$this->app->config('menu.cancel_message');
 
-            $msg = $this->willOverflowWith($temp) ? $msg : $temp;
+            $message = $this->willOverflowWith($temp) ? $message : $temp;
         }
 
-        return $this->response()->softEnd($msg);
+        return $this->response()->softEnd($message);
     }
 
     /**
      * Sends the final response screen to the user but allows you to continue
      * the script.
      *
-     * @param string $msg
+     *
+     * @param string $message
      *
      * @return void
      */
-    public function respond($msg)
+    public function respond($message)
     {
-        $this->softEnd($msg);
+        $this->softEnd($message);
     }
 
     /**
      * Sends the final response screen to the user but allows you to continue
      * the script.
      *
-     * @param string $msg
+     *
+     * @param string $message
      *
      * @return void
      */
-    public function respondAndContinue($msg)
+    public function respondAndContinue($message)
     {
-        $this->respond($msg);
+        $this->respond($message);
     }
 
     /**
      * Sends the final response screen to the user and automatically exits the
      * script.
      *
-     * @param string $msg
+     *
+     * @param string $message
      *
      * @return void
      */
-    public function hardEnd($msg)
+    public function hardEnd($message)
     {
-        return $this->response()->hardEnd($msg);
+        return $this->response()->hardEnd($message);
     }
 
     /**
      * Sends the final response screen to the user and automatically exits the
      * script.
      *
-     * @param string $msg
+     *
+     * @param string $message
      *
      * @return void
      */
-    public function respondAndExit($msg)
+    public function respondAndExit($message)
     {
-        $this->hardEnd($msg);
+        $this->hardEnd($message);
     }
 
     /**
      * Sends the final response screen to the user and automatically exits the
      * script.
      *
-     * @param string $msg
+     *
+     * @param string $message
      *
      * @return void
      */
-    public function terminate($msg)
+    public function terminate($message)
     {
-        $this->hardEnd($msg);
+        $this->hardEnd($message);
     }
 
     /**
@@ -195,7 +201,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Log a message to the default log system
      * (storage/logs/{date}/{name_of_this_menu}.log).
      *
-     * @param string|array $data
+     * @param string|array $data  Thr data to log
+     * @param string       $level The log level
      *
      * @throws \UnexpectedValueException If the level passed is unknown
      *
@@ -276,25 +283,25 @@ class BaseMenu /* implements \ArrayAccess */
      * Add a `go to main menu` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
-     * @param string $option
+     * @param string $trigger
      * @param string $display
      *
      * @return array The modified action bag
      */
-    public function insertMainMenuAction($option = '', $display = '')
+    public function insertMainMenuAction($trigger = '', $display = '')
     {
-        return $this->insertMenuActions($this->mainMenuAction($option, $display));
+        return $this->insertMenuActions($this->mainMenuAction($trigger, $display));
     }
 
     /**
      * Return a `go to main menu` action bag.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -318,8 +325,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Insert a `go to previous menu` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -335,8 +342,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Return an action bag containing a `go to previous menu` option, as an array.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -361,8 +368,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Insert a `paginate back` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -378,8 +385,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Return a `paginate back` action, as an array.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -404,8 +411,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Insert a `paginate forward` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -421,8 +428,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Return a `paginate forward` action.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -446,8 +453,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Insert a `end USSD` action into the actions.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -463,8 +470,8 @@ class BaseMenu /* implements \ArrayAccess */
      * Return a `end USSD` action.
      *
      * If no trigger is passed, it will use the configured trigger
-     * (in config/menu.php file)
-     * Same for the display
+     * (in config/menu.php file).
+     * Same for the display.
      *
      * @param string $trigger
      * @param string $display
@@ -541,31 +548,38 @@ class BaseMenu /* implements \ArrayAccess */
     /**
      * Send SMS to a number.
      *
-     * If no phone number  (`$tel`) has been passed, the SMS will be sent to the current user (`$this->tel()`)
+     * If the phone number  (`$tel`) has not been passed, the SMS will be sent to the
+     * current user (`$this->tel()`)
      *
-     * If no `senderName` has been passed, the method will try to use any configured SMS_SENDER_NAME variable in the env file or the equivalent parameter in the config/app.php file (`sms_sender_name`). If this parameter is not found, the sms will just be discarded.
+     * If the `senderName` has not been passed, the method will try to use
+     * any configured SMS_SENDER_NAME variable in the env file or the equivalent
+     * parameter in the config/app.php file (`sms_sender_name`). If this parameter
+     * is not found, the sms will just be discarded.
      *
-     * If no `endpoint` has been passed, the method will try to use any configured SMS_ENDPOINT variable in the env file or the equivalent parameter in the config/app.php file (`sms_endpoint`). If this parameter is not found, the sms will just be discarded.
+     * If the `endpoint` has not been passed, the method will try to use any configured
+     * SMS_ENDPOINT variable in the env file or the equivalent parameter in the config/app.
+     * php file (`sms_endpoint`). If this parameter is not found, the sms will just be
+     * discarded.
      *
-     * @param string $sms        The text to send
-     * @param string $tel        The phone number to send the SMS to.
-     * @param string $senderName The name that will appear as the one who sent the SMS
-     * @param string $endpoint   The endpoint to send the SMS to.
+     * @param string $sms      The text to send
+     * @param string $tel      The phone number to send the SMS to.
+     * @param string $sender   The name that will appear as the one who sent the SMS.
+     * @param string $endpoint The endpoint to send the SMS to.
      *
      * @return void
      */
-    public function sendSms($sms, $tel = '', $senderName = '', $endpoint = '')
+    public function sendSms($sms, $tel = '', $sender = '', $endpoint = '')
     {
-        $this->app->sendSms($sms, $tel, $senderName, $endpoint);
+        $this->app->sendSms($sms, $tel, $sender, $endpoint);
     }
 
     /**
-     * Send SMS and exit the script.
+     * Send SMS and terminate the application.
      *
-     * @param string $sms
-     * @param string $tel
-     * @param string $sender
-     * @param string $url
+     * @param string $sms      The text to send
+     * @param string $tel      The phone number to send the SMS to.
+     * @param string $sender   The name that will appear as the one who sent the SMS.
+     * @param string $endpoint The endpoint to send the SMS to.
      *
      * @return void
      */
@@ -679,9 +693,9 @@ class BaseMenu /* implements \ArrayAccess */
      *
      * @return UserResponse|mixed
      */
-    public function userPreviousResponses(...$args)
+    public function previousResponses(...$args)
     {
-        return $this->app->userPreviousResponses(...$args);
+        return $this->app->previousResponses(...$args);
     }
 
     /**
@@ -730,7 +744,6 @@ class BaseMenu /* implements \ArrayAccess */
      * a response or before the response is validated: (before, message,
      * actions, validate, saveAs)
      *
-     *
      * @return string
      */
     public function nextMenuName()
@@ -750,7 +763,7 @@ class BaseMenu /* implements \ArrayAccess */
         $length = count($this->historyBag());
 
         if (!$length) {
-            throw new \RuntimeException("Can't get a previous menu. 'back_history' is empty.");
+            throw new \RuntimeException('Cannot get any previous menu. The Menu history bag is empty.');
         }
 
         return $this->historyBag()[$length - 1];
@@ -775,7 +788,6 @@ class BaseMenu /* implements \ArrayAccess */
      * Returns the value associated to $name, if found. If the key $name is not
      * in the session, it returns the $default passed. If no $default was
      * passed, it throws an exception.
-     *
      *
      * @param string $name
      * @param mixed  $default
@@ -802,6 +814,21 @@ class BaseMenu /* implements \ArrayAccess */
     }
 
     /**
+     * Get a pagination session data.
+     *
+     * @param string $key
+     * @param string $menu
+     *
+     * @return mixed
+     */
+    public function paginationGet(string $key, string $menu)
+    {
+        $menu = $menu ?: $this->menuName();
+
+        return $this->sessionGet("pagination.{$menu}.{$key}");
+    }
+
+    /**
      * Allow the developer to remove a key from the session.
      *
      * @param string $name
@@ -816,7 +843,6 @@ class BaseMenu /* implements \ArrayAccess */
     /**
      * Allow the developer to retrieve a value from the session.
      * This is identical to `sessionGet`.
-     *
      *
      * @param string $key
      * @param mixed  $default
@@ -868,19 +894,19 @@ class BaseMenu /* implements \ArrayAccess */
 
         $args = in_array($method, RECEIVE_USER_RESPONSE, true) ? [
             $this->userResponse(),
-            $this->userPreviousResponses(),
-        ] : [$this->userPreviousResponses()];
+            $this->previousResponses(),
+        ] : [$this->previousResponses()];
 
         return call_user_func([$this, $method], ...$args);
     }
 
     public function offsetSet($offset, $value)
     {
-        // Nothing to do
+        throw new \RuntimeException('Cannot set '.$offset.'. Operation not allowed.');
     }
 
     public function offsetUnset($offset)
     {
-        // Nothing to do
+        throw new \RuntimeException('Cannot unset '.$offset.'. Operation not allowed.');
     }
 }

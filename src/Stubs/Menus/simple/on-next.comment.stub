@@ -1,0 +1,8 @@
+    /**
+     * This method is similar to the 'after' method and will run after the
+     * response, but only if the user is really moving to a menu up in the menu
+     * flow. This means, this method will not for menus like __welcome, __same.
+     *
+     * @param Rejoice\Foundation\UserResponse $previousResponses
+     * @return void
+     */

@@ -1,0 +1,9 @@
+    public function validate($response)
+    {
+        // Example
+        return [
+            'alpha' => 'Please, Only letters allowed',
+            'minLen:4' => 'Enter, at least 4 letters',
+            'maxLen:50' => '50 letters maximum',
+        ];
+    }

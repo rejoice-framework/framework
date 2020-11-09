@@ -3,10 +3,10 @@
 namespace Rejoice\Console\Commands;
 
 use function Prinx\Dotenv\env;
-use Prinx\Simulator\Libs\Simulator;
 use Prinx\Str;
 use Prinx\Utils\URL;
 use Rejoice\Console\Option;
+use Rejoice\Simulator\Libs\Simulator;
 
 class SimulatorConsoleCommand extends FrameworkCommand
 {
@@ -27,18 +27,6 @@ class SimulatorConsoleCommand extends FrameworkCommand
         'warning' => 'warning',
         'error'   => 'error',
     ];
-
-    public function __construct(string $name = null)
-    {
-        parent::__construct($name);
-
-        $this->messageParameter = $this->config('app.request_param_menu_string');
-        $this->sessionIdParameter = $this->config('app.request_param_session_id');
-        $this->requestTypeParameter = $this->config('app.request_param_request_type');
-        $this->userResponseParameter = $this->config('app.request_param_user_response');
-        $this->userNumberParameter = $this->config('app.request_param_user_phone_number');
-        $this->userNetworkParameter = $this->config('app.request_param_user_network');
-    }
 
     public function configure()
     {
@@ -76,10 +64,76 @@ class SimulatorConsoleCommand extends FrameworkCommand
             ->addOption(
                 'channel',
                 null,
-                Option::OPTIONAL,
+                Option::VALUE_OPTIONAL,
                 'Makes the request behave like it was from the particular channel (from a normal phone, or from whatsapp or from the console). The allowed channels are: USSD, WHATSAPP, CONSOLE',
                 env('USSD_CONSOLE_BEHAVIOR', 'USSD')
             );
+    }
+
+    public function fire()
+    {
+        $this->init();
+
+        $this->endpoint = $this->getOption('url');
+
+        if (!$this->endpoint || !URL::isUrl($this->endpoint)) {
+            $this->writeWithColor('Invalid endpoint "'.$this->endpoint.'"', 'red');
+
+            return SmileCommand::FAILURE;
+        }
+
+        if (!($tel = $this->getOption('tel'))) {
+            $this->writeWithColor('Invalid phone number "'.$tel.'"', 'red');
+
+            return SmileCommand::FAILURE;
+        }
+
+        return $this->simulate();
+    }
+
+    public function init()
+    {
+        $this->messageParameter = $this->config('app.request_param_menu_string');
+        $this->sessionIdParameter = $this->config('app.request_param_session_id');
+        $this->requestTypeParameter = $this->config('app.request_param_request_type');
+        $this->userResponseParameter = $this->config('app.request_param_user_response');
+        $this->userNumberParameter = $this->config('app.request_param_user_phone_number');
+        $this->userNetworkParameter = $this->config('app.request_param_user_network');
+    }
+
+    public function simulate()
+    {
+        $simulator = new Simulator;
+        $simulator->setEndpoint($this->endpoint);
+
+        $this->dial();
+
+        while (!$this->isLastMenu($this->payload)) {
+            $simulator->setPayload($this->payload);
+            $response = $simulator->callUssd();
+            $responseData = json_decode($response->get('data'), true);
+
+            if ($response->isSuccess() && is_array($responseData)) {
+                $this->drawSeparationLine(['middle' => ' MENU ']);
+
+                // $this->showMetadataIfExists($responseData);
+
+                if ($this->ussdWantsUserResponse($responseData)) {
+                    $this->getUserResponseAndSend($responseData);
+                } else {
+                    $this->handleUssdEnd($responseData);
+                }
+            } elseif (!Str::endsWith('/', $this->endpoint)) {
+                $simulator->setEndpoint($this->endpoint .= '/');
+                continue;
+            } else {
+                $this->showErrors($response);
+
+                return SmileCommand::FAILURE;
+            }
+        }
+
+        return SmileCommand::SUCCESS;
     }
 
     public function dial()
@@ -97,25 +151,6 @@ class SimulatorConsoleCommand extends FrameworkCommand
     public function end()
     {
         $this->payload[$this->requestTypeParameter] = self::APP_REQUEST_END;
-    }
-
-    public function fire()
-    {
-        $this->endpoint = $this->getOption('url');
-
-        if (!$this->endpoint || !URL::isUrl($this->endpoint)) {
-            $this->writeWithColor('Invalid endpoint "'.$this->endpoint.'"', 'red');
-
-            return SmileCommand::FAILURE;
-        }
-
-        if (!($tel = $this->getOption('tel'))) {
-            $this->writeWithColor('Invalid phone number "'.$tel.'"', 'red');
-
-            return SmileCommand::FAILURE;
-        }
-
-        return $this->simulate();
     }
 
     public function generateDisplayTable($data)
@@ -167,8 +202,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
      */
     public function htmlToText($messages)
     {
-        $stringPassed = is_string($messages);
-        $messagesPassed = $stringPassed ? [$messages] : $messages;
+        if (is_string($messages)) {
+            $stringPassed = true;
+            $messagesPassed = [$messages];
+        } else {
+            $stringPassed = false;
+            $messagesPassed = $messages;
+        }
 
         $converted = [];
 
@@ -226,41 +266,6 @@ class SimulatorConsoleCommand extends FrameworkCommand
                 $this->writeMetaName($colorType, ['', 'END '.$displayName.' ON THIS MENU']);
             }
         }
-    }
-
-    public function simulate()
-    {
-        $simulator = new Simulator();
-        $simulator->setEndpoint($this->endpoint);
-
-        $this->dial();
-
-        while (!$this->isLastMenu($this->payload)) {
-            $simulator->setPayload($this->payload);
-            $response = $simulator->callUssd();
-            $responseData = json_decode($response->get('data'), true);
-
-            if ($response->isSuccess() && is_array($responseData)) {
-                $this->drawSeparationLine(['middle' => ' MENU ']);
-
-                // $this->showMetadataIfExists($responseData);
-
-                if ($this->ussdWantsUserResponse($responseData)) {
-                    $this->getUserResponseAndSend($responseData);
-                } else {
-                    $this->handleUssdEnd($responseData);
-                }
-            } elseif (!Str::endsWith('/', $this->endpoint)) {
-                $simulator->setEndpoint($this->endpoint .= '/');
-                continue;
-            } else {
-                $this->showErrors($response);
-
-                return SmileCommand::FAILURE;
-            }
-        }
-
-        return SmileCommand::SUCCESS;
     }
 
     public function userWantsToDialAgain()
