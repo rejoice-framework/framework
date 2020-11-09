@@ -57,9 +57,11 @@ class UserResponseValidator
      *
      *
      *
-     * @param  string               $response
-     * @param  string|array         $validationRules
+     * @param string       $response
+     * @param string|array $validationRules
+     *
      * @throws \RuntimeException
+     *
      * @return \stdClass
      */
     public static function validate($response, $validationRules)
@@ -116,9 +118,11 @@ class UserResponseValidator
      *
      *
      *
-     * @param  string|int           $key
-     * @param  string|array         $value
+     * @param string|int   $key
+     * @param string|array $value
+     *
      * @throws \RuntimeException
+     *
      * @return array
      */
     public static function extractRuleAndError($key, $value)
@@ -158,7 +162,8 @@ class UserResponseValidator
      * Check if a value is string.
      *
      *
-     * @param  mixed  $str
+     * @param mixed $str
+     *
      * @return bool
      */
     public static function isString($str)

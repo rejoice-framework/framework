@@ -314,10 +314,12 @@ class Kernel
      *
      *
      *
-     * @param  string               $key
-     * @param  mixed                $default The default to return if the configuration is not found
-     * @param  bool                 $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @param string $key
+     * @param mixed  $default The default to return if the configuration is not found
+     * @param bool   $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     *
      * @throws \RuntimeException
+     *
      * @return Config|mixed
      */
     public function config($key = null, $default = null, $silent = false)
@@ -543,8 +545,8 @@ class Kernel
      *
      * @todo Search a proper way of determining if moving to next menu
      *
+     * @param string $nextMenu
      *
-     * @param  string $nextMenu
      * @return bool
      */
     public function isMovingToMenu($nextMenu)
@@ -564,10 +566,11 @@ class Kernel
      * `validate` method of the menu entity)
      *
      *
-     * @param  string  $currentMenu
-     * @param  string  $userError
-     * @param  bool    $responseExistsInMenuActions The response has already been specified by the developer
-     * @param  string  $nextMenu
+     * @param string $currentMenu
+     * @param string $userError
+     * @param bool   $responseExistsInMenuActions The response has already been specified by the developer
+     * @param string $nextMenu
+     *
      * @return bool
      */
     public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu)
@@ -581,8 +584,9 @@ class Kernel
      * Load the Menu Entity of a particular menu.
      *
      *
-     * @param  string $menuName
-     * @param  string $entityType  ('currentMenuEntity'|'nextMenuEntity')
+     * @param string $menuName
+     * @param string $entityType ('currentMenuEntity'|'nextMenuEntity')
+     *
      * @return void
      */
     public function loadMenuEntity($menuName, $entityType)
@@ -599,7 +603,8 @@ class Kernel
      * Call the proper method to run for the specific next menu.
      *
      *
-     * @param  string $nextMenu
+     * @param string $nextMenu
+     *
      * @return void
      */
     protected function runAppropriateState($nextMenu)
@@ -650,7 +655,8 @@ class Kernel
      * From here any subsequent request will be forward to the remote ussd
      *
      *
-     * @param  string $nextMenu
+     * @param string $nextMenu
+     *
      * @return void
      */
     protected function switchToRemoteUssd($nextMenu)
@@ -676,7 +682,8 @@ class Kernel
      * `save_as` parameter has the precedence
      *
      *
-     * @param  string  $userResponse
+     * @param string $userResponse
+     *
      * @return void
      */
     protected function saveUserResponse($userResponse)
@@ -998,7 +1005,8 @@ class Kernel
      * there is placeholders that match each index of the array and we replace
      * each placeholder by its value.
      *
-     * @param  string    $menuName
+     * @param string $menuName
+     *
      * @return string
      */
     protected function menuMessage($menuName)
@@ -1044,7 +1052,8 @@ class Kernel
      * the save_as parameter, etc.) in the session (persistMenuActions). and we
      * return only the messages for display purpose.
      *
-     * @param  string   $menuName
+     * @param string $menuName
+     *
      * @return array
      */
     protected function menuActions($menuName)
@@ -1347,9 +1356,10 @@ class Kernel
      * in the actionBag. If the parameter replace is true, the old actions will
      * be rather completely replaced by the new actionBag.
      *
-     * @param  array    $actionBag
-     * @param  bool     $replace
-     * @param  string   $menuName
+     * @param array  $actionBag
+     * @param bool   $replace
+     * @param string $menuName
+     *
      * @return array
      */
     public function insertMenuActions($actionBag, $replace = false, $menuName = '')
@@ -1378,7 +1388,8 @@ class Kernel
     /**
      * Empty, for this request, the actionBag of a particular menu.
      *
-     * @param  string $menuName
+     * @param string $menuName
+     *
      * @return void
      */
     public function emptyActionsOfMenu($menuName)
@@ -1423,6 +1434,7 @@ class Kernel
      * Returns the previous menu name.
      *
      * @throws \RuntimeException If nothing is in the history
+     *
      * @return string
      */
     public function previousMenuName()
@@ -1439,8 +1451,9 @@ class Kernel
     /**
      * Allows developer to save a value in the session.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function sessionSave($key, $value)
@@ -1455,9 +1468,11 @@ class Kernel
      * in the session, it returns the $default passed. If no $default was
      * passed, it throws an exception.
      *
-     * @param  string     $key
-     * @param  mixed      $default
+     * @param string $key
+     * @param mixed  $default
+     *
      * @throws \Exception If the key is not found and no default has been passed
+     *
      * @return mixed
      */
     public function sessionGet($key, $default = null)
@@ -1468,7 +1483,8 @@ class Kernel
     /**
      * Allow developer to check if the session contains an index.
      *
-     * @param  string $key
+     * @param string $key
+     *
      * @return bool
      */
     public function sessionHas($key)
@@ -1479,8 +1495,9 @@ class Kernel
     /**
      * Allow the developer to remove a key from the session.
      *
-     * @param  string $key
-     * @return bool   True if the key exists and has been removed
+     * @param string $key
+     *
+     * @return bool True if the key exists and has been removed
      */
     public function sessionRemove($key)
     {
@@ -1492,9 +1509,11 @@ class Kernel
      * This is identical to `sessionGet`
      * Returns the session instance if no parameter passed.
      *
-     * @param  string     $key
-     * @param  mixed      $default
+     * @param string $key
+     * @param mixed  $default
+     *
      * @throws \Exception If $key not found and no $default passed.
+     *
      * @return mixed
      */
     public function session($key = null, $default = null)
@@ -1528,7 +1547,8 @@ class Kernel
     /**
      * Add a menu name to the history stack.
      *
-     * @param  string $menuName
+     * @param string $menuName
+     *
      * @return void
      */
     protected function historyBagPush($menuName)
@@ -1574,8 +1594,9 @@ class Kernel
      * Returns a specific configured database connection.
      * It returns the default connection if no connection name is provided.
      *
-     * @param  string $connection The connection name
-     * @return \PDO   The PDO connection
+     * @param string $connection The connection name
+     *
+     * @return \PDO The PDO connection
      */
     public function db($connection = 'default')
     {
@@ -1719,7 +1740,8 @@ class Kernel
     /**
      * Retrieve the request input.
      *
-     * @param  string  $name
+     * @param string $name
+     *
      * @return mixed
      */
     public function request($name = null)
@@ -1787,10 +1809,11 @@ class Kernel
      * The sender name and endpoint can be configure in the env file or
      * directly in the config/app.php file
      *
-     * @param  string  $message
-     * @param  string  $msisdn
-     * @param  string  $senderName
-     * @param  string  $endpoint
+     * @param string $message
+     * @param string $msisdn
+     * @param string $senderName
+     * @param string $endpoint
+     *
      * @return void
      */
     public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
@@ -1807,8 +1830,10 @@ class Kernel
     /**
      * Return a path to a file or a folder.
      *
-     * @param  string                            $key
+     * @param string $key
+     *
      * @throws \RuntimeException
+     *
      * @return string|\Rejoice\Foundation\Path
      */
     public function path($key = null)
