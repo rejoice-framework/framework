@@ -83,7 +83,7 @@ define('RESERVED_MENU_IDs', [
 ]);
 
 define('WELCOME_MENU_NAME', 'welcome');
-define('MENU_MSG_PLACEHOLDER', ':');
+define('MENU_MSG_DELIMITER', ':');
 
 define(
     'REQUIRED_REQUEST_PARAMS',
