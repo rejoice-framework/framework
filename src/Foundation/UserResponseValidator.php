@@ -55,8 +55,6 @@ class UserResponseValidator
     /**
      * Validate the response against the defined rules.
      *
-     *
-     *
      * @param string       $response
      * @param string|array $validationRules
      *
@@ -116,8 +114,6 @@ class UserResponseValidator
      * Extract the validation rule and custom error from a line of the
      * validation array.
      *
-     *
-     *
      * @param string|int   $key
      * @param string|array $value
      *
@@ -160,7 +156,6 @@ class UserResponseValidator
 
     /**
      * Check if a value is string.
-     *
      *
      * @param mixed $str
      *
