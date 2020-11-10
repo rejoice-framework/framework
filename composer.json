@@ -38,6 +38,9 @@
   },
   "autoload": {
     "psr-4": {
+      "files": [
+        "src/Support/helpers.php"
+      ],
       "Rejoice\\": "src/"
     }
   }
