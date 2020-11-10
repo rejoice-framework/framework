@@ -37,10 +37,10 @@
     "optimize-autoloader": true
   },
   "autoload": {
-    "psr-4": {
       "files": [
         "src/Support/helpers.php"
       ],
+    "psr-4": {
       "Rejoice\\": "src/"
     }
   }
