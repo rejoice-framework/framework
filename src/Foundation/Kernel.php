@@ -314,12 +314,12 @@ class Kernel
      *
      *
      *
-     * @param string $key
-     * @param mixed  $default The default to return if the configuration is not found
-     * @param bool   $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
      *
+     *
+     * @param  string                $key
+     * @param  mixed                 $default The default to return if the configuration is not found
+     * @param  bool                  $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
      * @throws \RuntimeException
-     *
      * @return Config|mixed
      */
     public function config($key = null, $default = null, $silent = false)
@@ -545,8 +545,8 @@ class Kernel
      *
      * @todo Search a proper way of determining if moving to next menu
      *
-     * @param string $nextMenu
      *
+     * @param  string $nextMenu
      * @return bool
      */
     public function isMovingToMenu($nextMenu)
@@ -566,11 +566,11 @@ class Kernel
      * `validate` method of the menu entity)
      *
      *
-     * @param string $currentMenu
-     * @param string $userError
-     * @param bool   $responseExistsInMenuActions The response has already been specified by the developer
-     * @param string $nextMenu
      *
+     * @param  string  $currentMenu
+     * @param  string  $userError
+     * @param  bool    $responseExistsInMenuActions The response has already been specified by the developer
+     * @param  string  $nextMenu
      * @return bool
      */
     public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu)
@@ -584,9 +584,9 @@ class Kernel
      * Load the Menu Entity of a particular menu.
      *
      *
-     * @param string $menuName
-     * @param string $entityType ('currentMenuEntity'|'nextMenuEntity')
      *
+     * @param  string $menuName
+     * @param  string $entityType  ('currentMenuEntity'|'nextMenuEntity')
      * @return void
      */
     public function loadMenuEntity($menuName, $entityType)
@@ -603,8 +603,8 @@ class Kernel
      * Call the proper method to run for the specific next menu.
      *
      *
-     * @param string $nextMenu
      *
+     * @param  string $nextMenu
      * @return void
      */
     protected function runAppropriateState($nextMenu)
@@ -655,8 +655,8 @@ class Kernel
      * From here any subsequent request will be forward to the remote ussd
      *
      *
-     * @param string $nextMenu
      *
+     * @param  string $nextMenu
      * @return void
      */
     protected function switchToRemoteUssd($nextMenu)
@@ -682,8 +682,8 @@ class Kernel
      * `save_as` parameter has the precedence
      *
      *
-     * @param string $userResponse
      *
+     * @param  string  $userResponse
      * @return void
      */
     protected function saveUserResponse($userResponse)
@@ -876,28 +876,25 @@ class Kernel
 
     protected function messageFromMenuEntity($menuName)
     {
-        $resultCallBefore = '';
+        $message = [];
+        $menuClass = $this->nextMenuEntity;
+        $method = MENU_ENTITY_MESSAGE;
 
-        $callBefore = MENU_ENTITY_MESSAGE;
-
-        if ($this->nextMenuEntity && method_exists($this->nextMenuEntity, $callBefore)) {
-            $resultCallBefore = call_user_func(
-                [$this->nextMenuEntity, $callBefore],
-                $this->previousResponses()
-            );
+        if ($menuClass && method_exists($menuClass, $method)) {
+            $message = call_user_func([$menuClass, $method], $this->previousResponses());
         }
 
         if (isset($this->menus[$menuName][MSG])) {
-            if (!is_string($resultCallBefore) && !is_array($resultCallBefore)) {
-                throw new \RuntimeException("STRING OR ARRAY EXPECTED.\nThe function '".$callBefore."' in class '".get_class($this->nextMenuEntity)."' must return either a string or an array. If it returns a string, the string will be appended to the message of the menu. If it return an array, the library will parse the menu message and replace all words that are in the form :indexofthearray: by the value associated in the array. Check the documentation to learn more on how to use the '".$callBefore."' functions.");
+            if (!is_string($message) && !is_array($message)) {
+                throw new \RuntimeException("STRING OR ARRAY EXPECTED.\nThe method '".$method."' in class '".get_class($menuClass)."' must return either a string or an array. If it returns a string, the string will be appended to the message of the menu. If it return an associative array, the library will parse the menu message and replace all words that are in the form :indexofthearray: by the value associated in the array. If it returns a non-associative array, the array will be implode to string by new lines. Check the documentation to learn more on how to use the '".$method."' method.");
             }
         } else {
-            if (!is_string($resultCallBefore)) {
-                throw new \RuntimeException("STRING EXPECTED.\nThe function '".$callBefore."' in class '".get_class($this->nextMenuEntity)."' must return a string if the menu itself does not have any message. Check the documentation to learn more on how to use the '".$callBefore."' functions.");
+            if ((!is_string($message) && !is_array($message)) || is_associative($message)) {
+                throw new \RuntimeException("STRING OR NON-ASSOCIATIVE ARRAY EXPECTED.\nThe method '".$method."' in class '".get_class($menuClass)."' must return a string or a non-associative array, when the menu flow (in resources/menus/menus.php) does not have any message for this menu. Check the documentation to learn more on how to use the '".$method."' method.");
             }
         }
 
-        return $resultCallBefore;
+        return $message;
     }
 
     protected function actionsFromMenuEntity()
@@ -1006,8 +1003,8 @@ class Kernel
      * each placeholder by its value.
      *
      *
-     * @param string $menuName
      *
+     * @param  string    $menuName
      * @return string
      */
     protected function menuMessage($menuName)
@@ -1037,6 +1034,10 @@ class Kernel
 
             $message .= $message ? "\n".$menuFlowMessage : $menuFlowMessage;
         } else {
+            if (is_array($menuEntityMessage)) {
+                $menuEntityMessage = implode("\n", $menuEntityMessage);
+            }
+
             if (empty($message)) {
                 $message = $menuEntityMessage;
             } else {
@@ -1058,8 +1059,8 @@ class Kernel
      * return only the messages for display purpose.
      *
      *
-     * @param string $menuName
      *
+     * @param  string   $menuName
      * @return array
      */
     protected function menuActions($menuName)
@@ -1363,10 +1364,10 @@ class Kernel
      * be rather completely replaced by the new actionBag.
      *
      *
-     * @param array  $actionBag
-     * @param bool   $replace
-     * @param string $menuName
      *
+     * @param  array    $actionBag
+     * @param  bool     $replace
+     * @param  string   $menuName
      * @return array
      */
     public function insertMenuActions($actionBag, $replace = false, $menuName = '')
@@ -1396,8 +1397,8 @@ class Kernel
      * Empty, for this request, the actionBag of a particular menu.
      *
      *
-     * @param string $menuName
      *
+     * @param  string $menuName
      * @return void
      */
     public function emptyActionsOfMenu($menuName)
@@ -1443,8 +1444,8 @@ class Kernel
      * Returns the previous menu name.
      *
      *
-     * @throws \RuntimeException If nothing is in the history
      *
+     * @throws \RuntimeException If nothing is in the history
      * @return string
      */
     public function previousMenuName()
@@ -1462,9 +1463,9 @@ class Kernel
      * Allows developer to save a value in the session.
      *
      *
-     * @param string $key
-     * @param mixed  $value
      *
+     * @param  string $key
+     * @param  mixed  $value
      * @return void
      */
     public function sessionSave($key, $value)
@@ -1481,11 +1482,11 @@ class Kernel
      *
      *
      *
-     * @param string $key
-     * @param mixed  $default
      *
+     *
+     * @param  string     $key
+     * @param  mixed      $default
      * @throws \Exception If the key is not found and no default has been passed
-     *
      * @return mixed
      */
     public function sessionGet($key, $default = null)
@@ -1497,8 +1498,8 @@ class Kernel
      * Allow developer to check if the session contains an index.
      *
      *
-     * @param string $key
      *
+     * @param  string $key
      * @return bool
      */
     public function sessionHas($key)
@@ -1510,9 +1511,9 @@ class Kernel
      * Allow the developer to remove a key from the session.
      *
      *
-     * @param string $key
      *
-     * @return bool True if the key exists and has been removed
+     * @param  string $key
+     * @return bool   True if the key exists and has been removed
      */
     public function sessionRemove($key)
     {
@@ -1526,11 +1527,11 @@ class Kernel
      *
      *
      *
-     * @param string $key
-     * @param mixed  $default
      *
+     *
+     * @param  string     $key
+     * @param  mixed      $default
      * @throws \Exception If $key not found and no $default passed.
-     *
      * @return mixed
      */
     public function session($key = null, $default = null)
@@ -1565,8 +1566,8 @@ class Kernel
      * Add a menu name to the history stack.
      *
      *
-     * @param string $menuName
      *
+     * @param  string $menuName
      * @return void
      */
     protected function historyBagPush($menuName)
@@ -1613,9 +1614,9 @@ class Kernel
      * It returns the default connection if no connection name is provided.
      *
      *
-     * @param string $connection The connection name
      *
-     * @return \PDO The PDO connection
+     * @param  string $connection The connection name
+     * @return \PDO   The PDO connection
      */
     public function db($connection = 'default')
     {
@@ -1760,8 +1761,8 @@ class Kernel
      * Retrieve the request input.
      *
      *
-     * @param string $name
      *
+     * @param  string  $name
      * @return mixed
      */
     public function request($name = null)
@@ -1830,11 +1831,11 @@ class Kernel
      * directly in the config/app.php file
      *
      *
-     * @param string $message
-     * @param string $msisdn
-     * @param string $senderName
-     * @param string $endpoint
      *
+     * @param  string  $message
+     * @param  string  $msisdn
+     * @param  string  $senderName
+     * @param  string  $endpoint
      * @return void
      */
     public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
@@ -1853,10 +1854,10 @@ class Kernel
      *
      *
      *
-     * @param string $key
      *
+     *
+     * @param  string                            $key
      * @throws \RuntimeException
-     *
      * @return string|\Rejoice\Foundation\Path
      */
     public function path($key = null)
