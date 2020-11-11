@@ -316,10 +316,12 @@ class Kernel
      *
      *
      *
-     * @param  string                $key
-     * @param  mixed                 $default The default to return if the configuration is not found
-     * @param  bool                  $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @param string $key
+     * @param mixed  $default The default to return if the configuration is not found
+     * @param bool   $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     *
      * @throws \RuntimeException
+     *
      * @return Config|mixed
      */
     public function config($key = null, $default = null, $silent = false)
@@ -545,8 +547,8 @@ class Kernel
      *
      * @todo Search a proper way of determining if moving to next menu
      *
+     * @param string $nextMenu
      *
-     * @param  string $nextMenu
      * @return bool
      */
     public function isMovingToMenu($nextMenu)
@@ -567,10 +569,11 @@ class Kernel
      *
      *
      *
-     * @param  string  $currentMenu
-     * @param  string  $userError
-     * @param  bool    $responseExistsInMenuActions The response has already been specified by the developer
-     * @param  string  $nextMenu
+     * @param string $currentMenu
+     * @param string $userError
+     * @param bool   $responseExistsInMenuActions The response has already been specified by the developer
+     * @param string $nextMenu
+     *
      * @return bool
      */
     public function mustValidateResponse($userError, $responseExistsInMenuActions, $nextMenu)
@@ -585,8 +588,9 @@ class Kernel
      *
      *
      *
-     * @param  string $menuName
-     * @param  string $entityType  ('currentMenuEntity'|'nextMenuEntity')
+     * @param string $menuName
+     * @param string $entityType ('currentMenuEntity'|'nextMenuEntity')
+     *
      * @return void
      */
     public function loadMenuEntity($menuName, $entityType)
@@ -604,7 +608,8 @@ class Kernel
      *
      *
      *
-     * @param  string $nextMenu
+     * @param string $nextMenu
+     *
      * @return void
      */
     protected function runAppropriateState($nextMenu)
@@ -656,7 +661,8 @@ class Kernel
      *
      *
      *
-     * @param  string $nextMenu
+     * @param string $nextMenu
+     *
      * @return void
      */
     protected function switchToRemoteUssd($nextMenu)
@@ -683,7 +689,8 @@ class Kernel
      *
      *
      *
-     * @param  string  $userResponse
+     * @param string $userResponse
+     *
      * @return void
      */
     protected function saveUserResponse($userResponse)
@@ -1004,7 +1011,8 @@ class Kernel
      *
      *
      *
-     * @param  string    $menuName
+     * @param string $menuName
+     *
      * @return string
      */
     protected function menuMessage($menuName)
@@ -1060,7 +1068,8 @@ class Kernel
      *
      *
      *
-     * @param  string   $menuName
+     * @param string $menuName
+     *
      * @return array
      */
     protected function menuActions($menuName)
@@ -1365,9 +1374,10 @@ class Kernel
      *
      *
      *
-     * @param  array    $actionBag
-     * @param  bool     $replace
-     * @param  string   $menuName
+     * @param array  $actionBag
+     * @param bool   $replace
+     * @param string $menuName
+     *
      * @return array
      */
     public function insertMenuActions($actionBag, $replace = false, $menuName = '')
@@ -1398,7 +1408,8 @@ class Kernel
      *
      *
      *
-     * @param  string $menuName
+     * @param string $menuName
+     *
      * @return void
      */
     public function emptyActionsOfMenu($menuName)
@@ -1446,6 +1457,7 @@ class Kernel
      *
      *
      * @throws \RuntimeException If nothing is in the history
+     *
      * @return string
      */
     public function previousMenuName()
@@ -1464,8 +1476,9 @@ class Kernel
      *
      *
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return void
      */
     public function sessionSave($key, $value)
@@ -1484,9 +1497,11 @@ class Kernel
      *
      *
      *
-     * @param  string     $key
-     * @param  mixed      $default
+     * @param string $key
+     * @param mixed  $default
+     *
      * @throws \Exception If the key is not found and no default has been passed
+     *
      * @return mixed
      */
     public function sessionGet($key, $default = null)
@@ -1499,7 +1514,8 @@ class Kernel
      *
      *
      *
-     * @param  string $key
+     * @param string $key
+     *
      * @return bool
      */
     public function sessionHas($key)
@@ -1512,8 +1528,9 @@ class Kernel
      *
      *
      *
-     * @param  string $key
-     * @return bool   True if the key exists and has been removed
+     * @param string $key
+     *
+     * @return bool True if the key exists and has been removed
      */
     public function sessionRemove($key)
     {
@@ -1529,9 +1546,11 @@ class Kernel
      *
      *
      *
-     * @param  string     $key
-     * @param  mixed      $default
+     * @param string $key
+     * @param mixed  $default
+     *
      * @throws \Exception If $key not found and no $default passed.
+     *
      * @return mixed
      */
     public function session($key = null, $default = null)
@@ -1567,7 +1586,8 @@ class Kernel
      *
      *
      *
-     * @param  string $menuName
+     * @param string $menuName
+     *
      * @return void
      */
     protected function historyBagPush($menuName)
@@ -1615,8 +1635,9 @@ class Kernel
      *
      *
      *
-     * @param  string $connection The connection name
-     * @return \PDO   The PDO connection
+     * @param string $connection The connection name
+     *
+     * @return \PDO The PDO connection
      */
     public function db($connection = 'default')
     {
@@ -1762,7 +1783,8 @@ class Kernel
      *
      *
      *
-     * @param  string  $name
+     * @param string $name
+     *
      * @return mixed
      */
     public function request($name = null)
@@ -1832,10 +1854,11 @@ class Kernel
      *
      *
      *
-     * @param  string  $message
-     * @param  string  $msisdn
-     * @param  string  $senderName
-     * @param  string  $endpoint
+     * @param string $message
+     * @param string $msisdn
+     * @param string $senderName
+     * @param string $endpoint
+     *
      * @return void
      */
     public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
@@ -1856,8 +1879,10 @@ class Kernel
      *
      *
      *
-     * @param  string                            $key
+     * @param string $key
+     *
      * @throws \RuntimeException
+     *
      * @return string|\Rejoice\Foundation\Path
      */
     public function path($key = null)
