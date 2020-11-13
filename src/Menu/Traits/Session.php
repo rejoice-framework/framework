@@ -10,8 +10,9 @@ trait Session
     /**
      * Allows developer to save a value in the session.
      *
-     * @param  string $name
-     * @param  mixed  $value
+     * @param string $name
+     * @param mixed  $value
+     *
      * @return void
      */
     public function sessionSave($name, $value)
@@ -26,9 +27,11 @@ trait Session
      * in the session, it returns the $default passed. If no $default was
      * passed, it throws an exception.
      *
-     * @param  string                $name
-     * @param  mixed                 $default
+     * @param string $name
+     * @param mixed  $default
+     *
      * @throws \RuntimeException
+     *
      * @return mixed
      */
     public function sessionGet($name, $default = null)
@@ -39,7 +42,8 @@ trait Session
     /**
      * Allow developer to check if the session contains an index.
      *
-     * @param  string $name
+     * @param string $name
+     *
      * @return bool
      */
     public function sessionHas($name)
@@ -50,7 +54,8 @@ trait Session
     /**
      * Allow the developer to remove a key from the session.
      *
-     * @param  string $name
+     * @param string $name
+     *
      * @return void
      */
     public function sessionRemove($name)
@@ -62,14 +67,15 @@ trait Session
      * Allow the developer to retrieve a value from the session.
      * This is identical to `sessionGet`.
      *
-     * @param  string            $key
-     * @param  mixed             $default
+     * @param string $key
+     * @param mixed  $default
+     *
      * @throws \RuntimeException If $key not found and no $default passed.
+     *
      * @return mixed
      */
     public function session($key = null, $default = null)
     {
         return $this->app->session($key, $default);
     }
-
 }
