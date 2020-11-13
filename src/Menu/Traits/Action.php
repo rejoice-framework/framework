@@ -11,8 +11,9 @@ trait Action
      * Merge an action array with an actionBag.
      *
      *
-     * @param  array   $actionBag
-     * @param  array   $mergeWith
+     * @param array $actionBag
+     * @param array $mergeWith
+     *
      * @return array
      */
     public function mergeAction($actionBag, $mergeWith)
@@ -27,9 +28,10 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string $trigger
-     * @param  string $display
-     * @return array  The modified action bag
+     * @param string $trigger
+     * @param string $display
+     *
+     * @return array The modified action bag
      */
     public function insertMainMenuAction($trigger = '', $display = '')
     {
@@ -43,8 +45,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function mainMenuAction($trigger = '', $display = '')
@@ -67,9 +70,10 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string $trigger
-     * @param  string $display
-     * @return array  The modified action bag
+     * @param string $trigger
+     * @param string $display
+     *
+     * @return array The modified action bag
      */
     public function insertBackAction($trigger = '', $display = '')
     {
@@ -83,8 +87,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function backAction($trigger = '', $display = '')
@@ -106,8 +111,9 @@ trait Action
      *
      * Alias for the `backAction` method.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function back($trigger = '', $display = '')
@@ -122,9 +128,10 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string $trigger
-     * @param  string $display
-     * @return array  The modified action bag
+     * @param string $trigger
+     * @param string $display
+     *
+     * @return array The modified action bag
      */
     public function insertPaginateBackAction($trigger = '', $display = '')
     {
@@ -138,8 +145,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function paginateBackAction($trigger = '', $display = '')
@@ -163,9 +171,10 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string $trigger
-     * @param  string $display
-     * @return array  The modified action bag
+     * @param string $trigger
+     * @param string $display
+     *
+     * @return array The modified action bag
      */
     public function insertPaginateForwardAction($trigger = '', $display = '')
     {
@@ -179,8 +188,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function paginateForwardAction($trigger = '', $display = '')
@@ -203,9 +213,10 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string $trigger
-     * @param  string $display
-     * @return array  The modified action bag
+     * @param string $trigger
+     * @param string $display
+     *
+     * @return array The modified action bag
      */
     public function insertEndAction($trigger = '', $display = '')
     {
@@ -219,8 +230,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param  string  $trigger
-     * @param  string  $display
+     * @param string $trigger
+     * @param string $display
+     *
      * @return array
      */
     public function endAction($trigger = '', $display = '')
@@ -239,7 +251,8 @@ trait Action
     /**
      * Return an action bag after adding the back action to it.
      *
-     * @param  array   $actionBag
+     * @param array $actionBag
+     *
      * @return array
      */
     public function withBack($actionBag = [])
@@ -260,7 +273,8 @@ trait Action
     /**
      * Delete all the actions of a particular menu page ($menuName).
      *
-     * @param  string $menuName
+     * @param string $menuName
+     *
      * @return void
      */
     public function emptyMenuActions($menuName = '')
@@ -274,8 +288,9 @@ trait Action
      *
      * If no menu name is passed, the current menu name is used.
      *
-     * @param  array  $actions
-     * @param  string $menuName
+     * @param array  $actions
+     * @param string $menuName
+     *
      * @return void
      */
     public function setMenuActions($actions, $menuName = '')
@@ -291,10 +306,11 @@ trait Action
      * in the actionBag. If the parameter replace is true, the old actions will
      * be rather completely replaced by the new actionBag.
      *
-     * @param  array  $actionBag
-     * @param  bool   $replace
-     * @param  string $menuName
-     * @return array  The modified action bag
+     * @param array  $actionBag
+     * @param bool   $replace
+     * @param string $menuName
+     *
+     * @return array The modified action bag
      */
     public function insertMenuActions($actionBag, $replace = false, $menuName = '')
     {
@@ -306,7 +322,8 @@ trait Action
     /**
      * Empty, for this request, the actionBag of a particular menu.
      *
-     * @param  string $menuName
+     * @param string $menuName
+     *
      * @return void
      */
     public function emptyActionsOfMenu($menuName)

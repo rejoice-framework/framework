@@ -23,10 +23,11 @@ trait Sms
      * php file (`sms_endpoint`). If this parameter is not found, the sms will just be
      * discarded.
      *
-     * @param  string  $sms      The text to send
-     * @param  string  $tel      The phone number to send the SMS to.
-     * @param  string  $sender   The name that will appear as the one who sent the SMS.
-     * @param  string  $endpoint The endpoint to send the SMS to.
+     * @param string $sms      The text to send
+     * @param string $tel      The phone number to send the SMS to.
+     * @param string $sender   The name that will appear as the one who sent the SMS.
+     * @param string $endpoint The endpoint to send the SMS to.
+     *
      * @return void
      */
     public function sendSms($sms, $tel = '', $sender = '', $endpoint = '')
@@ -37,10 +38,11 @@ trait Sms
     /**
      * Send SMS and terminate the application.
      *
-     * @param  string $sms      The text to send
-     * @param  string $tel      The phone number to send the SMS to.
-     * @param  string $sender   The name that will appear as the one who sent the SMS.
-     * @param  string $endpoint The endpoint to send the SMS to.
+     * @param string $sms      The text to send
+     * @param string $tel      The phone number to send the SMS to.
+     * @param string $sender   The name that will appear as the one who sent the SMS.
+     * @param string $endpoint The endpoint to send the SMS to.
+     *
      * @return void
      */
     public function sendSmsAndExit($sms, $tel = '', $sender = '', $endpoint = '')

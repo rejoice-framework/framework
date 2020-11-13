@@ -11,6 +11,7 @@ trait Response
      * Convert message to string if it is not.
      *
      * @param string|array $message
+     *
      * @return string
      */
     public function getStringMessage($message)
@@ -22,7 +23,8 @@ trait Response
      * Sends the final response screen to the user but allows you to continue
      * the script.
      *
-     * @param  string|array $message
+     * @param string|array $message
+     *
      * @return void
      */
     public function softEnd($message)
@@ -47,7 +49,8 @@ trait Response
      * Sends the final response screen to the user but allows you to continue
      * the script.
      *
-     * @param  string|array $message
+     * @param string|array $message
+     *
      * @return void
      */
     public function respond($message)
@@ -59,7 +62,8 @@ trait Response
      * Sends the final response screen to the user but allows you to continue
      * the script.
      *
-     * @param  string|array $message
+     * @param string|array $message
+     *
      * @return void
      */
     public function respondAndContinue($message)
@@ -71,7 +75,8 @@ trait Response
      * Sends the final response screen to the user and automatically exits the
      * script.
      *
-     * @param  string|array $message
+     * @param string|array $message
+     *
      * @return void
      */
     public function hardEnd($message)
@@ -85,7 +90,8 @@ trait Response
      * Sends the final response screen to the user and automatically exits the
      * script.
      *
-     * @param  string|array $message
+     * @param string|array $message
+     *
      * @return void
      */
     public function respondAndExit($message)
@@ -97,7 +103,8 @@ trait Response
      * Sends the final response screen to the user and automatically exits the
      * script.
      *
-     * @param  string|array $message
+     * @param string|array $message
+     *
      * @return void
      */
     public function terminate($message)
