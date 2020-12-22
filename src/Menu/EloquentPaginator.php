@@ -98,12 +98,12 @@ trait EloquentPaginator
 
     public function orderBy()
     {
-        return ['id', 'asc'];
+        return $this->orderBy ?? [$this->paginationOffsetColumn(), 'asc'];
     }
 
     public function paginationOffsetColumn()
     {
-        return 'id';
+        return $this->paginationOffsetColumn ?? 'id';
     }
 
     public function paginationOffset()
