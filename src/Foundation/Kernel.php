@@ -1640,10 +1640,10 @@ class Kernel
 
     public function menuEntityClass($menuName)
     {
-        if(class_exists($menuName)) {
+        if (class_exists($menuName)) {
             return $menuName;
         }
-        
+
         $appNamespace = $this->specificAppMenuEntitiesNamespace();
         $appNamespace .= $appNamespace ? '\\' : '';
 
