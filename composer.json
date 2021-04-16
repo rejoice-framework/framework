@@ -28,7 +28,8 @@
     "prinx/array-utils": "^0.0",
     "prinx/os-utils": "^0.0",
     "psy/psysh": "^0.10",
-    "illuminate/database": "^8.11"
+    "illuminate/database": "^8.11",
+    "symfony/finder": "^5.2"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.2"
