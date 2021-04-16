@@ -259,16 +259,6 @@ class BaseMenu /* implements \ArrayAccess */
     /**
      * Get the raw response of the user for this menu.
      *
-     * @return Response
-     */
-    public function response()
-    {
-        return $this->app->response();
-    }
-
-    /**
-     * Get the raw response of the user for this menu.
-     *
      * @return string
      */
     public function userResponse()

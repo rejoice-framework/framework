@@ -8,6 +8,16 @@ namespace Rejoice\Menu\Traits;
 trait Response
 {
     /**
+     * Instance of the response to send back to the user.
+     *
+     * @return Response
+     */
+    public function response()
+    {
+        return $this->app->response();
+    }
+
+    /**
      * Convert message to string if it is not.
      *
      * @param string|array $message
