@@ -64,12 +64,12 @@ return [
     /*
      * This option works with the `always_start_new_session` option. If true
      * and always_start_new_session has been set to false, the user will have a
-     * prompt to continue their last session or restart a new session. If
-     * false, the last session will be automatically loaded whenever the user
+     * prompt to continue their previous session or restart a new session. If
+     * false, the previous session will be automatically loaded whenever the user
      * comes back.
      * This does not have any effect if always_start_new_session is set to true.
      */
-    'ask_user_before_reload_last_session' => true,
+    'ask_user_before_reload_previous_session' => true,
 
     /*
      * USSD sessions times out very quickly depending on the network and the

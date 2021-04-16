@@ -103,7 +103,7 @@ class Kernel
      * Custom request type.
      *
      * The custom request type help define a request type for handling restart
-     * from last session and other requests.
+     * from previous session and other requests.
      *
      * @var string
      */
@@ -229,7 +229,7 @@ class Kernel
      *
      * @var bool
      */
-    protected $hasResumedFromLastSession = false;
+    protected $hasResumedFromPreviousSession = false;
 
     protected $menuNamespaceDelimiter = '::';
 
@@ -367,12 +367,12 @@ class Kernel
 
                 break;
 
-            case APP_REQUEST_ASK_USER_BEFORE_RELOAD_LAST_SESSION:
-                $this->runAskUserBeforeReloadLastSessionState();
+            case APP_REQUEST_ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION:
+                $this->runAskUserBeforeReloadPreviousSessionState();
                 break;
 
-            case APP_REQUEST_RELOAD_LAST_SESSION_DIRECTLY:
-                $this->runLastSessionState();
+            case APP_REQUEST_RELOAD_PREVIOUS_SESSION_DIRECTLY:
+                $this->runPreviousSessionState();
                 break;
 
             case APP_REQUEST_CANCELLED:
@@ -408,12 +408,12 @@ class Kernel
     public function prepareToLaunchFromPreviousSession()
     {
         if (
-            $this->config('app.ask_user_before_reload_last_session') &&
+            $this->config('app.ask_user_before_reload_previous_session') &&
             $this->session->metadata('current_menu_name', false) !== WELCOME_MENU_NAME
         ) {
-            $this->setCustomUssdRequestType(APP_REQUEST_ASK_USER_BEFORE_RELOAD_LAST_SESSION);
+            $this->setCustomUssdRequestType(APP_REQUEST_ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION);
         } else {
-            $this->setCustomUssdRequestType(APP_REQUEST_RELOAD_LAST_SESSION_DIRECTLY);
+            $this->setCustomUssdRequestType(APP_REQUEST_RELOAD_PREVIOUS_SESSION_DIRECTLY);
         }
     }
 
@@ -422,10 +422,10 @@ class Kernel
         return $this->session->mustNotTimeout() && $this->session->isNew();
     }
 
-    protected function runLastSessionState()
+    protected function runPreviousSessionState()
     {
-        $this->hasResumedFromLastSession = true;
-        $this->sessionSave('has_resume_from_last_session', true);
+        $this->hasResumedFromPreviousSession = true;
+        $this->sessionSave('has_resume_from_previous_session', true);
         $this->saveCurrentMenuName($this->historyBagPop());
         $this->runState($this->currentMenuName());
     }
@@ -440,9 +440,9 @@ class Kernel
         $this->session->setMetadata('current_menu_name', $name);
     }
 
-    protected function runAskUserBeforeReloadLastSessionState()
+    protected function runAskUserBeforeReloadPreviousSessionState()
     {
-        $this->runState(ASK_USER_BEFORE_RELOAD_LAST_SESSION);
+        $this->runState(ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION);
     }
 
     protected function processResponse()
@@ -624,8 +624,8 @@ class Kernel
                 $this->runSameState();
                 break;
 
-            case APP_CONTINUE_LAST_SESSION:
-                $this->runLastSessionState();
+            case APP_CONTINUE_PREVIOUS_SESSION:
+                $this->runPreviousSessionState();
                 break;
 
             case APP_PAGINATE_FORWARD:
@@ -1140,12 +1140,12 @@ class Kernel
         if (APP_SPLITTED_MENU_NEXT !== $nextMenuName && APP_SPLITTED_MENU_BACK !== $nextMenuName) {
             if (
                 $this->currentMenuName() &&
-                $this->currentMenuName() !== WELCOME_MENU_NAME && ASK_USER_BEFORE_RELOAD_LAST_SESSION !== $nextMenuName &&
+                $this->currentMenuName() !== WELCOME_MENU_NAME && ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION !== $nextMenuName &&
                 !empty($this->historyBag()) && $this->previousMenuName() === $nextMenuName) {
                 $this->historyBagPop();
             } elseif (
                 $this->currentMenuName() && $this->currentMenuName() !== $nextMenuName &&
-                $this->currentMenuName() !== ASK_USER_BEFORE_RELOAD_LAST_SESSION
+                $this->currentMenuName() !== ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION
             ) {
                 $this->historyBagPush($this->currentMenuName());
             }
@@ -1850,13 +1850,13 @@ class Kernel
         return $this->logger;
     }
 
-    public function hasResumedFromLastSessionOnThisMenu()
+    public function hasResumedFromPreviousSessionOnThisMenu()
     {
-        return $this->hasResumedFromLastSession;
+        return $this->hasResumedFromPreviousSession;
     }
 
-    public function hasResumedFromLastSession()
+    public function hasResumedFromPreviousSession()
     {
-        return $this->session('has_resume_from_last_session', null);
+        return $this->session('has_resume_from_previous_session', null);
     }
 }

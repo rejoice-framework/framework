@@ -56,7 +56,7 @@ trait Paginator
 
     public function handlePagination()
     {
-        if ($this->hasResumedFromLastSessionOnThisMenu() || !empty($this->error())) {
+        if ($this->hasResumedFromPreviousSessionOnThisMenu() || !empty($this->error())) {
             $this->moveFetchCursorBackOnce();
         }
 
