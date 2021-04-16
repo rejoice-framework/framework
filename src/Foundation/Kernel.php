@@ -247,7 +247,7 @@ class Kernel
         ob_start();
         $this->appName = $appName;
         $this->forcedInput = $forcedInput;
-        $this->path = new Path;
+        $this->path = new Path();
         $this->logger = new Log(
             $this->path('app_default_log_file'),
             $this->path('app_default_cache_file')
@@ -562,7 +562,6 @@ class Kernel
      * developer has to specify the validation rules or validate himself in the
      * `validate` method of the menu entity)
      *
-     * @param string $currentMenu
      * @param string $userError
      * @param bool   $responseExistsInMenuActions The response has already been specified by the developer
      * @param string $nextMenu
@@ -1739,7 +1738,6 @@ class Kernel
     /**
      * Retrieve the request input.
      *
-     *
      * @param string $name
      *
      * @return mixed
@@ -1809,7 +1807,6 @@ class Kernel
      * The sender name and endpoint can be configure in the env file or
      * directly in the config/app.php file
      *
-     *
      * @param string $message
      * @param string $msisdn
      * @param string $senderName
@@ -1830,8 +1827,6 @@ class Kernel
 
     /**
      * Return a path to a file or a folder.
-     *
-     *
      *
      * @param string $key
      *

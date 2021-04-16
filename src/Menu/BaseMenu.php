@@ -328,9 +328,6 @@ class BaseMenu /* implements \ArrayAccess */
     /**
      * Return the user previous responses.
      *
-     * @param string $menuName The name of the menu response to retrieve
-     * @param string $default  The default to pass when no response has been found for the menu provided
-     *
      * @return UserResponse|mixed
      */
     public function previousResponses(...$args)
@@ -401,15 +398,6 @@ class BaseMenu /* implements \ArrayAccess */
     {
         return $this->app->hasResumeFromLastSession();
     }
-
-    // public function __call($method, $args)
-    // {
-    //     if (method_exists($this->app, $method)) {
-    //         return call_user_func([$this->app, $method], ...$args);
-    //     }
-
-    //     throw new \BadMethodCallException('Undefined method `'.$method.'` in class '.get_class($this));
-    // }
 
     // ArrayAccess Interface
     public function offsetExists($offset)
