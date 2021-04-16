@@ -268,6 +268,7 @@ class BaseMenu /* implements \ArrayAccess */
 
     /**
      * Get the raw response of the user for this menu.
+     * Alias for `userResponse`.
      *
      * @return string
      */
@@ -389,16 +390,32 @@ class BaseMenu /* implements \ArrayAccess */
         return $this->app->db($name);
     }
 
+    /**
+     * If the user has just resumed from the previous session (if the current menu is where the 
+     * user left on the previous session).
+     *
+     * @return boolean
+     */
     public function hasResumedFromPreviousSessionOnThisMenu()
-    {
-        return $this->hasResumedFromPreviousSessionOnThisMenu();
-    }
-
-    public function hasJustResumedFromPreviousSession()
     {
         return $this->app->hasResumedFromPreviousSessionOnThisMenu();
     }
 
+    /**
+     * Alias for `hasResumedFromLasSessionOnThisMenu`.
+     *
+     * @return boolean
+     */
+    public function hasJustResumedFromPreviousSession()
+    {
+        return $this->hasResumedFromPreviousSessionOnThisMenu();
+    }
+
+    /**
+     * If the current menu flow started with the user choosing "Start from previous session"
+     *
+     * @return boolean
+     */
     public function hasResumedFromPreviousSession()
     {
         return $this->app->hasResumedFromPreviousSession();

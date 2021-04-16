@@ -20,7 +20,7 @@ require_once __DIR__.'/../../constants.php';
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-class FileSession extends Session implements SessionInterface
+class FileSession extends Session
 {
     protected $file = null;
 

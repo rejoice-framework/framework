@@ -20,17 +20,39 @@ interface SessionInterface
 {
     public function isPrevious();
 
+    /**
+     * Delete session data only from the storage.
+     *
+     * Does not delete the current live session data.
+     *
+     * @return void
+     */
     public function delete();
 
     public function reset();
 
+    /**
+     * Reset completely the session data, both in live and in the storage.
+     *
+     * @return void
+     */
     public function hardReset();
-
+    
+    /**
+     * Attempts to retrieve a previous session data from the storage.
+     *
+     * @return void
+     */
     public function retrievePreviousData();
 
     public function retrieveData();
 
     public function previousSessionNotExists();
 
+    /**
+     * Save the session data to the current configured storage.
+     *
+     * @return void
+     */
     public function save();
 }

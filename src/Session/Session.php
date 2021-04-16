@@ -21,7 +21,7 @@ require_once __DIR__.'/../../constants.php';
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-class Session
+abstract class Session implements SessionInterface
 {
     protected $driver;
     protected $app;
@@ -41,26 +41,6 @@ class Session
     }
 
     /**
-     * Check if the just retrieved session is a previous session.
-     *
-     * @return bool
-     */
-    public function isPrevious()
-    {
-        return !$this->isNew();
-    }
-
-    /**
-     * Check if the session loaded is a new session.
-     *
-     * @return bool
-     */
-    public function isNew()
-    {
-        return $this->isNew;
-    }
-
-    /**
      * Starts the session.
      *
      * @return void
@@ -75,25 +55,16 @@ class Session
         } elseif ($this->app->isFirstRequest() && $this->hasExpired()) {
             $this->renew();
         }
-
-        // switch ($this->app->ussdRequestType()) {
-        //     case APP_REQUEST_INIT:
-        //         if ($this->hasExpired()) {
-        //             $this->renew();
-        //         }
-
-        //         break;
-
-        //     case APP_REQUEST_USER_SENT_RESPONSE:
-        //         break;
-        // }
     }
 
-    public function renew()
+    /**
+     * Check if the session loaded is a new session.
+     *
+     * @return bool
+     */
+    public function isNew()
     {
-        $this->deletePreviousData();
-        $this->isNew = true;
-        $this->initialise();
+        return $this->isNew;
     }
 
     public function initialise()
@@ -112,11 +83,6 @@ class Session
         return $this->hasPassed('lifetime');
     }
 
-    public function hasTimedOut()
-    {
-        return $this->hasPassed('timeout');
-    }
-
     public function hasPassed($type)
     {
         $allowed = $this->app->config("session.{$type}");
@@ -126,9 +92,11 @@ class Session
         return ($now - $lastConnection) >= $allowed;
     }
 
-    public function mustNotTimeout()
+    public function renew()
     {
-        return $this->app->config('app.allow_timeout') === false;
+        $this->deletePreviousData();
+        $this->isNew = true;
+        $this->initialise();
     }
 
     protected function deletePreviousData()
@@ -137,41 +105,37 @@ class Session
     }
 
     /**
-     * Delete session data from the storage.
+     * Check if the just retrieved session is a previous session.
      *
-     * This methodm leaves untouched the current live session data
-     *
-     * @return void
+     * @return bool
      */
-    public function delete()
+    public function isPrevious()
     {
+        return !$this->isNew();
+    }
+
+    public function hasTimedOut()
+    {
+        return $this->hasPassed('timeout');
+    }
+
+    public function mustNotTimeout()
+    {
+        return $this->app->config('app.allow_timeout') === false;
     }
 
     /**
-     * Attempts to retrieve a previous session data from the storage.
+     * Reset the session.
+     *
+     * This does not affect the session in its storage. Only the live session
+     * currently in use. To delete the session completely, in live and in the
+     * storage, use `hardReset`
      *
      * @return void
      */
-    public function retrievePreviousData()
+    public function reset()
     {
-    }
-
-    /**
-     * Save the session data to the current configured storage.
-     *
-     * @return void
-     */
-    public function save()
-    {
-    }
-
-    /**
-     * Reset completely the session data, both in live and in the storage.
-     *
-     * @return void
-     */
-    public function hardReset()
-    {
+        $this->initialise();
     }
 
     /**
@@ -249,12 +213,6 @@ class Session
      */
     public function remove($key)
     {
-        // if (isset($this->data[DEVELOPER_SAVED_DATA][$key])) {
-        //     unset($this->data[DEVELOPER_SAVED_DATA][$key]);
-
-        //     return true;
-        // }
-
         $explodedKey = explode('.', $key);
 
         if (isset($this->data[DEVELOPER_SAVED_DATA][$explodedKey[0]])) {
@@ -362,19 +320,5 @@ class Session
         }
 
         return $value;
-    }
-
-    /**
-     * Reset the session.
-     *
-     * This does not affect the session in its storage. Only the live session
-     * currently in use. To delete the session completely, in live and in the
-     * storage, use `hardReset`
-     *
-     * @return void
-     */
-    public function reset()
-    {
-        $this->initialise();
     }
 }
