@@ -1502,6 +1502,24 @@ class Kernel
     }
 
     /**
+     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and 
+     * save `$default` to the session.
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function sessionRemember($key, $default)
+    {
+        if (!$this->sessionHas($key)) {
+            $this->sessionSave($key, $default);
+        }
+
+        return $this->session($key);
+    }
+
+    /**
      * Allows the developer to retrieve a value from the session.
      * This is identical to `sessionGet`
      * Returns the session instance if no parameter passed.
