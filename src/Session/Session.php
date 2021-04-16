@@ -123,12 +123,7 @@ class Session
         $lastConnection = $this->data['__last_connection'] ?? 0;
         $now = microtime(true);
 
-        return $this->secondsToMinutes($now - $lastConnection) >= $allowed;
-    }
-
-    public function secondsToMinutes($sec)
-    {
-        return $sec / 60;
+        return ($now - $lastConnection) >= $allowed;
     }
 
     public function mustNotTimeout()
