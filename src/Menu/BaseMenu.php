@@ -389,14 +389,19 @@ class BaseMenu /* implements \ArrayAccess */
         return $this->app->db($name);
     }
 
-    public function hasResumeFromLastSessionOnThisMenu()
+    public function hasResumedFromLastSessionOnThisMenu()
     {
-        return $this->app->hasResumeFromLastSession();
+        return $this->hasResumedFromLastSessionOnThisMenu();
     }
 
-    public function hasResumeFromLastSession()
+    public function hasJustResumedFromLastSession()
     {
-        return $this->app->hasResumeFromLastSession();
+        return $this->app->hasResumedFromLastSessionOnThisMenu();
+    }
+
+    public function hasResumedFromLastSession()
+    {
+        return $this->app->hasResumedFromLastSession();
     }
 
     // ArrayAccess Interface

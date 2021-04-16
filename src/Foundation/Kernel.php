@@ -229,7 +229,7 @@ class Kernel
      *
      * @var bool
      */
-    protected $hasResumeFromLastSession = false;
+    protected $hasResumedFromLastSession = false;
 
     protected $menuNamespaceDelimiter = '::';
 
@@ -424,7 +424,7 @@ class Kernel
 
     protected function runLastSessionState()
     {
-        $this->hasResumeFromLastSession = true;
+        $this->hasResumedFromLastSession = true;
         $this->sessionSave('has_resume_from_last_session', true);
         $this->saveCurrentMenuName($this->historyBagPop());
         $this->runState($this->currentMenuName());
@@ -1850,12 +1850,12 @@ class Kernel
         return $this->logger;
     }
 
-    public function hasResumeFromLastSessionOnThisMenu()
+    public function hasResumedFromLastSessionOnThisMenu()
     {
-        return $this->hasResumeFromLastSession;
+        return $this->hasResumedFromLastSession;
     }
 
-    public function hasResumeFromLastSession()
+    public function hasResumedFromLastSession()
     {
         return $this->session('has_resume_from_last_session', null);
     }
