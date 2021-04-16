@@ -1502,7 +1502,7 @@ class Kernel
     }
 
     /**
-     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and 
+     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and
      * save `$default` to the session.
      *
      * @param string $key

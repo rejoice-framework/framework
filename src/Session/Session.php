@@ -182,8 +182,7 @@ abstract class Session implements SessionInterface
     /**
      * Set a value into the part of the session accessible by the developer.
      *
-     * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return void
      */
@@ -191,6 +190,10 @@ abstract class Session implements SessionInterface
     {
         if (!$this->hasMetadata(DEVELOPER_SAVED_DATA)) {
             $this->setMetadata(DEVELOPER_SAVED_DATA, []);
+        }
+
+        if (is_callable($value)) {
+            $value = call_user_func($value);
         }
 
         $this->data[DEVELOPER_SAVED_DATA] = Arr::multiKeySet(
@@ -233,8 +236,6 @@ abstract class Session implements SessionInterface
      *
      * If no key is passed, checks if the session is not empty
      *
-     * @param string $key
-     *
      * @return bool
      */
     public function has(string $key = '')
@@ -251,8 +252,6 @@ abstract class Session implements SessionInterface
      *
      * If no key is passed, checks if the session is not empty
      *
-     * @param string $key
-     *
      * @return bool
      */
     public function hasMetadata(string $key = '')
@@ -267,8 +266,7 @@ abstract class Session implements SessionInterface
     /**
      * Set a framework-level variable in the session.
      *
-     * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return void
      */
@@ -284,8 +282,6 @@ abstract class Session implements SessionInterface
      *
      * Returns true if the variable exists and has been removed, false otherwise
      *
-     * @param string $key
-     *
      * @return void
      */
     public function removeMetadata(string $key)
@@ -296,8 +292,7 @@ abstract class Session implements SessionInterface
     /**
      * Retrieve a framework-level variable from the session.
      *
-     * @param string $key
-     * @param mixed  $default
+     * @param mixed $default
      *
      * @throws \RuntimeException If value not found and no default value has been provided
      *
