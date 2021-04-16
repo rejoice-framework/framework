@@ -2,6 +2,7 @@
 
 use Rejoice\Foundation\Path;
 
+$projectRoot = Path::toProject();
 $frameworkRoot = Path::toFramework();
 
 return [
