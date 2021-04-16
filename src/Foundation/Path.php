@@ -78,7 +78,12 @@ class Path
     public static function toProject($append = '')
     {
         if (!isset(static::$toProject)) {
-            static::$toProject = str(realpath(__DIR__.'/../../../../../'))->ensureEnd(Os::slash());
+            if (isset($_SERVER['PWD'])) {
+                static::$toProject = dirname(realpath($_SERVER['PWD'].DIRECTORY_SEPARATOR.$_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR;
+            } else {
+                // static::$toProject = str(realpath(__DIR__.'/../../../../../'))->ensureEnd(Os::slash());
+                static::$toProject = dirname(realpath($_SERVER['SCRIPT_FILENAME'].DIRECTORY_SEPARATOR.'..')).DIRECTORY_SEPARATOR;
+            }
         }
 
         return static::$toProject.$append;

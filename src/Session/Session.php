@@ -206,6 +206,24 @@ abstract class Session implements SessionInterface
     }
 
     /**
+     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and
+     * save `$default` to the session.
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function remember($key, $default)
+    {
+        if (!$this->has($key)) {
+            $this->set($key, $default);
+        }
+
+        return $this->get($key);
+    }
+
+    /**
      * Remove a key from the part of the session accessible by the developer.
      *
      * Returns true if the key exists and has been removed. False otherwise

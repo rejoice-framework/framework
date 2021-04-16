@@ -1512,11 +1512,7 @@ class Kernel
      */
     public function sessionRemember($key, $default)
     {
-        if (!$this->sessionHas($key)) {
-            $this->sessionSave($key, $default);
-        }
-
-        return $this->session($key);
+        return $this->session->remember($key, $default);
     }
 
     /**

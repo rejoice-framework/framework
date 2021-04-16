@@ -37,7 +37,7 @@ interface SessionInterface
      * @return void
      */
     public function hardReset();
-    
+
     /**
      * Attempts to retrieve a previous session data from the storage.
      *
@@ -55,4 +55,47 @@ interface SessionInterface
      * @return void
      */
     public function save();
+
+    /**
+     * Retrieve a value from the part of the session accessible by the developer.
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @throws \RuntimeException If value not found and no default value has been provided
+     *
+     * @return mixed
+     */
+    public function get($key = null, $default = null);
+
+    /**
+     * Set a value into the part of the session accessible by the developer.
+     *
+     * @param mixed $value
+     *
+     * @return void
+     */
+    public function set(string $key, $value);
+
+    /**
+     * Remove a key from the part of the session accessible by the developer.
+     *
+     * Returns true if the key exists and has been removed. False otherwise
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function remove($key);
+
+    /**
+     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and
+     * save `$default` to the session.
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function remember($key, $default);
 }
