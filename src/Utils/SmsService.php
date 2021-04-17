@@ -34,8 +34,22 @@ class SmsService
         $this->app = $app;
     }
 
+    /**
+     * Send SMS.
+     *
+     * @param string[]|string $message
+     * @param string          $msisdn
+     * @param string          $senderName
+     * @param string          $endpoint
+     *
+     * @return void
+     */
     public function send($message, $msisdn = '', $senderName = '', $endpoint = '')
     {
+        if (is_array($message)) {
+            $message = implode("\n", $message);
+        }
+
         if (!($message = trim($message))) {
             return;
         }
@@ -84,7 +98,7 @@ class SmsService
         curl_close($curlHandle);
 
         return [
-            'data'  => $result,
+            'data' => $result,
             'error' => $err,
         ];
     }
