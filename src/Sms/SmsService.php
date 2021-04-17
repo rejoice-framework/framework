@@ -98,7 +98,7 @@ class SmsService implements SmsServiceInterface
         curl_close($curlHandle);
 
         return [
-            'data' => $result,
+            'data'  => $result,
             'error' => $err,
         ];
     }

@@ -16,17 +16,23 @@ class ClearLogCommand extends Smile
         $this->setName('log:clear')
             ->setDescription('Clear log files.')
             ->addOption(
-                'all', 'a', Option::OPTIONAL,
+                'all',
+                'a',
+                Option::OPTIONAL,
                 'Remove both log files created by rejoice and custom log files.',
                 true
             )
             ->addOption(
-                'file', 'f', Option::OPTIONAL,
+                'file',
+                'f',
+                Option::OPTIONAL,
                 'Remove only files.',
                 false
             )
             ->addOption(
-                'dir', 'd', Option::OPTIONAL,
+                'dir',
+                'd',
+                Option::OPTIONAL,
                 'Remove only directories.',
                 false
             );

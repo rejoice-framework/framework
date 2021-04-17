@@ -391,10 +391,10 @@ class BaseMenu /* implements \ArrayAccess */
     }
 
     /**
-     * If the user has just resumed from the previous session (if the current menu is where the 
+     * If the user has just resumed from the previous session (if the current menu is where the
      * user left on the previous session).
      *
-     * @return boolean
+     * @return bool
      */
     public function hasResumedFromPreviousSessionOnThisMenu()
     {
@@ -404,7 +404,7 @@ class BaseMenu /* implements \ArrayAccess */
     /**
      * Alias for `hasResumedFromLasSessionOnThisMenu`.
      *
-     * @return boolean
+     * @return bool
      */
     public function hasJustResumedFromPreviousSession()
     {
@@ -412,9 +412,9 @@ class BaseMenu /* implements \ArrayAccess */
     }
 
     /**
-     * If the current menu flow started with the user choosing "Start from previous session"
+     * If the current menu flow started with the user choosing "Start from previous session".
      *
-     * @return boolean
+     * @return bool
      */
     public function hasResumedFromPreviousSession()
     {
