@@ -63,6 +63,12 @@ class Path
     {
         if (!isset(static::$toFramework)) {
             static::$toFramework = str(realpath(__DIR__.'/../../'))->ensureEnd(Os::slash());
+
+            // if (isset($_SERVER['PWD'])) {
+            //     static::$toFramework = dirname(realpath($_SERVER['PWD'].DIRECTORY_SEPARATOR.$_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'rejoice'.DIRECTORY_SEPARATOR.'framework'.DIRECTORY_SEPARATOR;
+            // } else {
+            //     static::$toFramework = dirname(realpath($_SERVER['SCRIPT_FILENAME'].DIRECTORY_SEPARATOR.'..')).DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'rejoice'.DIRECTORY_SEPARATOR.'framework'.DIRECTORY_SEPARATOR;
+            // }
         }
 
         return static::$toFramework.$append;
@@ -78,12 +84,13 @@ class Path
     public static function toProject($append = '')
     {
         if (!isset(static::$toProject)) {
-            if (isset($_SERVER['PWD'])) {
-                static::$toProject = dirname(realpath($_SERVER['PWD'].DIRECTORY_SEPARATOR.$_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR;
-            } else {
-                // static::$toProject = str(realpath(__DIR__.'/../../../../../'))->ensureEnd(Os::slash());
-                static::$toProject = dirname(realpath($_SERVER['SCRIPT_FILENAME'].DIRECTORY_SEPARATOR.'..')).DIRECTORY_SEPARATOR;
-            }
+            static::$toProject = str(realpath(__DIR__.'/../../../../../'))->ensureEnd(Os::slash());
+
+            // if (isset($_SERVER['PWD'])) {
+            //     static::$toProject = dirname(realpath($_SERVER['PWD'].DIRECTORY_SEPARATOR.$_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR;
+            // } else {
+            //     static::$toProject = dirname(realpath($_SERVER['SCRIPT_FILENAME'].DIRECTORY_SEPARATOR.'..')).DIRECTORY_SEPARATOR;
+            // }
         }
 
         return static::$toProject.$append;
