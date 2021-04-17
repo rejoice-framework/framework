@@ -10,7 +10,6 @@ trait Action
     /**
      * Merge an action array with an actionBag.
      *
-     *
      * @param array $actionBag
      * @param array $mergeWith
      *
@@ -57,7 +56,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_WELCOME,
             ],
         ];
@@ -100,7 +99,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_BACK,
             ],
         ];
@@ -109,7 +108,7 @@ trait Action
     /**
      * Return an action bag containing a `go to previous menu` option, as an array.
      *
-     * Alias for the `backAction` method.
+     * Alias for the `backAction`.
      *
      * @param string $trigger
      * @param string $display
@@ -158,7 +157,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_PAGINATE_BACK,
             ],
         ];
@@ -200,7 +199,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_PAGINATE_FORWARD,
             ],
         ];
@@ -242,7 +241,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_END,
             ],
         ];
@@ -255,9 +254,9 @@ trait Action
      *
      * @return array
      */
-    public function withBack($actionBag = [])
+    public function withBack($actionBag = [], $backTrigger = '', $display = '')
     {
-        return $this->mergeAction($actionBag, $this->backAction());
+        return $this->mergeAction($actionBag, $this->backAction($backTrigger, $display));
     }
 
     /**
