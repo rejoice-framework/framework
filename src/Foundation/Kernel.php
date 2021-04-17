@@ -21,7 +21,7 @@ use Prinx\Utils\URL;
 use Rejoice\Database\Connections;
 use Rejoice\Database\DB;
 use Rejoice\Menu\Menus;
-use Rejoice\Utils\SmsService;
+use Rejoice\Sms\SmsServiceInterface;
 
 /**
  * Main Library. Handle the request and return a response.
@@ -1834,7 +1834,13 @@ class Kernel
             return;
         }
 
-        $smsService = new SmsService($this);
+        $smsServiceClass = $this->config('app.sms_service');
+
+        if (!($smsServiceClass instanceof SmsServiceInterface)) {
+            throw new \Exception('Sms Service class must implements "'.SmsServiceInterface::class.'" interface.');
+        }
+
+        $smsService = new $smsServiceClass($this);
 
         return $smsService->send($message, $msisdn, $senderName, $endpoint);
     }

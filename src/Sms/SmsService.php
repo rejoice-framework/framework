@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Rejoice\Utils;
+namespace Rejoice\Sms;
 
 use Rejoice\Foundation\Kernel;
 
@@ -18,7 +18,7 @@ use Rejoice\Foundation\Kernel;
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-class SmsService
+class SmsService implements SmsServiceInterface
 {
     protected $app;
 
