@@ -658,7 +658,6 @@ class Kernel
         $this->session->save();
         $this->setUssdRequestType(APP_REQUEST_INIT);
         $this->processFromRemoteUssd($nextMenu);
-
     }
 
     /**
