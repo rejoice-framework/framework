@@ -109,7 +109,7 @@ abstract class Session implements SessionInterface
      *
      * @return bool
      */
-    public function isPrevious()
+    public function hasPrevious()
     {
         return !$this->isNew();
     }

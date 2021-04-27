@@ -18,7 +18,7 @@ namespace Rejoice\Session;
  */
 interface SessionInterface
 {
-    public function isPrevious();
+    public function hasPrevious();
 
     /**
      * Delete session data only from the storage.

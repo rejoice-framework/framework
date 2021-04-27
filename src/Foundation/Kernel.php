@@ -342,7 +342,7 @@ class Kernel
 
     protected function handleUserRequest()
     {
-        if ($this->isFirstRequest() && $this->session->isPrevious()) {
+        if ($this->isFirstRequest() && $this->session->hasPrevious()) {
             $this->prepareToLaunchFromPreviousSession();
         } elseif ($this->attemptsToCallSubMenuDirectly() && $this->doesNotAllowDirectSubMenuCall()) {
             $this->forceRestart();
