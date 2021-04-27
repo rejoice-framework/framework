@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Rejoice\Console\Commands;
 
 use Rejoice\Console\Commands\FrameworkCommand as Smile;
 use Symfony\Component\Finder\Finder;

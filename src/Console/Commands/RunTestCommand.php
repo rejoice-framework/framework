@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Rejoice\Console\Commands;
 
 use Rejoice\Console\Commands\FrameworkCommand as Smile;
 use Rejoice\Foundation\Path;
@@ -20,7 +20,7 @@ class RunTestCommand extends Smile
 
     public function fire()
     {
-        passthru(PHP_BINARY.' '.Path::toProject('vendor/phpunit/phpunit/phpunit'));
+        passthru(PHP_BINARY.' '.Path::toProject('vendor/bin/phpunit'));
 
         // $process = (new Process([
         //     PHP_BINARY,
