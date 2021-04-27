@@ -31,8 +31,6 @@ class Config
      * If array provided as configDirs, the config from those paths will be merge
      *
      * @param string|string[] $configDirs The config folder path or an array of paths
-     * @param string          $separator
-     * @param string          $fileSuffix
      */
     public function __construct($configDirs, string $separator = '.', string $fileSuffix = '.php')
     {
@@ -69,8 +67,9 @@ class Config
      * Get a configuration variable from the config.
      *
      * @param string $key
-     * @param mixed  $default The default to return if the configuration is not found
-     * @param bool   $silent  If true, will shutdown the exception throwing if configuration variable not found and no default was passed.
+     * @param mixed  $default The default to return if the configuration value is not found
+     * @param bool   $silent  If silent is false, will throw an exception if configuration variable
+     *                        is not found and no default was passed.
      *
      * @throws \RuntimeException
      *
@@ -81,7 +80,7 @@ class Config
         $argCount = \func_num_args();
 
         if (0 === $argCount) {
-            return $this->config;
+            return $this;
         }
 
         $value = Arr::multiKeyGet($key, $this->config);

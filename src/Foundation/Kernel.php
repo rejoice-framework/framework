@@ -657,8 +657,9 @@ class Kernel
         $this->session->setMetadata('ussd_has_switched', true);
         $this->session->save();
         $this->setUssdRequestType(APP_REQUEST_INIT);
+        $this->processFromRemoteUssd($nextMenu);
 
-        return $this->processFromRemoteUssd($nextMenu);
+        return;
     }
 
     /**
