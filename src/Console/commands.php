@@ -15,5 +15,6 @@ return [
     ClearSessionCommand::class,
     RunTestCommand::class,
     ScheduleRunCommand::class,
+    ServeCommand::class,
     // ...
 ];
