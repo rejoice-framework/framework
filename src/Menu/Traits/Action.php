@@ -50,7 +50,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG => $display,
+                ITEM_MSG    => $display,
                 ITEM_ACTION => APP_WELCOME,
             ],
         ];
@@ -105,7 +105,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG => $display,
+                ITEM_MSG    => $display,
                 ITEM_ACTION => APP_BACK,
             ],
         ];
@@ -163,7 +163,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG => $display,
+                ITEM_MSG    => $display,
                 ITEM_ACTION => APP_PAGINATE_BACK,
             ],
         ];
@@ -205,7 +205,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG => $display,
+                ITEM_MSG    => $display,
                 ITEM_ACTION => APP_PAGINATE_FORWARD,
             ],
         ];
@@ -247,7 +247,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG => $display,
+                ITEM_MSG    => $display,
                 ITEM_ACTION => APP_END,
             ],
         ];

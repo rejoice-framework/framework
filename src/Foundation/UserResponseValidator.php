@@ -149,7 +149,7 @@ class UserResponseValidator
         }
 
         return [
-            'rule' => $rule,
+            'rule'  => $rule,
             'error' => $customError,
         ];
     }
@@ -411,7 +411,7 @@ class UserResponseValidator
 
         return self::validate($str, [
             'integer' => 'The age must be a number',
-            'min:0' => 'The age must be greater than 0',
+            'min:0'   => 'The age must be greater than 0',
             'max:100' => 'The age must be less than 100',
         ]);
     }
