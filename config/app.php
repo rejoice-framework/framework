@@ -9,7 +9,7 @@ return [
     'id' => env('APP_ID', 'rejoice_ussd'),
 
     /*
-     * The environment of the application
+     * The environment of the application.
      */
     'environment' => env('APP_ENV', 'prod'),
 
@@ -25,27 +25,32 @@ return [
 
     /*
      * If true, and an SMS endpoint and sender name have been configured, every
-     * last response will be sent as SMS to the user
+     * last response will be sent as SMS to the user.
      */
     'always_send_sms_at_end' => false,
 
     /*
-     * For test purpose. You can enable/disable overall sending of SMS
+     * You can enable/disable overall sending of SMS.
      */
     'send_sms_enabled' => env('SEND_SMS_ENABLED', true),
 
     /*
-     * SMS Service
+     * SMS Service.
      */
     'sms_service' => \Rejoice\Sms\SmsService::class,
 
     /*
-     * For test purpose. You can enable/disable overall sending of SMS
+     * SMS Service.
+     */
+    'jobs_class' => \App\Jobs\Job::class,
+
+    /*
+     * You can enable/disable overall logging.
      */
     'log_enabled' => env('LOG_ENABLED', true),
 
     /*
-     * You can disabled connection to the application database by turning this to false
+     * You can disabled connection to the application database by turning this to false.
      */
     'connect_app_db' => true,
 
@@ -82,7 +87,7 @@ return [
      * time has passed, and a response is sent requesting for an input from the
      * user, that response is displayed. That behavior is used to allow the
      * application not to time out. So that the user can see the last response,
-     * no matter how long the USSD menu is.
+     * no matter how long the USSD menu lasts.
      */
     'allow_timeout' => true,
 
@@ -116,19 +121,19 @@ return [
      * country
      */
     'request_param_user_phone_number' => env('USER_PHONE_PARAM_NAME', 'msisdn'),
-    'request_param_user_network'      => env('USER_NETWORK_PARAM_NAME', 'network'),
-    'request_param_session_id'        => env('SESSION_ID_PARAM_NAME', 'sessionID'),
-    'request_param_request_type'      => env('REQUEST_TYPE_PARAM_NAME', 'ussdServiceOp'),
-    'request_param_user_response'     => env('USER_RESPONSE_PARAM_NAME', 'ussdString'),
-    'request_param_menu_string'       => env('MENU_STRING_PARAM_NAME', 'message'),
+    'request_param_user_network' => env('USER_NETWORK_PARAM_NAME', 'network'),
+    'request_param_session_id' => env('SESSION_ID_PARAM_NAME', 'sessionID'),
+    'request_param_request_type' => env('REQUEST_TYPE_PARAM_NAME', 'ussdServiceOp'),
+    'request_param_user_response' => env('USER_RESPONSE_PARAM_NAME', 'ussdString'),
+    'request_param_menu_string' => env('MENU_STRING_PARAM_NAME', 'message'),
 
     /*
      * Request type codes
      */
-    'request_init'               => env('REQUEST_INIT_CODE', '1'),
-    'request_end'                => env('REQUEST_END_CODE', '17'),
-    'request_failed'             => env('REQUEST_FAILED_CODE', '3'),
-    'request_cancelled'          => env('REQUEST_CANCELLED_CODE', '30'),
-    'request_ask_user_response'  => env('REQUEST_ASK_USER_RESPONSE_CODE', '2'),
+    'request_init' => env('REQUEST_INIT_CODE', '1'),
+    'request_end' => env('REQUEST_END_CODE', '17'),
+    'request_failed' => env('REQUEST_FAILED_CODE', '3'),
+    'request_cancelled' => env('REQUEST_CANCELLED_CODE', '30'),
+    'request_ask_user_response' => env('REQUEST_ASK_USER_RESPONSE_CODE', '2'),
     'request_user_sent_response' => env('REQUEST_USER_SENT_RESPONSE_CODE', '18'),
 ];
