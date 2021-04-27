@@ -16,13 +16,13 @@ return [
      * Timeout of the final response
      * Default 180 (3 minutes)
      */
-   'timeout' => 180,
+    'timeout' => 180,
 
     'database' => [
-        'user' => env('SESSION_DB_USER', ''),
+        'user'     => env('SESSION_DB_USER', ''),
         'password' => env('SESSION_DB_PASS', ''),
-        'host' => env('SESSION_DB_HOST', ''),
-        'port' => env('SESSION_DB_PORT', ''),
-        'dbname' => env('SESSION_DB_NAME', ''),
+        'host'     => env('SESSION_DB_HOST', ''),
+        'port'     => env('SESSION_DB_PORT', ''),
+        'dbname'   => env('SESSION_DB_NAME', ''),
     ],
 ];
