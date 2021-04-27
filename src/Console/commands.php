@@ -10,6 +10,10 @@ return [
     NewModelCommand::class,
     NewMenuCommand::class,
     DevtoolCommand::class,
-    ServeCommand::class,
-    //
+    ClearCacheCommand::class,
+    ClearLogCommand::class,
+    ClearSessionCommand::class,
+    RunTestCommand::class,
+    ScheduleRunCommand::class,
+    // ...
 ];
