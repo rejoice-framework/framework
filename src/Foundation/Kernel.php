@@ -1215,6 +1215,8 @@ class Kernel
         $this->response->addErrorInSimulator($error);
         $this->response->softEnd($this->config('menu.application_failed_message'));
 
+        $error = strip_tags($this->br2nl($error));
+
         $log = "Error:\n".$error."\n\nUser session:\n".json_encode($sessionData, JSON_PRETTY_PRINT);
 
         $this->logger->emergency($log);
@@ -1226,6 +1228,23 @@ class Kernel
         }
 
         exit;
+    }
+
+    /**
+     * Convert BR tags to newlines and carriage returns.
+     *
+     * @param string The string to convert
+     * @param string The string to use as line separator
+     *
+     * @return string The converted string
+     *
+     * @see https://www.php.net/manual/en/function.nl2br.php#115182
+     */
+    public function br2nl($string, $separator = PHP_EOL)
+    {
+        $separator = in_array($separator, ["\n", "\r", "\r\n", "\n\r", chr(30), chr(155), PHP_EOL]) ? $separator : PHP_EOL;
+
+        return preg_replace('/\<br(\s*)?\/?\>/i', $separator, $string);
     }
 
     protected function runPreviousState()
