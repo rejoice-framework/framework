@@ -28,11 +28,11 @@ define('APP_REQUEST_CANCELLED', $config->get('app.request_cancelled'));
 define('APP_REQUEST_ASK_USER_RESPONSE', $config->get('app.request_ask_user_response'));
 define('APP_REQUEST_USER_SENT_RESPONSE', $config->get('app.request_user_sent_response'));
 define(
-    'APP_REQUEST_ASK_USER_BEFORE_RELOAD_LAST_SESSION',
+    'APP_REQUEST_ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION',
     '__CUSTOM_REQUEST_TYPE1'
 );
 define(
-    'APP_REQUEST_RELOAD_LAST_SESSION_DIRECTLY',
+    'APP_REQUEST_RELOAD_PREVIOUS_SESSION_DIRECTLY',
     '__CUSTOM_REQUEST_TYPE2'
 );
 
@@ -55,7 +55,7 @@ define('APP_SAME', '__same');
 define('APP_END', '__end');
 define('APP_SPLITTED_MENU_NEXT', '__split_next');
 define('APP_SPLITTED_MENU_BACK', '__split_back');
-define('APP_CONTINUE_LAST_SESSION', '__continue_last_session');
+define('APP_CONTINUE_PREVIOUS_SESSION', '__continue_previous_session');
 define('APP_PAGINATE_FORWARD', '__paginate_forward');
 define('APP_PAGINATE_BACK', '__paginate_back');
 
@@ -67,7 +67,7 @@ define('APP_PAGINATE_BACK', '__paginate_back');
  * APP_BACK: throw the previous menu
  * APP_SAME: re-throw the current menu
  * APP_END: throw a goodbye menu
- * APP_CONTINUE_LAST_SESSION: throw the menu on which the user was before
+ * APP_CONTINUE_PREVIOUS_SESSION: throw the menu on which the user was before
  * request timed out or was cancelled
  */
 define('RESERVED_MENU_IDs', [
@@ -75,7 +75,7 @@ define('RESERVED_MENU_IDs', [
     APP_END,
     APP_BACK,
     APP_SAME,
-    APP_CONTINUE_LAST_SESSION,
+    APP_CONTINUE_PREVIOUS_SESSION,
     APP_SPLITTED_MENU_NEXT,
     APP_SPLITTED_MENU_BACK,
     APP_PAGINATE_FORWARD,
@@ -99,8 +99,8 @@ define(
 define('ALLOWED_REQUEST_CHANNELS', ['USSD', 'WHATSAPP', 'CONSOLE']);
 
 define(
-    'ASK_USER_BEFORE_RELOAD_LAST_SESSION',
-    'ask_user_before_reload_last_session'
+    'ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION',
+    'ask_user_before_reload_previous_session'
 );
 
 define('DEVELOPER_SAVED_DATA', 'session_data_accessible_by_app');

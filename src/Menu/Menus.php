@@ -93,29 +93,29 @@ class Menus implements \ArrayAccess
             $this->insertMenuActions($modifications, $app->currentMenuName());
         }
 
-        if ($app->config('app.ask_user_before_reload_last_session')) {
+        if ($app->config('app.ask_user_before_reload_previous_session')) {
             $this->menus = array_merge(
                 $this->menus,
-                $this->menuAskUserBeforeReloadLastSession()
+                $this->menuAskUserBeforeReloadPreviousSession()
             );
         }
     }
 
-    public function menuAskUserBeforeReloadLastSession()
+    public function menuAskUserBeforeReloadPreviousSession()
     {
-        $message = $this->app->config('menu.message_ask_user_before_reload_last_session');
-        $lastSessionTrigger = $this->app->config('menu.last_session_trigger');
-        $lastSessionDisplay = $this->app->config('menu.last_session_display');
+        $message = $this->app->config('menu.message_ask_user_before_reload_previous_session');
+        $previousSessionTrigger = $this->app->config('menu.previous_session_trigger');
+        $previousSessionDisplay = $this->app->config('menu.previous_session_display');
         $restartSessionTrigger = $this->app->config('menu.restart_session_trigger');
         $restartSessionDisplay = $this->app->config('menu.restart_session_display');
 
         return [
-            ASK_USER_BEFORE_RELOAD_LAST_SESSION => [
+            ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION => [
                 'message' => $message,
                 'actions' => [
-                    $lastSessionTrigger    => [
-                        ITEM_MSG    => $lastSessionDisplay,
-                        ITEM_ACTION => APP_CONTINUE_LAST_SESSION,
+                    $previousSessionTrigger    => [
+                        ITEM_MSG    => $previousSessionDisplay,
+                        ITEM_ACTION => APP_CONTINUE_PREVIOUS_SESSION,
                     ],
                     $restartSessionTrigger => [
                         ITEM_MSG    => $restartSessionDisplay,

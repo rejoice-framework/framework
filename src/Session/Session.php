@@ -21,7 +21,7 @@ require_once __DIR__.'/../../constants.php';
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-class Session
+abstract class Session implements SessionInterface
 {
     protected $driver;
     protected $app;
@@ -41,26 +41,6 @@ class Session
     }
 
     /**
-     * Check if the just retrieved session is a previous session.
-     *
-     * @return bool
-     */
-    public function isPrevious()
-    {
-        return !$this->isNew();
-    }
-
-    /**
-     * Check if the session loaded is a new session.
-     *
-     * @return bool
-     */
-    public function isNew()
-    {
-        return $this->isNew;
-    }
-
-    /**
      * Starts the session.
      *
      * @return void
@@ -75,25 +55,16 @@ class Session
         } elseif ($this->app->isFirstRequest() && $this->hasExpired()) {
             $this->renew();
         }
-
-        // switch ($this->app->ussdRequestType()) {
-        //     case APP_REQUEST_INIT:
-        //         if ($this->hasExpired()) {
-        //             $this->renew();
-        //         }
-
-        //         break;
-
-        //     case APP_REQUEST_USER_SENT_RESPONSE:
-        //         break;
-        // }
     }
 
-    public function renew()
+    /**
+     * Check if the session loaded is a new session.
+     *
+     * @return bool
+     */
+    public function isNew()
     {
-        $this->deletePreviousData();
-        $this->isNew = true;
-        $this->initialise();
+        return $this->isNew;
     }
 
     public function initialise()
@@ -112,28 +83,20 @@ class Session
         return $this->hasPassed('lifetime');
     }
 
-    public function hasTimedOut()
-    {
-        return $this->hasPassed('timeout');
-    }
-
     public function hasPassed($type)
     {
         $allowed = $this->app->config("session.{$type}");
         $lastConnection = $this->data['__last_connection'] ?? 0;
         $now = microtime(true);
 
-        return $this->secondsToMinutes($now - $lastConnection) >= $allowed;
+        return ($now - $lastConnection) >= $allowed;
     }
 
-    public function secondsToMinutes($sec)
+    public function renew()
     {
-        return $sec / 60;
-    }
-
-    public function mustNotTimeout()
-    {
-        return $this->app->config('app.allow_timeout') === false;
+        $this->deletePreviousData();
+        $this->isNew = true;
+        $this->initialise();
     }
 
     protected function deletePreviousData()
@@ -142,41 +105,37 @@ class Session
     }
 
     /**
-     * Delete session data from the storage.
+     * Check if the just retrieved session is a previous session.
      *
-     * This methodm leaves untouched the current live session data
-     *
-     * @return void
+     * @return bool
      */
-    public function delete()
+    public function hasPrevious()
     {
+        return !$this->isNew();
+    }
+
+    public function hasTimedOut()
+    {
+        return $this->hasPassed('timeout');
+    }
+
+    public function mustNotTimeout()
+    {
+        return $this->app->config('app.allow_timeout') === false;
     }
 
     /**
-     * Attempts to retrieve a previous session data from the storage.
+     * Reset the session.
+     *
+     * This does not affect the session in its storage. Only the live session
+     * currently in use. To delete the session completely, in live and in the
+     * storage, use `hardReset`
      *
      * @return void
      */
-    public function retrievePreviousData()
+    public function reset()
     {
-    }
-
-    /**
-     * Save the session data to the current configured storage.
-     *
-     * @return void
-     */
-    public function save()
-    {
-    }
-
-    /**
-     * Reset completely the session data, both in live and in the storage.
-     *
-     * @return void
-     */
-    public function hardReset()
-    {
+        $this->initialise();
     }
 
     /**
@@ -223,8 +182,7 @@ class Session
     /**
      * Set a value into the part of the session accessible by the developer.
      *
-     * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return void
      */
@@ -234,6 +192,10 @@ class Session
             $this->setMetadata(DEVELOPER_SAVED_DATA, []);
         }
 
+        if (is_callable($value)) {
+            $value = call_user_func($value);
+        }
+
         $this->data[DEVELOPER_SAVED_DATA] = Arr::multiKeySet(
             $key,
             $value,
@@ -241,6 +203,24 @@ class Session
         );
 
         return $this;
+    }
+
+    /**
+     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and
+     * save `$default` to the session.
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function remember($key, $default)
+    {
+        if (!$this->has($key)) {
+            $this->set($key, $default);
+        }
+
+        return $this->get($key);
     }
 
     /**
@@ -254,12 +234,6 @@ class Session
      */
     public function remove($key)
     {
-        // if (isset($this->data[DEVELOPER_SAVED_DATA][$key])) {
-        //     unset($this->data[DEVELOPER_SAVED_DATA][$key]);
-
-        //     return true;
-        // }
-
         $explodedKey = explode('.', $key);
 
         if (isset($this->data[DEVELOPER_SAVED_DATA][$explodedKey[0]])) {
@@ -280,8 +254,6 @@ class Session
      *
      * If no key is passed, checks if the session is not empty
      *
-     * @param string $key
-     *
      * @return bool
      */
     public function has(string $key = '')
@@ -298,8 +270,6 @@ class Session
      *
      * If no key is passed, checks if the session is not empty
      *
-     * @param string $key
-     *
      * @return bool
      */
     public function hasMetadata(string $key = '')
@@ -314,8 +284,7 @@ class Session
     /**
      * Set a framework-level variable in the session.
      *
-     * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return void
      */
@@ -331,8 +300,6 @@ class Session
      *
      * Returns true if the variable exists and has been removed, false otherwise
      *
-     * @param string $key
-     *
      * @return void
      */
     public function removeMetadata(string $key)
@@ -343,8 +310,7 @@ class Session
     /**
      * Retrieve a framework-level variable from the session.
      *
-     * @param string $key
-     * @param mixed  $default
+     * @param mixed $default
      *
      * @throws \RuntimeException If value not found and no default value has been provided
      *
@@ -367,19 +333,5 @@ class Session
         }
 
         return $value;
-    }
-
-    /**
-     * Reset the session.
-     *
-     * This does not affect the session in its storage. Only the live session
-     * currently in use. To delete the session completely, in live and in the
-     * storage, use `hardReset`
-     *
-     * @return void
-     */
-    public function reset()
-    {
-        $this->initialise();
     }
 }

@@ -3,14 +3,13 @@
 use function Prinx\Dotenv\env;
 
 return [
-
     /*
      * Unique identifier for this application.
      */
     'id' => env('APP_ID', 'rejoice_ussd'),
 
     /*
-     * The environment of the application
+     * The environment of the application.
      */
     'environment' => env('APP_ENV', 'prod'),
 
@@ -26,22 +25,32 @@ return [
 
     /*
      * If true, and an SMS endpoint and sender name have been configured, every
-     * last response will be sent as SMS to the user
+     * last response will be sent as SMS to the user.
      */
     'always_send_sms_at_end' => false,
 
     /*
-     * For test purpose. You can enable/disable overall sending of SMS
+     * You can enable/disable overall sending of SMS.
      */
     'send_sms_enabled' => env('SEND_SMS_ENABLED', true),
 
     /*
-     * For test purpose. You can enable/disable overall sending of SMS
+     * SMS Service.
+     */
+    'sms_service' => \Rejoice\Sms\SmsService::class,
+
+    /*
+     * Jobs class.
+     */
+    'jobs_class' => \App\Jobs\Job::class,
+
+    /*
+     * You can enable/disable overall logging.
      */
     'log_enabled' => env('LOG_ENABLED', true),
 
     /*
-     * You can disabled connection to the application database by turning this to false
+     * You can disabled connection to the application database by turning this to false.
      */
     'connect_app_db' => true,
 
@@ -64,12 +73,12 @@ return [
     /*
      * This option works with the `always_start_new_session` option. If true
      * and always_start_new_session has been set to false, the user will have a
-     * prompt to continue their last session or restart a new session. If
-     * false, the last session will be automatically loaded whenever the user
+     * prompt to continue their previous session or restart a new session. If
+     * false, the previous session will be automatically loaded whenever the user
      * comes back.
      * This does not have any effect if always_start_new_session is set to true.
      */
-    'ask_user_before_reload_last_session' => true,
+    'ask_user_before_reload_previous_session' => true,
 
     /*
      * USSD sessions times out very quickly depending on the network and the
@@ -78,9 +87,15 @@ return [
      * time has passed, and a response is sent requesting for an input from the
      * user, that response is displayed. That behavior is used to allow the
      * application not to time out. So that the user can see the last response,
-     * no matter how long the USSD menu is.
+     * no matter how long the USSD menu lasts.
      */
     'allow_timeout' => true,
+
+    /*
+     * If true, you can directly call a sub menu, without passing through
+     * the normal flow (from the welcome menu till the particular sub menu)
+     */
+    'allow_direct_sub_menu_call' => false,
 
     /*
      * Cancel the session whenever there is an error in the user's response
@@ -95,12 +110,6 @@ return [
      * continue their session.
      */
     'end_on_unhandled_action' => false,
-
-    /*
-     * If true, you can directly call a sub menu, without passing through
-     * the normal flow (from the welcome menu till the particular sub menu)
-     */
-    'allow_direct_sub_menu_call' => false,
 
     /*
      * Delimits variables in stubs files

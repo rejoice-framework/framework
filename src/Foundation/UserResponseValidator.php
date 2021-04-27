@@ -64,7 +64,7 @@ class UserResponseValidator
      */
     public static function validate($response, $validationRules)
     {
-        $validation = new \stdClass;
+        $validation = new \stdClass();
         $validation->validated = true;
 
         $rules = $validationRules;
@@ -163,7 +163,7 @@ class UserResponseValidator
      */
     public static function isString($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!is_string($str)) {
@@ -178,7 +178,7 @@ class UserResponseValidator
 
     public static function isMin($num, $min)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!(floatval($num) >= floatval($min))) {
@@ -193,7 +193,7 @@ class UserResponseValidator
 
     public static function isMax($num, $max)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!(floatval($num) <= floatval($max))) {
@@ -208,7 +208,7 @@ class UserResponseValidator
 
     public static function isMinLength($str, $minLen)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isMinLength($str, intval($minLen))) {
@@ -223,7 +223,7 @@ class UserResponseValidator
 
     public static function isMaxLength($str, $maxLen)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isMaxLength($str, intval($maxLen))) {
@@ -256,7 +256,7 @@ class UserResponseValidator
 
     public static function isAlpha($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isAlphabetic($str)) {
@@ -278,7 +278,7 @@ class UserResponseValidator
 
     public static function isAlphaNum($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isAlphanumeric($str)) {
@@ -300,7 +300,7 @@ class UserResponseValidator
 
     public static function isNumeric($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isNumeric($str)) {
@@ -315,7 +315,7 @@ class UserResponseValidator
 
     public static function isInteger($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isNumeric($str)) {
@@ -337,7 +337,7 @@ class UserResponseValidator
 
     public static function isFloat($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isFloatNumeric($str)) {
@@ -359,7 +359,7 @@ class UserResponseValidator
 
     public static function isTel($str)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Str::isTelNumber($str)) {
@@ -374,7 +374,7 @@ class UserResponseValidator
 
     public static function isRegex($str, $pattern)
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         $matched = preg_match($pattern, $str);
@@ -384,7 +384,7 @@ class UserResponseValidator
             self::$customErrors['regex'] ??
                 'The response does not match the pattern.';
         } elseif ($matched === false) {
-            throw new \Exception('Error in the validation regex: '.$pattern);
+            throw new \Exception('Regex validation error: '.preg_last_error_msg().". \nRegex: ".$pattern);
         }
 
         return $v;
@@ -392,7 +392,7 @@ class UserResponseValidator
 
     public static function isDate($date, $format = 'j/n/Y')
     {
-        $v = new \stdClass;
+        $v = new \stdClass();
         $v->validated = true;
 
         if (!Date::isDate($date, $format)) {

@@ -8,6 +8,16 @@ namespace Rejoice\Menu\Traits;
 trait Response
 {
     /**
+     * Instance of the response to send back to the user.
+     *
+     * @return Response
+     */
+    public function response()
+    {
+        return $this->app->response();
+    }
+
+    /**
      * Convert message to string if it is not.
      *
      * @param string|array $message
@@ -90,13 +100,39 @@ trait Response
      * Sends the final response screen to the user and automatically exits the
      * script.
      *
-     * @param string|array $message
+     * @param string[]|string $message
      *
      * @return void
      */
     public function respondAndExit($message)
     {
         $this->hardEnd($message);
+    }
+
+    /**
+     * Sends final response and the same response as SMS.
+     *
+     * @param string[]|string $message
+     *
+     * @return void
+     */
+    public function respondWithSms($message)
+    {
+        $this->respondAndContinue($message);
+        $this->sendSms();
+    }
+
+    /**
+     * Sends final response and the same response as SMS and exit.
+     *
+     * @param string[]|string $message
+     *
+     * @return void
+     */
+    public function respondWithSmsAndExit($message)
+    {
+        $this->respondAndContinue($message);
+        $this->sendSmsAndExit($message);
     }
 
     /**

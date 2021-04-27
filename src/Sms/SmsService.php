@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Rejoice\Utils;
+namespace Rejoice\Sms;
 
 use Rejoice\Foundation\Kernel;
 
@@ -18,7 +18,7 @@ use Rejoice\Foundation\Kernel;
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-class SmsService
+class SmsService implements SmsServiceInterface
 {
     protected $app;
 
@@ -34,8 +34,22 @@ class SmsService
         $this->app = $app;
     }
 
+    /**
+     * Send SMS.
+     *
+     * @param string[]|string $message
+     * @param string          $msisdn
+     * @param string          $senderName
+     * @param string          $endpoint
+     *
+     * @return void
+     */
     public function send($message, $msisdn = '', $senderName = '', $endpoint = '')
     {
+        if (is_array($message)) {
+            $message = implode("\n", $message);
+        }
+
         if (!($message = trim($message))) {
             return;
         }

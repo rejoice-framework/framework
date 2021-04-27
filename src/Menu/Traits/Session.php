@@ -8,7 +8,9 @@ namespace Rejoice\Menu\Traits;
 trait Session
 {
     /**
-     * Allows developer to save a value in the session.
+     * Allows developer to save a value in the session. This does not persist the value to storage
+     * automatically. The value is persisted only at the end of the request (when the framework
+     * sends a response back to the user.).
      *
      * @param string $name
      * @param mixed  $value
@@ -21,7 +23,7 @@ trait Session
     }
 
     /**
-     * Allow developer to retrieve a previously saved value from the session.
+     * Allows developer to retrieve a previously saved value from the session.
      *
      * Returns the value associated to $name, if found. If the key $name is not
      * in the session, it returns the $default passed. If no $default was
@@ -40,7 +42,7 @@ trait Session
     }
 
     /**
-     * Allow developer to check if the session contains an index.
+     * Allows developer to check if the session contains an index.
      *
      * @param string $name
      *
@@ -52,7 +54,7 @@ trait Session
     }
 
     /**
-     * Allow the developer to remove a key from the session.
+     * Allows the developer to remove a key from the session.
      *
      * @param string $name
      *
@@ -64,15 +66,28 @@ trait Session
     }
 
     /**
-     * Allow the developer to retrieve a value from the session.
-     * This is identical to `sessionGet`.
+     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and
+     * save `$default` to the session.
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function sessionRemember($key, $default)
+    {
+        return $this->session()->remember($key, $default);
+    }
+
+    /**
+     * Get the session instance. Can also be used as `sessionGet` by passing $key with/out $default.
      *
      * @param string $key
      * @param mixed  $default
      *
      * @throws \RuntimeException If $key not found and no $default passed.
      *
-     * @return mixed
+     * @return \Rejoice\Session\SessionInterface|mixed
      */
     public function session($key = null, $default = null)
     {

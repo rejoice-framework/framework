@@ -21,7 +21,7 @@ require_once __DIR__.'/../../constants.php';
  *
  * @author Prince Dorcis <princedorcis@gmail.com>
  */
-class DatabaseSession extends Session implements SessionInterface
+class DatabaseSession extends Session
 {
     protected $db;
     protected $tableName;

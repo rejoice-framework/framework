@@ -21,7 +21,7 @@ use Prinx\Utils\URL;
 use Rejoice\Database\Connections;
 use Rejoice\Database\DB;
 use Rejoice\Menu\Menus;
-use Rejoice\Utils\SmsService;
+use Rejoice\Sms\SmsServiceInterface;
 
 /**
  * Main Library. Handle the request and return a response.
@@ -103,7 +103,7 @@ class Kernel
      * Custom request type.
      *
      * The custom request type help define a request type for handling restart
-     * from last session and other requests.
+     * from previous session and other requests.
      *
      * @var string
      */
@@ -229,7 +229,7 @@ class Kernel
      *
      * @var bool
      */
-    protected $hasResumeFromLastSession = false;
+    protected $hasResumedFromPreviousSession = false;
 
     protected $menuNamespaceDelimiter = '::';
 
@@ -247,7 +247,7 @@ class Kernel
         ob_start();
         $this->appName = $appName;
         $this->forcedInput = $forcedInput;
-        $this->path = new Path;
+        $this->path = new Path();
         $this->logger = new Log(
             $this->path('app_default_log_file'),
             $this->path('app_default_cache_file')
@@ -342,7 +342,7 @@ class Kernel
 
     protected function handleUserRequest()
     {
-        if ($this->isFirstRequest() && $this->session->isPrevious()) {
+        if ($this->isFirstRequest() && $this->session->hasPrevious()) {
             $this->prepareToLaunchFromPreviousSession();
         } elseif ($this->attemptsToCallSubMenuDirectly() && $this->doesNotAllowDirectSubMenuCall()) {
             $this->forceRestart();
@@ -367,12 +367,12 @@ class Kernel
 
                 break;
 
-            case APP_REQUEST_ASK_USER_BEFORE_RELOAD_LAST_SESSION:
-                $this->runAskUserBeforeReloadLastSessionState();
+            case APP_REQUEST_ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION:
+                $this->runAskUserBeforeReloadPreviousSessionState();
                 break;
 
-            case APP_REQUEST_RELOAD_LAST_SESSION_DIRECTLY:
-                $this->runLastSessionState();
+            case APP_REQUEST_RELOAD_PREVIOUS_SESSION_DIRECTLY:
+                $this->runPreviousSessionState();
                 break;
 
             case APP_REQUEST_CANCELLED:
@@ -408,12 +408,12 @@ class Kernel
     public function prepareToLaunchFromPreviousSession()
     {
         if (
-            $this->config('app.ask_user_before_reload_last_session') &&
+            $this->config('app.ask_user_before_reload_previous_session') &&
             $this->session->metadata('current_menu_name', false) !== WELCOME_MENU_NAME
         ) {
-            $this->setCustomUssdRequestType(APP_REQUEST_ASK_USER_BEFORE_RELOAD_LAST_SESSION);
+            $this->setCustomUssdRequestType(APP_REQUEST_ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION);
         } else {
-            $this->setCustomUssdRequestType(APP_REQUEST_RELOAD_LAST_SESSION_DIRECTLY);
+            $this->setCustomUssdRequestType(APP_REQUEST_RELOAD_PREVIOUS_SESSION_DIRECTLY);
         }
     }
 
@@ -422,10 +422,10 @@ class Kernel
         return $this->session->mustNotTimeout() && $this->session->isNew();
     }
 
-    protected function runLastSessionState()
+    protected function runPreviousSessionState()
     {
-        $this->hasResumeFromLastSession = true;
-        $this->sessionSave('has_resume_from_last_session', true);
+        $this->hasResumedFromPreviousSession = true;
+        $this->sessionSave('has_resume_from_previous_session', true);
         $this->saveCurrentMenuName($this->historyBagPop());
         $this->runState($this->currentMenuName());
     }
@@ -440,9 +440,9 @@ class Kernel
         $this->session->setMetadata('current_menu_name', $name);
     }
 
-    protected function runAskUserBeforeReloadLastSessionState()
+    protected function runAskUserBeforeReloadPreviousSessionState()
     {
-        $this->runState(ASK_USER_BEFORE_RELOAD_LAST_SESSION);
+        $this->runState(ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION);
     }
 
     protected function processResponse()
@@ -562,7 +562,6 @@ class Kernel
      * developer has to specify the validation rules or validate himself in the
      * `validate` method of the menu entity)
      *
-     * @param string $currentMenu
      * @param string $userError
      * @param bool   $responseExistsInMenuActions The response has already been specified by the developer
      * @param string $nextMenu
@@ -625,8 +624,8 @@ class Kernel
                 $this->runSameState();
                 break;
 
-            case APP_CONTINUE_LAST_SESSION:
-                $this->runLastSessionState();
+            case APP_CONTINUE_PREVIOUS_SESSION:
+                $this->runPreviousSessionState();
                 break;
 
             case APP_PAGINATE_FORWARD:
@@ -658,8 +657,7 @@ class Kernel
         $this->session->setMetadata('ussd_has_switched', true);
         $this->session->save();
         $this->setUssdRequestType(APP_REQUEST_INIT);
-
-        return $this->processFromRemoteUssd($nextMenu);
+        $this->processFromRemoteUssd($nextMenu);
     }
 
     /**
@@ -946,7 +944,7 @@ class Kernel
                 $this->session->mustNotTimeout() &&
                 $cancelMessage = $this->config('menu.cancel_message')
             ) {
-                $sep = $this->app->config('menu.seperator_menu_string_and_cancel_message');
+                $sep = $this->config('menu.seperator_menu_string_and_cancel_message');
                 $message .= $sep.$cancelMessage;
             }
 
@@ -1141,12 +1139,12 @@ class Kernel
         if (APP_SPLITTED_MENU_NEXT !== $nextMenuName && APP_SPLITTED_MENU_BACK !== $nextMenuName) {
             if (
                 $this->currentMenuName() &&
-                $this->currentMenuName() !== WELCOME_MENU_NAME && ASK_USER_BEFORE_RELOAD_LAST_SESSION !== $nextMenuName &&
+                $this->currentMenuName() !== WELCOME_MENU_NAME && ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION !== $nextMenuName &&
                 !empty($this->historyBag()) && $this->previousMenuName() === $nextMenuName) {
                 $this->historyBagPop();
             } elseif (
                 $this->currentMenuName() && $this->currentMenuName() !== $nextMenuName &&
-                $this->currentMenuName() !== ASK_USER_BEFORE_RELOAD_LAST_SESSION
+                $this->currentMenuName() !== ASK_USER_BEFORE_RELOAD_PREVIOUS_SESSION
             ) {
                 $this->historyBagPush($this->currentMenuName());
             }
@@ -1215,7 +1213,10 @@ class Kernel
         $this->response->addErrorInSimulator($error);
         $this->response->softEnd($this->config('menu.application_failed_message'));
 
-        $log = "Error:\n".$error."\n\nUser session:\n".json_encode($sessionData, JSON_PRETTY_PRINT);
+        $error = strip_tags($this->br2nl($error));
+        $sessionData = $this->isProdEnv() ? json_encode($sessionData) : json_encode($sessionData, JSON_PRETTY_PRINT);
+
+        $log = "Error:\n".$error."\n\nUser session:\n".$sessionData;
 
         $this->logger->emergency($log);
 
@@ -1226,6 +1227,23 @@ class Kernel
         }
 
         exit;
+    }
+
+    /**
+     * Convert BR tags to newlines and carriage returns.
+     *
+     * @param string The string to convert
+     * @param string The string to use as line separator
+     *
+     * @return string The converted string
+     *
+     * @see https://www.php.net/manual/en/function.nl2br.php#115182
+     */
+    public function br2nl($string, $separator = PHP_EOL)
+    {
+        $separator = in_array($separator, ["\n", "\r", "\r\n", "\n\r", chr(30), chr(155), PHP_EOL]) ? $separator : PHP_EOL;
+
+        return preg_replace('/\<br(\s*)?\/?\>/i', $separator, $string);
     }
 
     protected function runPreviousState()
@@ -1503,6 +1521,20 @@ class Kernel
     }
 
     /**
+     * Returns the session value of `$key` if `$key` is in the session, else returns `$default` and
+     * save `$default` to the session.
+     *
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function sessionRemember($key, $default)
+    {
+        return $this->session->remember($key, $default);
+    }
+
+    /**
      * Allows the developer to retrieve a value from the session.
      * This is identical to `sessionGet`
      * Returns the session instance if no parameter passed.
@@ -1739,7 +1771,6 @@ class Kernel
     /**
      * Retrieve the request input.
      *
-     *
      * @param string $name
      *
      * @return mixed
@@ -1809,29 +1840,29 @@ class Kernel
      * The sender name and endpoint can be configure in the env file or
      * directly in the config/app.php file
      *
-     *
-     * @param string $message
-     * @param string $msisdn
-     * @param string $senderName
-     * @param string $endpoint
+     * @param string[]|string $message
      *
      * @return void
      */
-    public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
+    public function sendSms($message, string $msisdn = '', string $senderName = '', string $endpoint = '')
     {
         if (!$this->config('app.send_sms_enabled')) {
             return;
         }
 
-        $smsService = new SmsService($this);
+        $smsServiceClass = $this->config('app.sms_service');
+
+        if (!($smsServiceClass instanceof SmsServiceInterface)) {
+            throw new \Exception('Sms Service class must implements "'.SmsServiceInterface::class.'" interface.');
+        }
+
+        $smsService = new $smsServiceClass($this);
 
         return $smsService->send($message, $msisdn, $senderName, $endpoint);
     }
 
     /**
      * Return a path to a file or a folder.
-     *
-     *
      *
      * @param string $key
      *
@@ -1855,13 +1886,13 @@ class Kernel
         return $this->logger;
     }
 
-    public function hasResumeFromLastSessionOnThisMenu()
+    public function hasResumedFromPreviousSessionOnThisMenu()
     {
-        return $this->hasResumeFromLastSession;
+        return $this->hasResumedFromPreviousSession;
     }
 
-    public function hasResumeFromLastSession()
+    public function hasResumedFromPreviousSession()
     {
-        return $this->session('has_resume_from_last_session', null);
+        return $this->session('has_resume_from_previous_session', null);
     }
 }

@@ -10,7 +10,6 @@ trait Action
     /**
      * Merge an action array with an actionBag.
      *
-     *
      * @param array $actionBag
      * @param array $mergeWith
      *
@@ -28,12 +27,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param string $trigger
-     * @param string $display
-     *
      * @return array The modified action bag
      */
-    public function insertMainMenuAction($trigger = '', $display = '')
+    public function insertMainMenuAction(string $trigger = '', string $display = '')
     {
         return $this->insertMenuActions($this->mainMenuAction($trigger, $display));
     }
@@ -45,12 +41,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param string $trigger
-     * @param string $display
-     *
      * @return array
      */
-    public function mainMenuAction($trigger = '', $display = '')
+    public function mainMenuAction(string $trigger = '', string $display = '')
     {
         $trigger = $trigger ?: $this->app->config('menu.welcome_action_trigger');
         $display = $display ?: $this->app->config('menu.welcome_action_display');
@@ -61,6 +54,18 @@ trait Action
                 ITEM_ACTION => APP_WELCOME,
             ],
         ];
+    }
+
+    /**
+     * Return a `go to main menu` action bag.
+     *
+     * Alias for `mainMenuAction`
+     *
+     * @return array
+     */
+    public function main(string $trigger = '', string $display = '')
+    {
+        return $this->mainMenuAction($trigger, $display);
     }
 
     /**
@@ -109,7 +114,7 @@ trait Action
     /**
      * Return an action bag containing a `go to previous menu` option, as an array.
      *
-     * Alias for the `backAction` method.
+     * Alias for the `backAction`.
      *
      * @param string $trigger
      * @param string $display
@@ -249,15 +254,32 @@ trait Action
     }
 
     /**
+     * Return a `end USSD` action.
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file).
+     * Same for the display.
+     *
+     * @param string $trigger
+     * @param string $display
+     *
+     * @return array
+     */
+    public function end($trigger = '', $display = '')
+    {
+        return $this->endAction($trigger, $display);
+    }
+
+    /**
      * Return an action bag after adding the back action to it.
      *
      * @param array $actionBag
      *
      * @return array
      */
-    public function withBack($actionBag = [])
+    public function withBack($actionBag = [], $backTrigger = '', $display = '')
     {
-        return $this->mergeAction($actionBag, $this->backAction());
+        return $this->mergeAction($actionBag, $this->backAction($backTrigger, $display));
     }
 
     /**

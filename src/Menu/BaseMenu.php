@@ -259,16 +259,6 @@ class BaseMenu /* implements \ArrayAccess */
     /**
      * Get the raw response of the user for this menu.
      *
-     * @return Response
-     */
-    public function response()
-    {
-        return $this->app->response();
-    }
-
-    /**
-     * Get the raw response of the user for this menu.
-     *
      * @return string
      */
     public function userResponse()
@@ -278,6 +268,7 @@ class BaseMenu /* implements \ArrayAccess */
 
     /**
      * Get the raw response of the user for this menu.
+     * Alias for `userResponse`.
      *
      * @return string
      */
@@ -337,9 +328,6 @@ class BaseMenu /* implements \ArrayAccess */
 
     /**
      * Return the user previous responses.
-     *
-     * @param string $menuName The name of the menu response to retrieve
-     * @param string $default  The default to pass when no response has been found for the menu provided
      *
      * @return UserResponse|mixed
      */
@@ -402,24 +390,36 @@ class BaseMenu /* implements \ArrayAccess */
         return $this->app->db($name);
     }
 
-    public function hasResumeFromLastSessionOnThisMenu()
+    /**
+     * If the user has just resumed from the previous session (if the current menu is where the
+     * user left on the previous session).
+     *
+     * @return bool
+     */
+    public function hasResumedFromPreviousSessionOnThisMenu()
     {
-        return $this->app->hasResumeFromLastSession();
+        return $this->app->hasResumedFromPreviousSessionOnThisMenu();
     }
 
-    public function hasResumeFromLastSession()
+    /**
+     * Alias for `hasResumedFromLasSessionOnThisMenu`.
+     *
+     * @return bool
+     */
+    public function hasJustResumedFromPreviousSession()
     {
-        return $this->app->hasResumeFromLastSession();
+        return $this->hasResumedFromPreviousSessionOnThisMenu();
     }
 
-    // public function __call($method, $args)
-    // {
-    //     if (method_exists($this->app, $method)) {
-    //         return call_user_func([$this->app, $method], ...$args);
-    //     }
-
-    //     throw new \BadMethodCallException('Undefined method `'.$method.'` in class '.get_class($this));
-    // }
+    /**
+     * If the current menu flow started with the user choosing "Start from previous session".
+     *
+     * @return bool
+     */
+    public function hasResumedFromPreviousSession()
+    {
+        return $this->app->hasResumedFromPreviousSession();
+    }
 
     // ArrayAccess Interface
     public function offsetExists($offset)

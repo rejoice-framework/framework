@@ -103,7 +103,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
     public function simulate()
     {
-        $simulator = new Simulator;
+        $simulator = new Simulator();
         $simulator->setEndpoint($this->endpoint);
 
         $this->dial();
@@ -111,6 +111,7 @@ class SimulatorConsoleCommand extends FrameworkCommand
         while (!$this->isLastMenu($this->payload)) {
             $simulator->setPayload($this->payload);
             $response = $simulator->callUssd();
+
             $responseData = json_decode($response->get('data'), true);
 
             if ($response->isSuccess() && is_array($responseData)) {
