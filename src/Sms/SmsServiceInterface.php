@@ -8,11 +8,8 @@ interface SmsServiceInterface
      * Send SMS.
      *
      * @param string[]|string $message
-     * @param string          $msisdn
-     * @param string          $senderName
-     * @param string          $endpoint
      *
      * @return void
      */
-    public function send($message, $msisdn = '', $senderName = '', $endpoint = '');
+    public function send($message, string $msisdn = '', string $senderName = '', string $endpoint = '');
 }

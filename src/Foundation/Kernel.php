@@ -1821,14 +1821,11 @@ class Kernel
      * The sender name and endpoint can be configure in the env file or
      * directly in the config/app.php file
      *
-     * @param string $message
-     * @param string $msisdn
-     * @param string $senderName
-     * @param string $endpoint
+     * @param string[]|string $message
      *
      * @return void
      */
-    public function sendSms($message, $msisdn = '', $senderName = '', $endpoint = '')
+    public function sendSms($message, string $msisdn = '', string $senderName = '', string $endpoint = '')
     {
         if (!$this->config('app.send_sms_enabled')) {
             return;
