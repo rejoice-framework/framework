@@ -1216,8 +1216,9 @@ class Kernel
         $this->response->softEnd($this->config('menu.application_failed_message'));
 
         $error = strip_tags($this->br2nl($error));
+        $sessionData = $this->isProdEnv() ? json_encode($sessionData) : json_encode($sessionData, JSON_PRETTY_PRINT);
 
-        $log = "Error:\n".$error."\n\nUser session:\n".json_encode($sessionData, JSON_PRETTY_PRINT);
+        $log = "Error:\n".$error."\n\nUser session:\n".$sessionData;
 
         $this->logger->emergency($log);
 
