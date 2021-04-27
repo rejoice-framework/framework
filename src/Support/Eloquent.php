@@ -3,8 +3,8 @@
 namespace Rejoice\Support;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Rejoice\Foundation\Path;
 use function Prinx\Dotenv\loadEnv;
+use Rejoice\Foundation\Path;
 
 /**
  * Eloquent Database Connection.
