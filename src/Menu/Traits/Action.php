@@ -27,12 +27,9 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param string $trigger
-     * @param string $display
-     *
      * @return array The modified action bag
      */
-    public function insertMainMenuAction($trigger = '', $display = '')
+    public function insertMainMenuAction(string $trigger = '', string $display = '')
     {
         return $this->insertMenuActions($this->mainMenuAction($trigger, $display));
     }
@@ -44,22 +41,31 @@ trait Action
      * (in config/menu.php file).
      * Same for the display.
      *
-     * @param string $trigger
-     * @param string $display
-     *
      * @return array
      */
-    public function mainMenuAction($trigger = '', $display = '')
+    public function mainMenuAction(string $trigger = '', string $display = '')
     {
         $trigger = $trigger ?: $this->app->config('menu.welcome_action_trigger');
         $display = $display ?: $this->app->config('menu.welcome_action_display');
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_WELCOME,
             ],
         ];
+    }
+
+    /**
+     * Return a `go to main menu` action bag.
+     *
+     * Alias for `mainMenuAction`
+     *
+     * @return array
+     */
+    public function main(string $trigger = '', string $display = '')
+    {
+        return $this->mainMenuAction($trigger, $display);
     }
 
     /**
@@ -99,7 +105,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_BACK,
             ],
         ];
@@ -157,7 +163,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_PAGINATE_BACK,
             ],
         ];
@@ -199,7 +205,7 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_PAGINATE_FORWARD,
             ],
         ];
@@ -241,10 +247,27 @@ trait Action
 
         return [
             $trigger => [
-                ITEM_MSG    => $display,
+                ITEM_MSG => $display,
                 ITEM_ACTION => APP_END,
             ],
         ];
+    }
+
+    /**
+     * Return a `end USSD` action.
+     *
+     * If no trigger is passed, it will use the configured trigger
+     * (in config/menu.php file).
+     * Same for the display.
+     *
+     * @param string $trigger
+     * @param string $display
+     *
+     * @return array
+     */
+    public function end($trigger = '', $display = '')
+    {
+        return $this->endAction($trigger, $display);
     }
 
     /**
