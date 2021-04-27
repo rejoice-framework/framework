@@ -93,7 +93,8 @@ class Scheduler extends BaseScheduler
 
                 return $e->getMessage();
             } catch (\Throwable $th) {
-                $message = sprintf('Error when executing scheduled command "%s": %s',
+                $message = sprintf(
+                    'Error when executing scheduled command "%s": %s',
                     $commandName,
                     $th->getMessage()
                 );
