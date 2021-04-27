@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs;
+namespace Rejoice\Jobs;
 
 use GO\Job;
 use GO\Scheduler as BaseScheduler;
