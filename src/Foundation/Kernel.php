@@ -946,7 +946,7 @@ class Kernel
                 $this->session->mustNotTimeout() &&
                 $cancelMessage = $this->config('menu.cancel_message')
             ) {
-                $sep = $this->app->config('menu.seperator_menu_string_and_cancel_message');
+                $sep = $this->config('menu.seperator_menu_string_and_cancel_message');
                 $message .= $sep.$cancelMessage;
             }
 
