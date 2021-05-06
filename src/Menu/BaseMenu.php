@@ -162,7 +162,7 @@ class BaseMenu /* implements \ArrayAccess */
 
             $menuName = Str::pascalCase(array_pop($exploded));
             $menuRelativePath = $exploded ? implode(Os::slash(), $exploded) : '';
-            $dir = !$menuRelativePath ?: $dir.'/'.$menuRelativePath;
+            $dir = !$menuRelativePath ? $dir : $dir.'/'.$menuRelativePath;
 
             if (!is_dir($dir)) {
                 mkdir($dir, 0777, true);
