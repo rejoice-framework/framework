@@ -2,11 +2,11 @@
 
 namespace Rejoice\Console\Commands;
 
+use function Prinx\Dotenv\env;
 use Prinx\Str;
 use Prinx\Utils\URL;
 use Rejoice\Console\Option;
 use Rejoice\Simulator\Libs\Simulator;
-use function Prinx\Dotenv\env;
 
 class SimulatorConsoleCommand extends FrameworkCommand
 {
@@ -23,9 +23,9 @@ class SimulatorConsoleCommand extends FrameworkCommand
     const APP_REQUEST_USER_SENT_RESPONSE = '18';
 
     protected $simulatorMetadata = [
-        'info' => 'question',
+        'info'    => 'question',
         'warning' => 'warning',
-        'error' => 'error',
+        'error'   => 'error',
     ];
 
     /**
@@ -145,12 +145,12 @@ class SimulatorConsoleCommand extends FrameworkCommand
     public function dial()
     {
         $this->payload = [
-            $this->requestTypeParameter => self::APP_REQUEST_INIT,
+            $this->requestTypeParameter  => self::APP_REQUEST_INIT,
             $this->userResponseParameter => $this->getOption('ussd_code'),
-            $this->userNumberParameter => $this->getOption('tel'),
-            $this->userNetworkParameter => $this->getOption('network'),
-            $this->sessionIdParameter => time(),
-            'channel' => $this->getOption('channel'),
+            $this->userNumberParameter   => $this->getOption('tel'),
+            $this->userNetworkParameter  => $this->getOption('network'),
+            $this->sessionIdParameter    => time(),
+            'channel'                    => $this->getOption('channel'),
         ];
     }
 
