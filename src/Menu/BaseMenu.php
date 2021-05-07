@@ -155,13 +155,30 @@ class BaseMenu /* implements \ArrayAccess */
     public function logger()
     {
         if (!$this->logger) {
-            $dir = $this->app->path('log_root_dir').'menus/'.date('Y-m-d');
-            $dir = Os::toPathStyle($dir);
+            $rootDir = $this->app->path('project_root');
+            $menuClassDir = $this->app->path('app_menu_class_dir');
 
-            $exploded = explode($this->app->menuNamespaceDelimiter(), $this->name);
+            $menuClassDirRelative = substr_replace($menuClassDir, '', 0, strlen($rootDir));
+
+            $menuClassDirRelativeExploded = explode(Os::slash(), $menuClassDirRelative);
+            $menuClassDirRelativeExploded = array_filter($menuClassDirRelativeExploded, function ($folder) {
+                return trim($folder);
+            });
+            $menuClassDirRelativeExploded = array_map(function ($folder) {
+                return ucfirst($folder);
+            }, $menuClassDirRelativeExploded);
+
+            $menuClassDirRelative = implode('\\', $menuClassDirRelativeExploded);
+
+            $menuName = substr_replace($this->name, '', 0, strlen($menuClassDirRelative.'\\'));
+
+            $exploded = explode($this->app->menuNamespaceDelimiter(), $menuName);
 
             $menuName = Str::pascalCase(array_pop($exploded));
             $menuRelativePath = $exploded ? implode(Os::slash(), $exploded) : '';
+
+            $dir = $this->app->path('log_root_dir').'menus/'.date('Y-m-d');
+            $dir = Os::toPathStyle($dir);
             $dir = !$menuRelativePath ? $dir : $dir.'/'.$menuRelativePath;
 
             if (!is_dir($dir)) {
@@ -170,6 +187,7 @@ class BaseMenu /* implements \ArrayAccess */
 
             $file = $dir.'/'.$menuName.'.log';
             $cache = $dir.'/.count';
+
             $this->logger = new Log($file, $cache);
         }
 
