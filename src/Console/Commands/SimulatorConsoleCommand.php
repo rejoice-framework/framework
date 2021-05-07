@@ -28,6 +28,13 @@ class SimulatorConsoleCommand extends FrameworkCommand
         'error'   => 'error',
     ];
 
+    /**
+     * Codepage used on Windows cmd.exe.
+     *
+     * @var int
+     */
+    protected $codepage;
+
     public function configure()
     {
         $this->setName('simulator:console')
@@ -117,8 +124,6 @@ class SimulatorConsoleCommand extends FrameworkCommand
             if ($response->isSuccess() && is_array($responseData)) {
                 $this->drawSeparationLine(['middle' => ' MENU ']);
 
-                // $this->showMetadataIfExists($responseData);
-
                 if ($this->ussdWantsUserResponse($responseData)) {
                     $this->getUserResponseAndSend($responseData);
                 } else {
@@ -156,12 +161,25 @@ class SimulatorConsoleCommand extends FrameworkCommand
 
     public function generateDisplayTable($data)
     {
+        if (\function_exists('sapi_windows_cp_set')) {
+            @sapi_windows_cp_set($this->getCodepage());
+        }
+
         $menuScreen = $this->createTable();
         $menuScreen->setHeaders(['MENU SCREEN'])
             ->addRow([$data['message']])
             ->setColumnMaxWidth(0, 50)
-            ->setStyle('box')
+            ->border('box-double')
             ->show();
+    }
+
+    public function getCodepage()
+    {
+        if (is_null($this->codepage)) {
+            $this->codepage = sapi_windows_cp_get('├');
+        }
+
+        return $this->codepage;
     }
 
     public function getUserResponseAndSend($data)
