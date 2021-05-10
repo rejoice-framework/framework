@@ -18,7 +18,9 @@ class ScheduleRunCommand extends Smile
         $scheduler = new Scheduler();
         $scheduler->setSchedulerCommand($this);
 
-        $jobs = new $this->config('app.jobs_class');
+        $jobClass = $this->config('app.jobs_class');
+        $jobs = new $jobClass();
+
         $jobs->schedule($scheduler);
 
         $scheduler->run();
